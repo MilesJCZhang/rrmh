@@ -1,0 +1,149 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/register/register",
+    "pages/profile/profile",
+    "pages/avatar/avatar",
+    "pages/match/match",
+    "pages/mine/mine",
+    "pages/pay/pay",
+    "pages/customer-service/customer-service",
+    "pages/agreement/agreement"
+  ],
+  "subpackages": [
+    {
+      "root": "subpackages/activity",
+      "name": "activity",
+      "pages": [
+        "pages/salon-detail/salon-detail",
+        "pages/salon-list/salon-list",
+        "pages/salon-create/salon-create",
+        "pages/salon-weekly/salon-weekly",
+        "pages/male-salon-list/male-salon-list",
+        "pages/female-salon-list/female-salon-list",
+        "pages/male-salon-detail/male-salon-detail",
+        "pages/female-salon-detail/female-salon-detail",
+        "pages/male-salon-create/male-salon-create",
+        "pages/female-salon-create/female-salon-create",
+        "pages/male-salon-signup/male-salon-signup"
+      ]
+    },
+    {
+      "root": "subpackages/matchmaker",
+      "name": "matchmaker",
+      "pages": [
+        "pages/matchmaker/matchmaker",
+        "pages/matchmaker/apply",
+        "pages/matchmaker/qrcode",
+        "pages/matchmaker/earnings",
+        "pages/matchmaker/list/list",
+        "pages/matchmaker/detail/detail",
+        "pages/matchmaker-workbench/matchmaker-workbench",
+        "pages/recommender/recommender",
+        "pages/recommender/income/income",
+        "pages/recommender/open/open",
+        "pages/recommender/usage-records/usage-records",
+        "pages/recommender/tree/tree"
+      ]
+    },
+    {
+      "root": "subpackages/partner",
+      "name": "partner",
+      "pages": [
+        "pages/cooperation/intro/intro",
+        "pages/cooperation/partners/partners",
+        "pages/cooperation/apply/apply",
+        "pages/partner-apply/partner-apply",
+        "pages/franchisee/online/apply",
+        "pages/franchisee/dashboard/dashboard",
+        "pages/community-station/workbench/workbench"
+      ]
+    },
+    {
+      "root": "subpackages/social",
+      "name": "social",
+      "pages": [
+        "pages/chat/chat",
+        "pages/group/group",
+        "pages/reunion/reunion",
+        "pages/reunion/reunion-profile",
+        "pages/reunion/reunion-chat",
+        "pages/salon/salon",
+        "pages/activity/list/list",
+        "pages/activity/detail/detail"
+      ]
+    },
+    {
+      "root": "subpackages/user",
+      "name": "user",
+      "pages": [
+        "pages/verify/verify",
+        "pages/user/user/user",
+        "pages/user/profile/profile",
+        "pages/user/orders/orders",
+        "pages/user/membership/membership",
+        "pages/payment/success/success",
+        "pages/payment/fail/fail",
+        "pages/payment/refund/refund",
+        "pages/help/help",
+        "pages/about/about"
+      ]
+    },
+    {
+      "root": "subpackages/premium",
+      "name": "premium",
+      "pages": [
+        "pages/verify/verify",
+        "pages/match/match",
+        "pages/custody/custody"
+      ]
+    }
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#C8102E",
+    "navigationBarTitleText": "人人媒好",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#FDF6F0"
+  },
+  "tabBar": {
+    "color": "#A07060",
+    "selectedColor": "#C8102E",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/icons/home.png",
+        "selectedIconPath": "assets/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/match/match",
+        "text": "AI推荐",
+        "iconPath": "assets/icons/match.png",
+        "selectedIconPath": "assets/icons/match-active.png"
+      },
+      {
+        "pagePath": "pages/avatar/avatar",
+        "text": "我的画像",
+        "iconPath": "assets/icons/avatar.png",
+        "selectedIconPath": "assets/icons/avatar-active.png"
+      },
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "我的",
+        "iconPath": "assets/icons/mine.png",
+        "selectedIconPath": "assets/icons/mine-active.png"
+      }
+    ]
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于查找您附近的社区活动和同城会员，不会用于其他目的"
+    }
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}

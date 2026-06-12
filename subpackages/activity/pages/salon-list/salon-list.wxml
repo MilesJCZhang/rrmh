@@ -1,0 +1,140 @@
+<!-- subpackages/activity/pages/salon-list/salon-list.wxml -->
+<!-- 固定导航栏（主题色背景，最上层） -->
+<view class="salon-fixed-nav" style="background: {{themeGradient}};">
+  <view class="salon-nav-back" bindtap="goBack">
+    <text class="salon-nav-arrow">‹</text>
+  </view>
+</view>
+
+<view class="page {{salonType === 'male_salon' ? 'male-theme' : salonType === 'female_salon' ? 'female-theme' : ''}}">
+
+  <!-- 页面头部 -->
+  <view class="page-header" wx:if="{{!salonType}}">
+    <text class="page-header-title">3男3女线下沙龙</text>
+    <text class="page-header-desc">按评分段精准分组，每场3男3女深度了解</text>
+    <view class="header-badges">
+      <view class="badge-item">
+        <text class="badge-num">3男3女</text>
+        <text class="badge-label">固定6人制</text>
+      </view>
+      <view class="badge-item">
+        <text class="badge-num">按评分</text>
+        <text class="badge-label">同段分组</text>
+      </view>
+      <view class="badge-item">
+        <text class="badge-num">¥399</text>
+        <text class="badge-label">报名费</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 差异化头部 -->
+  <view class="page-header" wx:if="{{salonType}}">
+    <text class="page-header-title">{{salonType === 'male_salon' ? '男推荐官主体沙龙' : '女推荐官主体沙龙'}}</text>
+    <text class="page-header-desc">推荐官专属精品小班，志趣相投的圈友精准相聚</text>
+    <view class="header-badges">
+      <view class="badge-item"><text class="badge-num">{{totalCap}}人</text><text class="badge-label">每场人数</text></view>
+      <view class="badge-item"><text class="badge-num">含随行</text><text class="badge-label">可带朋友</text></view>
+      <view class="badge-item"><text class="badge-num">审核制</text><text class="badge-label">品质保障</text></view>
+    </view>
+  </view>
+
+  <!-- 我的评分等级提示（仅常规沙龙） -->
+  <view class="tier-tip" wx:if="{{!salonType && tierInfo && myScoreTier !== 'unrated'}}">
+    <text class="tier-tip-icon">{{myScoreTier === 'gold' ? '🥇' : myScoreTier === 'silver' ? '🥈' : '🥉'}}</text>
+    <text class="tier-tip-text">您的评分等级: {{tierInfo.label}}（可参加{{myScoreTier === 'bronze' ? '基础' : myScoreTier === 'silver' ? '良好+基础' : '所有'}}场次）</text>
+  </view>
+
+  <!-- Tier筛选Tab（仅常规沙龙） -->
+  <view class="tier-tab-bar" wx:if="{{!salonType}}">
+    <view class="tier-tab {{activeTier === item.key ? 'tier-tab-active' : ''}}" wx:for="{{tierTabs}}" wx:key="key" bindtap="onTierTabTap" data-key="{{item.key}}">
+      {{item.label}}
+    </view>
+  </view>
+
+  <!-- 沙龙列表 -->
+  <view class="salon-cards" wx:if="{{salonList.length > 0}}">
+    <view class="salon-card" wx:for="{{salonList}}" wx:key="id" bindtap="onTap" data-id="{{item.id}}">
+      <view class="sc-header">
+        <view class="sc-title">{{item.title}}</view>
+        <view class="sc-tier-badge" wx:if="{{item.score_tier && item.score_tier !== 'all' && !salonType && !item.type}}">
+          {{item.score_tier === 'gold' ? '优质专场' : item.score_tier === 'silver' ? '良好专场' : '基础专场'}}
+        </view>
+      </view>
+      <view class="sc-meta">
+        <text class="sc-date">{{item.event_date}}</text>
+        <text class="sc-time" wx:if="{{item.start_time}}">{{item.start_time}}-{{item.end_time || ''}}</text>
+        <text class="sc-location" wx:if="{{item.location}}">📍 {{item.location}}</text>
+      </view>
+
+      <!-- 名额状态（按每个沙龙自身的类型渲染） -->
+      <view class="sc-group-bar">
+        <!-- 常规混合沙龙（无 type，且 isGrouped）：显示3男3女 -->
+        <view wx:if="{{!item.type && item.isGrouped}}">
+          <view class="sc-gender-row">
+            <text class="sc-gender-label">👨</text>
+            <view class="sc-slot-dots">
+              <view class="sc-dot {{idx < item.male_count ? 'filled' : ''}}" wx:for="{{item.max_per_gender || 3}}" wx:for-index="idx" wx:key="idx"></view>
+            </view>
+            <text class="sc-gender-remain">{{item.maleRemain}}位</text>
+          </view>
+          <view class="sc-gender-row">
+            <text class="sc-gender-label">👩</text>
+            <view class="sc-slot-dots">
+              <view class="sc-dot {{idx < item.female_count ? 'filled-f' : ''}}" wx:for="{{item.max_per_gender || 3}}" wx:for-index="idx" wx:key="idx"></view>
+            </view>
+            <text class="sc-gender-remain">{{item.femaleRemain}}位</text>
+          </view>
+        </view>
+        <!-- 推荐官主体沙龙（有 type 字段）：显示单性别名额 -->
+        <view wx:elif="{{item.type}}">
+          <view class="sc-gender-row">
+            <text class="sc-gender-label">{{item.type === 'male_salon' ? '👨 男士' : '👩 女士'}}</text>
+            <view class="sc-slot-dots">
+              <view class="sc-dot {{idx < (item.max_recommenders || 9) - item.totalRemainMain ? 'filled' : ''}}" wx:for="{{item.max_recommenders || 9}}" wx:for-index="idx" wx:key="idx"></view>
+            </view>
+            <text class="sc-gender-remain">{{item.totalRemainMain}}位推荐官</text>
+          </view>
+          <view class="sc-cap-tip">含随行，每场共{{item.total_cap || 27}}人封顶</view>
+        </view>
+        <!-- 非分组的常规沙龙：显示基础剩余名额 -->
+        <view wx:else>
+          <view class="sc-gender-row">
+            <text class="sc-simple-remain">剩余 {{item.totalRemain}} 个名额</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="sc-footer">
+        <view class="sc-price">
+          <text class="sc-price-sym">¥</text>
+          <text class="sc-price-num">{{item.registrationFee}}</text>
+          <text class="sc-price-unit">/人</text>
+        </view>
+        <view class="sc-cta {{item.isRegistered ? 'sc-cta-done' : (item.totalRemain <= 0 ? 'sc-cta-disabled' : '')}}">
+          {{item.isRegistered ? '已报名' : (item.totalRemain <= 0 ? '已满员' : '立即报名')}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-wrap" wx:if="{{!loading && salonList.length === 0}}">
+    <text class="empty-icon-text">🎉</text>
+    <text class="empty-hint">{{salonType ? '暂无该类型的沙龙场次' : '暂无开放的沙龙场次'}}</text>
+    <text class="empty-sub">{{salonType ? '等待推荐官发布新场次' : '请关注后续发布'}}</text>
+  </view>
+
+  <!-- 推荐官浮动按钮 -->
+  <view class="fab-create" wx:if="{{isMatchmaker}}" bindtap="goCreateSalon">
+    <text class="fab-create-icon">+</text>
+    <text class="fab-create-text">申请发布</text>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

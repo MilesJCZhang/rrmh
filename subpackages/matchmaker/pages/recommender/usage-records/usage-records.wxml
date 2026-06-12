@@ -1,0 +1,39 @@
+<!-- pages/recommender/usage-records/usage-records.wxml -->
+<view class="page-container">
+  <!-- 使用记录列表 -->
+  <view class="records-list" wx:if="{{records.length > 0}}">
+    <view class="record-item" wx:for="{{records}}" wx:key="id">
+      <view class="record-left">
+        <view class="record-icon">🎯</view>
+        <view class="record-info">
+          <view class="record-name">{{item.user_name}}</view>
+          <view class="record-meta">
+            <text class="record-scene">{{item.scene_name}}</text>
+            <text class="record-role">{{item.user_role}}</text>
+          </view>
+          <view class="record-ip" wx:if="{{item.ip_address}}">IP: {{item.ip_address}}</view>
+        </view>
+      </view>
+      <view class="record-right">
+        <view class="record-code">{{item.code}}</view>
+        <view class="record-time">{{item.time_ago}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="loading-more" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+  
+  <view class="no-more" wx:if="{{!hasMore && records.length > 0}}">
+    <text>没有更多记录了</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-box" wx:if="{{records.length === 0 && !loading}}">
+    <text class="empty-icon">📋</text>
+    <text class="empty-text">暂无使用记录</text>
+    <text class="empty-sub">推荐码被使用时将显示在这里</text>
+  </view>
+</view>

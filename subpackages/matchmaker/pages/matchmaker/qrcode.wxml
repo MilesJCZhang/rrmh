@@ -1,0 +1,69 @@
+<!-- pages/matchmaker/qrcode.wxml - 推广二维码（支持管理员分配的邀请码） -->
+<view class="page">
+  <view class="qrcode-page px-32">
+    <view class="qr-card">
+      <view class="qr-header">
+        <text class="qr-title">我的专属推荐码</text>
+        <text class="qr-desc" wx:if="{{!hasReferralCode}}">用户扫码进入，自动绑定为您的推荐用户</text>
+        <text class="qr-desc" wx:if="{{hasReferralCode}}">{{codeTypeName}}专属邀请码，扫码自动注册绑定</text>
+      </view>
+
+      <!-- 小程序码显示区域 -->
+      <view class="poster-preview">
+        <!-- 加载中 -->
+        <view wx:if="{{qrcodeLoading || generating}}" class="loading-box">
+          <view class="loading-spinner"></view>
+          <text class="loading-text">正在生成二维码…</text>
+        </view>
+
+        <!-- 小程序码（优先显示） -->
+        <image wx:elif="{{qrcodeBase64}}" src="{{qrcodeBase64}}" class="poster-img qrcode-img" mode="aspectFit" bindtap="onPreviewPoster" />
+
+        <!-- 原有海报（兜底） -->
+        <image wx:elif="{{posterUrl}}" src="{{posterUrl}}" class="poster-img" mode="aspectFit" bindtap="onPreviewPoster" />
+
+        <!-- 占位图 -->
+        <image wx:else src="/assets/images/qr-placeholder.png" class="poster-img" mode="aspectFit" />
+      </view>
+
+      <!-- 邀请码显示（新增） -->
+      <view class="invitation-code-box" wx:if="{{hasReferralCode}}">
+        <view class="code-label">我的邀请码</view>
+        <view class="code-value-box">
+          <text class="code-value">{{referralCode}}</text>
+          <text class="code-copy-btn" bindtap="onCopyCode">复制</text>
+        </view>
+        <view class="code-type-tag">{{codeTypeName}}</view>
+      </view>
+
+      <!-- 原有推荐ID（兜底显示） -->
+      <view class="matchmaker-id" wx:if="{{!hasReferralCode && matchmakerId}}">
+        <text class="id-label">我的推荐ID：</text>
+        <text class="id-val">{{matchmakerId}}</text>
+        <text class="id-copy" bindtap="onCopyId">复制</text>
+      </view>
+
+      <!-- 操作按钮 -->
+      <button class="btn btn-primary btn-block mt-24" open-type="shareTimeline" wx:if="{{canShareTimeline}}">分享到朋友圈</button>
+      <button class="btn btn-secondary btn-block mt-16" bindtap="onSavePoster">保存海报到相册</button>
+      <button class="btn btn-outline btn-block mt-16" open-type="share">发给好友</button>
+
+      <!-- 刷新按钮（新增，用于重新生成小程序码） -->
+      <button class="btn btn-text btn-block mt-16" bindtap="loadMiniappQrcode" wx:if="{{hasReferralCode && !qrcodeBase64 && !qrcodeLoading}}">
+        重新生成二维码
+      </button>
+    </view>
+
+    <!-- 推广说明 -->
+    <view class="tips-card mt-24">
+      <view class="tips-title">🎯 推广小贴士</view>
+      <view class="tip-line" wx:if="{{hasReferralCode}}">1. 分享您的小程序码，用户扫码自动注册并绑定为推荐用户</view>
+      <view class="tip-line" wx:else>1. 将海报发到微信群、朋友圈，或发给志同道合的朋友</view>
+      <view class="tip-line">2. 用户扫码进入后永久绑定您为推荐人</view>
+      <view class="tip-line">3. 该用户产生的所有消费，您都能持续获得积分</view>
+      <view class="tip-line">4. 推荐的AI陪伴用户，每人可得 ¥99</view>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

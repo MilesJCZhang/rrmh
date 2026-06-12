@@ -1,0 +1,146 @@
+<!-- pages/user/user -->
+<view class="page-container">
+  
+  <!-- 用户信息头部 -->
+  <view class="user-header">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <!-- 左侧：头像 -->
+      <button
+        class="avatar-btn"
+        open-type="chooseAvatar"
+        bindchooseavatar="onChooseAvatar"
+      >
+        <image
+          class="user-avatar"
+          src="{{isLogin && userInfo.avatar ? userInfo.avatar : '/assets/images/default-avatar.png'}}"
+          mode="aspectFill"
+        />
+      </button>
+
+      <!-- 中间：昵称 + 状态 -->
+      <view class="user-info-section">
+        <block wx:if="{{isLogin}}">
+          <!-- 已设置昵称：显示文字 -->
+          <text class="user-name" wx:if="{{hasNickname || userInfo.name}}">{{userInfo.nickname || userInfo.name}}</text>
+          <!-- 未设置昵称：显示 input -->
+          <input
+            wx:else
+            class="nickname-input-inline"
+            type="nickname"
+            placeholder="点击获取微信昵称"
+            bindblur="onNicknameInput"
+          />
+          <!-- 身份标识 + 实名状态 -->
+          <view class="user-tags">
+            <text class="user-role-tag {{userInfo.role}}">{{userRoleName}}</text>
+            <text class="user-status" wx:if="{{userInfo.verificationStatus === 'verified'}}">已实名</text>
+            <text class="user-phone" wx:elif="{{userInfo.phone}}">{{userInfo.phone}}</text>
+          </view>
+        </block>
+        <block wx:else>
+          <text class="user-name">点击登录</text>
+        </block>
+      </view>
+
+      <!-- 右侧：操作按钮 -->
+      <view class="user-action">
+        <block wx:if="{{!isLogin}}">
+          <button class="btn-login" bindtap="onLogin">登录</button>
+        </block>
+        <block wx:elif="{{isLogin && needsWechatAuth}}">
+          <button class="btn-auth-phone" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">手机号快捷登录</button>
+        </block>
+        <block wx:else>
+          <view class="btn-edit" bindtap="navigateToProfile"><text>编辑 ></text></view>
+        </block>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 推荐官收益卡片（所有推荐官身份可见） -->
+  <view class="section" wx:if="{{isLogin && (userInfo.role === 'professional_recommender' || userInfo.role === 'partner_matchmaker' || userInfo.role === 'public_matchmaker' || userInfo.role === 'city_franchisee' || userInfo.role === 'community_station')}}">
+    <view class="income-card">
+      <view class="income-header">
+        <view class="income-title">
+          <image class="income-icon" src="/images/icon/star.png" />
+          <text>推荐官收益</text>
+        </view>
+        <view class="income-arrow" bindtap="navigateToIncome">
+          <text>查看详情</text>
+          <image src="/images/icon/arrow_right.png" />
+        </view>
+      </view>
+      <view class="income-stats">
+        <view class="income-item">
+          <text class="income-value">¥{{recommenderIncome.today}}</text>
+          <text class="income-label">今日收益</text>
+        </view>
+        <view class="income-divider"></view>
+        <view class="income-item">
+          <text class="income-value">¥{{recommenderIncome.month}}</text>
+          <text class="income-label">本月收益</text>
+        </view>
+        <view class="income-divider"></view>
+        <view class="income-item">
+          <text class="income-value">¥{{recommenderIncome.withdrawable}}</text>
+          <text class="income-label">可提现</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷操作 -->
+  <view class="section">
+    <view class="quick-actions">
+      <block wx:for="{{quickActions}}" wx:key="id">
+        <view class="action-item" data-index="{{index}}" bindtap="onQuickActionTap">
+          <image class="action-icon" src="{{item.icon}}" />
+          <text class="action-title">{{item.title}}</text>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="section">
+    <view class="menu-list">
+      <block wx:for="{{menuItems}}" wx:key="id">
+        <view class="menu-item" wx:if="{{item.show}}" data-index="{{index}}" bindtap="onMenuItemTap">
+          <view class="menu-left">
+            <image class="menu-icon" src="{{item.icon}}" />
+            <view class="menu-info">
+              <text class="menu-title">{{item.title}}</text>
+              <text class="menu-desc">{{item.desc}}</text>
+            </view>
+          </view>
+          <image class="menu-arrow" src="/images/icon/arrow_right.png" />
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 升级推荐官卡片（可升级时显示） -->
+  <view class="section" wx:if="{{isLogin && canUpgradeRecommender}}">
+    <view class="upgrade-card" bindtap="navigateToRecommenderOpen">
+      <view class="upgrade-left">
+        <view class="upgrade-icon">🎁</view>
+        <view class="upgrade-info">
+          <text class="upgrade-title">升级专业推荐官</text>
+          <text class="upgrade-desc">开通全业务推广收益，终身权益</text>
+        </view>
+      </view>
+      <view class="upgrade-right">
+        <text class="upgrade-fee">¥3990</text>
+        <text class="upgrade-tag">立即升级</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部版权信息 -->
+  <view class="footer">
+    <text class="footer-text">人人好媒 v2.0</text>
+    <text class="footer-copyright">© 2026 人人好媒版权所有</text>
+  </view>
+
+</view>

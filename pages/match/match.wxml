@@ -1,0 +1,345 @@
+<!-- pages/match/match.wxml - AI推荐页（评分分层+解锁） -->
+<view class="page">
+
+  <!-- 评分头部区 -->
+  <view class="score-header" wx:if="{{hasProfile && !isMatchmaker}}">
+    <view class="score-header-inner">
+      <view class="score-main">
+        <view class="score-number">
+          <text class="score-value">{{profileScore}}</text>
+          <text class="score-unit">/100分</text>
+        </view>
+        <view class="score-tier-badge" style="background:{{tierInfo.color}}20;color:{{tierInfo.color}};border:1rpx solid {{tierInfo.color}}40;">
+          {{tierInfo.label}}
+        </view>
+      </view>
+      <view class="score-bar-wrap">
+        <view class="score-bar-bg">
+          <view class="score-bar-fill" style="width:{{profileScore}}%;background:{{tierInfo.color}};"></view>
+        </view>
+      </view>
+      <view class="score-actions" wx:if="{{profileScore < 80}}">
+        <view class="improve-btn" bindtap="onImproveScore">继续完善资料，提升评分 →</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分值解读区 -->
+  <view class="tier-guide" wx:if="{{hasProfile && !isMatchmaker}}">
+    <view class="tier-guide-title">分值解读</view>
+    <view class="tier-guide-list">
+      <view class="tier-guide-item {{scoreTier === 'gold' ? 'current' : ''}}">
+        <view class="tgi-badge" style="background:#FFD700;">80+</view>
+        <view class="tgi-info">
+          <text class="tgi-label">优质会员</text>
+          <text class="tgi-desc">线上了解¥199 + 线下沙龙</text>
+        </view>
+      </view>
+      <view class="tier-guide-item {{scoreTier === 'silver' ? 'current' : ''}}">
+        <view class="tgi-badge" style="background:#C0C0C0;">60-79</view>
+        <view class="tgi-info">
+          <text class="tgi-label">良好会员</text>
+          <text class="tgi-desc">线上了解¥299 + 线下沙龙</text>
+        </view>
+      </view>
+      <view class="tier-guide-item {{scoreTier === 'bronze' ? 'current' : ''}}">
+        <view class="tgi-badge" style="background:#CD7F32;">&lt;60</view>
+        <view class="tgi-info">
+          <text class="tgi-label">基础会员</text>
+          <text class="tgi-desc">仅线下沙龙</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 开始AI匹配按钮 -->
+  <view class="match-start-section" wx:if="{{hasProfile && !isMatchmaker}}">
+    <button class="btn btn-primary btn-lg match-start-btn" bindtap="onTabChange" data-tab="recommend" hover-class="btn-hover">
+      🤖 开始AI匹配
+    </button>
+  </view>
+
+  <!-- Tab切换 -->
+  <view class="tab-bar">
+    <view class="tab-item {{activeTab === 'recommend' ? 'active' : ''}}" bindtap="onTabChange" data-tab="recommend">精准推荐</view>
+    <view class="tab-item {{activeTab === 'group' ? 'active' : ''}}" bindtap="onTabChange" data-tab="group">{{isMatchmaker ? '我的会员' : '画像群'}}</view>
+    <view class="tab-item {{activeTab === 'history' ? 'active' : ''}}" bindtap="onTabChange" data-tab="history">聊天记录</view>
+  </view>
+
+  <!-- 精准推荐 -->
+  <view class="tab-content" wx:if="{{activeTab === 'recommend'}}">
+    <!-- 筛选条件 -->
+    <view class="filter-bar px-32">
+      <scroll-view scroll-x enable-flex class="filter-scroll">
+        <view class="filter-item {{filter.distance === item.val ? 'active' : ''}}" wx:for="{{distanceOptions}}" wx:key="val" bindtap="onFilterChange" data-key="distance" data-val="{{item.val}}">{{item.label}}</view>
+      </scroll-view>
+    </view>
+
+    <!-- 推荐列表 -->
+    <view class="match-list px-32" wx:if="{{matchList.length > 0 && !loading}}">
+      <view class="match-card" wx:for="{{matchList}}" wx:key="id" bindtap="onMatchTap" data-item="{{item}}">
+        <!-- Tier Badge -->
+        <view class="match-tier-badge" wx:if="{{item.scoreTier}}">
+          <view class="tier-dot" style="background:{{item.scoreTier === 'gold' ? '#FFD700' : item.scoreTier === 'silver' ? '#C0C0C0' : '#CD7F32'}};"></view>
+          <text>{{item.profileScore}}分</text>
+        </view>
+
+        <!-- 顶部：头像 + 基础信息 -->
+        <view class="match-header">
+          <view class="image-container">
+            <image class="match-avatar" src="{{item.avatar}}" mode="aspectFill" lazy-load="{{true}}" binderror="onImageError" bindload="onImageLoad" data-index="{{index}}" />
+            <view class="image-placeholder" wx:if="{{item.avatarLoading}}">
+              <view class="loading-spinner small"></view>
+            </view>
+          </view>
+          <view class="match-header-info">
+            <view class="match-name-row">
+              <text class="match-name">{{item.avatarName || item.nickname}}</text>
+              <view class="match-badges">
+                <text class="badge-role" wx:if="{{item.role !== 'single'}}">{{item.roleText || item.role}}</text>
+              </view>
+            </view>
+            <view class="match-subtitle">
+              <text wx:if="{{item.age}}">{{item.age}}岁</text>
+              <text class="dot" wx:if="{{item.age && item.city}}">·</text>
+              <text wx:if="{{item.city}}">{{item.city}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 中间：简介 + 标签 -->
+        <view class="match-body">
+          <view class="match-desc">{{item.intro}}</view>
+          <view class="match-tags" wx:if="{{item.tags.length > 0}}">
+            <text class="tag tag-mini" wx:for="{{item.tags}}" wx:key="*this" wx:for-item="tag">{{tag}}</text>
+          </view>
+        </view>
+
+        <!-- 底部：分层操作区 -->
+        <view class="match-footer">
+          <view class="match-footer-left">
+            <text class="ai-note" wx:if="{{!item.isUnlocked}}">🤖 AI画像，结果仅供参考</text>
+            <text class="unlocked-note" wx:else>✅ 已解锁</text>
+          </view>
+          <view class="match-footer-right">
+            <block wx:if="{{isMatchmaker}}">
+              <button class="btn btn-primary btn-small" hover-class="btn-hover" bindtap="onStartChat" data-id="{{item.id}}">查看会员</button>
+            </block>
+            <block wx:elif="{{item.isUnlocked}}">
+              <button class="btn btn-primary btn-small" hover-class="btn-hover" catchtap="onMatchTap" data-item="{{item}}">开始聊天 💬</button>
+            </block>
+            <block wx:elif="{{item.canOnlineUnlock}}">
+              <button class="btn btn-gold-fill btn-small" hover-class="btn-hover" catchtap="onOnlineUnlock" data-id="{{item.id}}">线上了解¥{{item.onlinePrice}}</button>
+              <button class="btn btn-outline btn-small" hover-class="btn-hover" catchtap="onOfflineMeet">线下了解</button>
+            </block>
+            <block wx:else>
+              <button class="btn btn-outline btn-small" hover-class="btn-hover" catchtap="onOfflineMeet">线下了解</button>
+            </block>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{matchList.length === 0 && !loading && hasProfile}}">
+      <view class="empty-icon-text">📭</view>
+      <text class="empty-title">暂无推荐结果</text>
+      <text class="empty-desc">试试调整筛选条件，或者完善个人资料提高匹配度</text>
+      <view class="empty-actions">
+        <button class="btn btn-outline" bindtap="onResetFilter">重置筛选</button>
+        <button class="btn btn-primary" bindtap="onGoProfile">完善资料</button>
+      </view>
+    </view>
+
+    <!-- 加载中 -->
+    <view class="loading-state" wx:if="{{loading}}">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">正在为您精准匹配中...</text>
+    </view>
+
+    <!-- 未建档提示 -->
+    <view class="lock-tip px-32" wx:if="{{!hasProfile && !isMatchmaker}}">
+      <view class="lock-card">
+        <text class="lock-icon">🔐</text>
+        <view class="lock-title">完成建档后查看推荐</view>
+        <view class="lock-desc">填写基础信息，系统智能推荐最合适的朋友</view>
+        <button class="btn btn-primary mt-24" bindtap="onGoRegister">立即建档</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 高端验资匹配入口 -->
+  <view class="premium-entry" wx:if="{{hasProfile && scoreTier === 'gold' && !isMatchmaker}}">
+    <view class="premium-card" bindtap="onGoPremium" hover-class="hover-opacity">
+      <view class="premium-left">
+        <text class="premium-icon">💎</text>
+        <view class="premium-info">
+          <view class="premium-title">高端验资匹配</view>
+          <view class="premium-desc">10万基金托管 · AI+人工双重匹配 · 专属服务</view>
+        </view>
+      </view>
+      <text class="premium-arrow">›</text>
+    </view>
+  </view>
+
+
+
+  <!-- 画像群/我的会员 -->
+  <view class="tab-content" wx:if="{{activeTab === 'group'}}">
+    <block wx:if="{{isMatchmaker}}">
+      <view class="px-32" wx:if="{{memberAvatarList.length > 0}}">
+        <view class="section-title">会员画像推荐动态</view>
+        <view class="member-avatar-card" wx:for="{{memberAvatarList}}" wx:key="id">
+          <view class="ma-header">
+            <image class="ma-avatar" src="{{item.avatar}}" mode="aspectFill" binderror="onListAvatarError" data-index="{{index}}" />
+            <view class="ma-info">
+              <view class="ma-name">{{item.name}}</view>
+              <view class="ma-meta">{{item.age}}岁 · {{item.city}}</view>
+            </view>
+            <view class="ma-status-badge {{item.avatarStatus === 'active' ? 'badge-active' : item.avatarStatus === 'chatting' ? 'badge-chatting' : 'badge-idle'}}">
+              {{item.avatarStatus === 'active' ? '推荐中' : item.avatarStatus === 'chatting' ? '聊天中' : '待激活'}}
+            </view>
+          </view>
+          <view class="ma-stats" wx:if="{{item.avatarStatus !== 'idle'}}">
+            <view class="ma-stat-item">
+              <text class="ma-stat-num">{{item.matchCount || 0}}</text>
+              <text class="ma-stat-label">推荐次数</text>
+            </view>
+            <view class="ma-stat-item">
+              <text class="ma-stat-num">{{item.chatCount || 0}}</text>
+              <text class="ma-stat-label">画像聊天</text>
+            </view>
+            <view class="ma-stat-item">
+              <text class="ma-stat-num">{{item.interestCount || 0}}</text>
+              <text class="ma-stat-label">有意向</text>
+            </view>
+          </view>
+          <view class="ma-recent" wx:if="{{item.recentActivity}}">
+            <text class="ma-recent-text">{{item.recentActivity}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="lock-card px-32" wx:else>
+        <text class="lock-icon">👥</text>
+        <view class="lock-title">暂无会员</view>
+        <view class="lock-desc">通过推荐码邀请会员建档后，可在此查看他们的画像推荐动态</view>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="group-section px-32" wx:if="{{myGroup}}">
+        <view class="section-title">我的画像所在群</view>
+        <view class="group-card current-group">
+          <view class="group-header">
+            <text class="group-icon">👥</text>
+            <view class="group-info">
+              <view class="group-name">{{myGroup.name}}</view>
+              <view class="group-desc">{{myGroup.memberCount}}人 · {{myGroup.category}}</view>
+            </view>
+            <view class="group-status-badge {{myGroup.active ? 'active' : ''}}">
+              {{myGroup.active ? '活跃中' : '已休眠'}}
+            </view>
+          </view>
+          <view class="group-avatars">
+            <view class="g-avatar-item" wx:for="{{myGroup.members}}" wx:key="id" wx:if="{{index < 5}}">
+              <image class="g-avatar-img" src="{{item.avatar}}" mode="aspectFill" />
+              <text class="g-avatar-name">{{item.avatarName}}</text>
+            </view>
+            <view class="g-avatar-more" wx:if="{{myGroup.memberCount > 5}}">+{{myGroup.memberCount - 5}}</view>
+          </view>
+          <view class="group-fee-info" wx:if="{{groupFreeRemain > 0}}">
+            <text class="fee-free">🎁 免费期还剩 {{groupFreeRemain}} 天</text>
+          </view>
+          <view class="group-fee-info" wx:else>
+            <text class="fee-text">月费 ¥99/月，全额归您的推荐官</text>
+            <button class="btn btn-sm btn-primary" bindtap="onRenewGroup">续费</button>
+          </view>
+        </view>
+      </view>
+      <view class="group-join px-32" wx:else>
+        <view class="lock-card">
+          <text class="lock-icon">👥</text>
+          <view class="lock-title">让画像进入智能推荐群</view>
+          <view class="lock-desc">系统自动推荐最合适的群，第一个月完全免费</view>
+          <button class="btn btn-primary mt-24" hover-class="btn-hover" bindtap="onJoinGroup" loading="{{joiningGroup}}" disabled="{{joiningGroup}}">免费加入推荐群</button>
+        </view>
+      </view>
+      <view class="chat-preview px-32 mt-24" wx:if="{{groupChats.length > 0}}">
+        <view class="section-title">画像最新聊天</view>
+        <view class="chat-item" wx:for="{{groupChats}}" wx:key="id">
+          <image class="chat-avatar" src="{{item.avatar}}" mode="aspectFill" />
+          <view class="chat-content">
+            <view class="chat-name">{{item.name}}</view>
+            <view class="chat-msg">{{item.lastMsg}}</view>
+          </view>
+          <view class="chat-time">{{item.time}}</view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 聊天记录 -->
+  <view class="tab-content" wx:if="{{activeTab === 'history'}}">
+    <view class="chat-history px-32">
+      <view class="history-item" wx:for="{{chatHistory}}" wx:key="id" bindtap="onHistoryTap" data-id="{{item.id}}">
+        <view class="history-avatar-wrap">
+          <image class="history-avatar" src="{{item.targetAvatar}}" mode="aspectFill" />
+          <view class="history-ai-dot">AI</view>
+        </view>
+        <view class="history-content">
+          <view class="history-name">{{item.targetAvatarName}}</view>
+          <view class="history-last">{{item.lastMsg}}</view>
+        </view>
+        <view class="history-right">
+          <view class="history-time">{{item.time}}</view>
+          <view class="history-result {{item.result}}">
+            <text wx:if="{{item.result === 'match'}}">✓ 合适</text>
+            <text wx:elif="{{item.result === 'no_match'}}">✗ 不合适</text>
+            <text wx:else>聊天中</text>
+          </view>
+        </view>
+      </view>
+      <view class="empty-wrap" wx:if="{{chatHistory.length === 0}}">
+        <text class="empty-icon">💬</text>
+        <text class="empty-text">还没有聊天记录</text>
+        <text class="empty-sub">选择精准推荐，让画像代您先行了解</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 付费解锁弹窗 -->
+  <view class="pay-modal" wx:if="{{showPayModal}}">
+    <view class="pay-overlay" bindtap="onClosePayModal"></view>
+    <view class="pay-sheet">
+      <view class="pay-title">线上了解对方 <text class="ai-pay-badge">🔒 付费解锁</text></view>
+      <view class="pay-target">
+        <image class="pay-target-avatar" src="{{payTarget.avatar}}" mode="aspectFill" />
+        <view class="pay-target-info">
+          <view class="pay-target-name">{{payTarget.avatarName || payTarget.nickname}}</view>
+          <view class="pay-target-desc">{{payTarget.intro}}</view>
+        </view>
+      </view>
+      <view class="pay-tier-info" wx:if="{{payTarget.scoreTier}}">
+        <text class="tier-dot" style="background:{{payTarget.scoreTier === 'gold' ? '#FFD700' : payTarget.scoreTier === 'silver' ? '#C0C0C0' : '#CD7F32'}};"></text>
+        <text>对方评分: {{payTarget.profileScore}}分 ({{payTarget.scoreTier === 'gold' ? '优质' : payTarget.scoreTier === 'silver' ? '良好' : '基础'}})</text>
+      </view>
+      <view class="pay-amount">¥ <text class="pay-num">{{payTarget.onlinePrice}}</text></view>
+      <view class="pay-desc-list">
+        <view class="pay-desc-item">✅ 解锁后可在线上与对方真人聊天</view>
+        <view class="pay-desc-item">✅ 复用AI画像聊天通道，安全便捷</view>
+        <view class="pay-desc-item">✅ 解锁后永久有效，随时可聊</view>
+        <view class="pay-desc-item">🔒 全程隐私保护，不暴露真实信息</view>
+      </view>
+      <button class="btn btn-primary btn-block btn-lg" hover-class="btn-hover" bindtap="onConfirmPay" loading="{{paying}}" disabled="{{paying}}">立即解锁 ¥{{payTarget.onlinePrice}}</button>
+      <button class="btn btn-outline btn-block mt-16" bindtap="onClosePayModal">再想想</button>
+    </view>
+  </view>
+
+  <!-- AI免责声明 -->
+  <view class="ai-disclaimer-bar">
+    <text class="ai-disclaimer-icon">🤖</text>
+    <text class="ai-disclaimer-text">本服务为AI生成内容，结果仅供参考</text>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "prompt": "custom",
+  "authorize": {
+    "content": "希望你阅读并同意以下协议后继续使用",
+    "options": [
+      {
+        "name": "《隐私政策》",
+        "url": "pages/agreement/agreement?type=privacy"
+      },
+      {
+        "name": "《用户协议》",
+        "url": "pages/agreement/agreement?type=platform"
+      }
+    ]
+  }
+}

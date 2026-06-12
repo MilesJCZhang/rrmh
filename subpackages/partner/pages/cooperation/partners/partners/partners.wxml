@@ -1,0 +1,13 @@
+<!-- pages/cooperation/partners/partners -->
+<view class="page-container">
+  <view class="page-header">
+    <text class="page-title">合作伙伴</text>
+  </view>
+  <view class="page-content">
+    <view class="placeholder-content">
+      <text class="placeholder-icon">🚧</text>
+      <text class="placeholder-text">合作伙伴</text>
+      <text class="placeholder-desc">功能开发中，敬请期待</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,299 @@
+<!-- pages/index/index.wxml - 首页 -->
+<view class="page">
+
+  <!-- 隐私协议弹窗（用户首次使用必须同意）-->
+  <privacy-popup show="{{showPrivacyPopup}}" bindclose="onPrivacyClose"></privacy-popup>
+
+  <!-- 磨砂玻璃导航栏（覆盖在Banner上方） -->
+  <view class="glass-nav">
+    <view class="glass-nav-bg"></view>
+    <view class="glass-nav-inner" style="margin-top: {{statusBarH}}px;">
+      <image class="nav-logo" src="/assets/images/Logo.jpg" mode="aspectFit" />
+      <text class="nav-title">人人媒好</text>
+      <view class="nav-placeholder"></view>
+    </view>
+  </view>
+
+  <!-- 顶部广告轮播 Banner -->
+  <view class="hero hero-banner" style="padding-top: calc({{statusBarH}}px + 44px);">
+    <swiper
+      class="hero-swiper"
+      circular
+      autoplay
+      interval="4000"
+      duration="600"
+    >
+      <swiper-item wx:for="{{heroSlides}}" wx:key="id" bindtap="onHeroSlideTap" data-page="{{item.ctaPage}}">
+        <view class="hero-slide hero-slide--{{item.theme}}">
+          <!-- 后台配置的背景图（覆盖CSS渐变），加载失败时降级显示文字 -->
+          <image
+            wx:if="{{item.imageUrl}}"
+            class="hero-slide-bg"
+            src="{{item.imageUrl}}"
+            mode="aspectFill"
+            lazy-load="{{index > 0}}"
+            binderror="onHeroImageError"
+            bindload="onHeroImageLoad"
+            data-index="{{index}}"
+          />
+          <!-- 装饰元素 & 文字（无后台图或图片加载失败时显示） -->
+          <block wx:if="{{!item.imageUrl || item._imgState === 'error'}}">
+          <view class="hs-deco hs-deco-1"></view>
+          <view class="hs-deco hs-deco-2"></view>
+          <view class="hs-deco hs-deco-3"></view>
+          <text class="hs-pattern">{{item.pattern}}</text>
+          <view class="hero-content">
+            <view class="hero-title">{{item.title}}</view>
+            <view class="hero-subtitle">{{item.subtitle}}</view>
+            <view class="hs-highlights">
+              <view class="hs-hl-item" wx:for="{{item.highlights}}" wx:for-item="hl" wx:key="*this">
+                <text class="hs-hl-dot"></text>
+                <text class="hs-hl-text">{{hl}}</text>
+              </view>
+            </view>
+          </view>
+          <view class="hs-cta">
+            <text class="hs-cta-text">{{item.ctaText}}</text>
+            <text class="hs-cta-arrow"> ></text>
+          </view>
+          </block>
+        </view>
+      </swiper-item>
+    </swiper>
+  </view>
+
+  <!-- 无推荐人引导提示条（仅访客显示） -->
+  <view class="guide-tip" wx:if="{{isGuest}}" bindtap="onLearnMore">
+    <view class="guide-tip-icon">
+      <text class="gti-text">!</text>
+    </view>
+    <view class="guide-tip-body">
+      <text class="guide-tip-title">报名建档需推荐官推荐码</text>
+      <text class="guide-tip-desc">联系客服获取推荐码，注册时可快速绑定</text>
+    </view>
+    <view class="guide-tip-arrow">
+      <text>获取推荐码</text>
+    </view>
+  </view>
+
+  <!-- 二宫格入口：遇见缘分 + 成为推荐官 -->
+  <view class="section px-32">
+    <view class="grid2-wrap">
+      <!-- 会员档案 -->
+      <view class="grid2-card grid2-card--dating" bindtap="onDatingTap" style="{{gridBgs.dating ? 'background-image: url(' + gridBgs.dating + '); background-size: cover;' : ''}}">
+        <block wx:if="{{!gridBgs.dating}}">
+        <view class="grid2-deco"></view>
+        <view class="grid2-body">
+          <view class="grid2-emoji">🌟</view>
+          <view class="grid2-title">会员档案</view>
+          <view class="grid2-desc">AI形象画像・圈层精准甄选</view>
+          <view style="font-size: 20rpx; color: #999; margin-top: 4rpx;">人工智能生成</view>
+        </view>
+        <view class="grid2-arrow">></view>
+        </block>
+      </view>
+      <!-- 圈层主题沙龙 -->
+      <view class="grid2-card grid2-card--matchmaker" bindtap="onGrid4Tap" data-key="salon" style="{{gridBgs.salon ? 'background-image: url(' + gridBgs.salon + '); background-size: cover;' : ''}}">
+        <block wx:if="{{!gridBgs.salon}}">
+        <view class="grid2-deco"></view>
+        <view class="grid2-body">
+          <view class="grid2-emoji">🎉</view>
+          <view class="grid2-title">圈层主题沙龙</view>
+          <view class="grid2-desc">线下志趣交流・品质圈层聚会</view>
+        </view>
+        <view class="grid2-arrow">></view>
+        </block>
+      </view>
+    </view>
+  </view>
+
+
+  <!-- 平台数据统计（真实数据从后端获取） -->
+  <view class="section px-32" wx:if="{{stats}}">
+    <view class="stats-card">
+      <view class="stat-block">
+        <text class="stat-num">{{stats.users}}+</text>
+        <text class="stat-lbl">注册会员</text>
+      </view>
+      <view class="stat-sep"></view>
+      <view class="stat-block">
+        <text class="stat-num">{{stats.matches}}+</text>
+        <text class="stat-lbl">成功结识</text>
+      </view>
+      <view class="stat-sep"></view>
+      <view class="stat-block">
+        <text class="stat-num">{{stats.matchmakers}}+</text>
+        <text class="stat-lbl">认证推荐官</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 四宫格入口：公益推荐官/联创推荐官/城市合伙人/社区驿站 -->
+  <view class="section px-32">
+    <view class="grid4-wrap">
+      <!-- 公益推荐官入口 -->
+      <view class="grid4-card grid4-card--salon" bindtap="onMatchmakerTap" style="{{gridBgs.charity ? 'background-image: url(' + gridBgs.charity + '); background-size: cover;' : ''}}">
+        <block wx:if="{{!gridBgs.charity}}">
+        <view class="grid4-deco grid4-deco-1"></view>
+        <view class="grid4-body">
+          <view class="grid4-emoji">💐</view>
+          <view class="grid4-title">公益推荐官</view>
+          <view class="grid4-desc">热心推荐对接・圈层友好互助</view>
+        </view>
+        <view class="grid4-arrow">></view>
+        </block>
+      </view>
+      <!-- 联创推荐官入口 -->
+      <view class="grid4-card grid4-card--professional" bindtap="onCofounterTap" style="{{gridBgs.partner ? 'background-image: url(' + gridBgs.partner + '); background-size: cover;' : ''}}">
+        <block wx:if="{{!gridBgs.partner}}">
+        <view class="grid4-deco grid4-deco-4"></view>
+        <view class="grid4-body">
+          <view class="grid4-emoji">💎</view>
+          <view class="grid4-title">联创推荐官</view>
+          <view class="grid4-desc">专属权益升级・圈层社交服务</view>
+        </view>
+        <view class="grid4-arrow">></view>
+        </block>
+      </view>
+      <!-- 男推荐官主体沙龙 -->
+      <view class="grid4-card grid4-card--male-salon" bindtap="onGenderSalonTap" data-type="male_salon" style="{{gridBgs.maleSalon ? 'background-image: url(' + gridBgs.maleSalon + '); background-size: cover;' : ''}}">
+        <block wx:if="{{!gridBgs.maleSalon}}">
+        <view class="grid4-deco grid4-deco-5"></view>
+        <view class="grid4-body">
+          <view class="grid4-emoji">🏋‍♂️</view>
+          <view class="grid4-title">男推荐官主体沙龙</view>
+          <view class="grid4-desc">男士推荐官主办·专属圈层交流</view>
+        </view>
+        <view class="grid4-arrow"></view>
+        </block>
+      </view>
+      <!-- 女推荐官主体沙龙 -->
+      <view class="grid4-card grid4-card--female-salon" bindtap="onGenderSalonTap" data-type="female_salon" style="{{gridBgs.femaleSalon ? 'background-image: url(' + gridBgs.femaleSalon + '); background-size: cover;' : ''}}">
+        <block wx:if="{{!gridBgs.femaleSalon}}">
+        <view class="grid4-deco grid4-deco-6"></view>
+        <view class="grid4-body">
+          <view class="grid4-emoji">🏋‍♀️</view>
+          <view class="grid4-title">女推荐官主体沙龙</view>
+          <view class="grid4-desc">女士推荐官主办·专属圈层交流</view>
+        </view>
+        <view class="grid4-arrow"></view>
+        </block>
+      </view>
+      <!-- 城市合伙人 -->
+      <view class="grid4-card grid4-card--franchisee" bindtap="onGrid4Tap" data-key="franchisee" style="{{gridBgs.city ? 'background-image: url(' + gridBgs.city + '); background-size: cover;' : ''}}">
+        <block wx:if="{{!gridBgs.city}}">
+        <view class="grid4-deco grid4-deco-3"></view>
+        <view class="grid4-body">
+          <view class="grid4-emoji">🏙️</view>
+          <view class="grid4-title">城市合伙人</view>
+          <view class="grid4-desc">同城活动运营・品牌联动合作</view>
+        </view>
+        <view class="grid4-arrow">></view>
+        </block>
+      </view>
+      <!-- 社区服务站 -->
+      <view class="grid4-card grid4-card--station" bindtap="onGrid4Tap" data-key="community" style="{{gridBgs.community ? 'background-image: url(' + gridBgs.community + '); background-size: cover;' : ''}}">
+        <block wx:if="{{!gridBgs.community}}">
+        <view class="grid4-deco grid4-deco-2"></view>
+        <view class="grid4-body">
+          <view class="grid4-emoji">🌿</view>
+          <view class="grid4-title">社区服务站</view>
+          <view class="grid4-desc">免费入驻申请・深耕本地社区</view>
+        </view>
+        <view class="grid4-arrow">></view>
+        </block>
+      </view>
+    </view>
+  </view>
+
+  <!-- 扫码/输入绑定入口（仅访客显示） -->
+  <view class="section px-32" wx:if="{{isGuest}}">
+    <!-- 扫码绑定 -->
+    <view class="scan-row" bindtap="onScanQrcode">
+      <view class="scan-icon-box">
+        <text class="scan-icon-text">扫</text>
+      </view>
+      <view class="scan-info">
+        <view class="scan-title">扫推荐官推荐码</view>
+        <view class="scan-desc">已有推荐码？点击扫码绑定</view>
+      </view>
+      <view class="scan-arrow">></view>
+    </view>
+    <!-- 输入推荐码 -->
+    <view class="input-code-row" bindtap="onShowCodeModal">
+      <view class="input-code-icon-box">
+        <text class="input-code-icon-text">输</text>
+      </view>
+      <view class="input-code-info">
+        <view class="input-code-title">输入推荐官推荐码</view>
+        <view class="input-code-desc">已有推荐码？手动输入绑定</view>
+      </view>
+      <view class="scan-arrow">></view>
+    </view>
+  </view>
+
+  <!-- 输入推荐码弹窗 -->
+  <view class="modal-mask" wx:if="{{showCodeModal}}" bindtap="onCloseCodeModal">
+    <view class="modal-box" catchtap="">
+      <view class="modal-header">
+        <view class="modal-icon-circle">
+          <text class="modal-icon-text">码</text>
+        </view>
+        <view class="modal-title">输入推荐官推荐码</view>
+        <view class="modal-desc">请输入管理员或推荐官分配给您的推荐码</view>
+      </view>
+      <view class="modal-body">
+        <view class="code-input-wrap">
+          <input
+            class="code-input"
+            placeholder="请输入推荐码，如 LCRG001"
+            value="{{inputCode}}"
+            bindinput="onCodeInput"
+            bindconfirm="onSubmitCode"
+            maxlength="20"
+            focus="{{codeInputFocus}}"
+          />
+        </view>
+        <view class="code-error" wx:if="{{codeError}}">{{codeError}}</view>
+      </view>
+      <view class="modal-actions">
+        <button class="btn btn-primary btn-block btn-lg" bindtap="onSubmitCode" loading="{{codeSubmitting}}">确认绑定</button>
+        <button class="btn btn-outline btn-block mt-16" bindtap="onCloseCodeModal">取消</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 推荐码引导弹窗 -->
+  <view class="modal-mask" wx:if="{{showGuideModal}}" bindtap="onCloseGuide">
+    <view class="modal-box" catchtap="">
+      <view class="modal-header">
+        <view class="modal-icon-circle">
+          <text class="modal-icon-text">引</text>
+        </view>
+        <view class="modal-title">注册需推荐官推荐码</view>
+        <view class="modal-desc">为了给您提供更好的社交服务，注册建档时需要输入推荐官推荐码</view>
+      </view>
+      <view class="modal-steps">
+        <view class="step-row">
+          <view class="step-circle">1</view>
+          <text class="step-text">联系平台客服或身边的推荐官</text>
+        </view>
+        <view class="step-row">
+          <view class="step-circle">2</view>
+          <text class="step-text">获取专属推荐官推荐码</text>
+        </view>
+        <view class="step-row">
+          <view class="step-circle">3</view>
+          <text class="step-text">注册时输入推荐码即可完成建档</text>
+        </view>
+      </view>
+      <view class="modal-actions">
+        <button class="btn btn-primary btn-block btn-lg" open-type="contact" session-from="index-guide-modal">💬 联系客服获取推荐码</button>
+        <button class="btn btn-outline btn-block mt-16" bindtap="onLearnMore">了解推荐官推荐</button>
+      </view>
+      <view class="modal-close" bindtap="onCloseGuide">关闭</view>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

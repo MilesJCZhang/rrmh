@@ -1,0 +1,77 @@
+<!-- pages/matchmaker/earnings.wxml - 收益明细 & 会员列表 -->
+<view class="page px-32">
+  <!-- 累计收益（收益tab下显示） -->
+  <view class="total-bar" wx:if="{{tab === 'earnings'}}">
+    <text class="tb-label">累计收益</text>
+    <text class="tb-amount">¥{{totalIncome}}</text>
+  </view>
+  <!-- 会员总数（会员tab下显示） -->
+  <view class="total-bar" wx:if="{{tab === 'members'}}">
+    <text class="tb-label">累计推荐</text>
+    <text class="tb-amount">{{totalMembers}}人</text>
+  </view>
+
+  <!-- 收益列表 -->
+  <view wx:if="{{tab === 'earnings'}}">
+    <view class="earnings-list" wx:if="{{earnings.length > 0}}">
+      <view class="earning-item" wx:for="{{earnings}}" wx:key="id">
+        <view class="ei-left">
+          <text class="ei-type-icon">{{item.typeIcon}}</text>
+          <view class="ei-info">
+            <text class="ei-desc">{{item.typeName}}</text>
+            <text class="ei-time">{{item.time}}</text>
+          </view>
+        </view>
+        <view class="ei-right">
+          <text class="ei-amount {{item.status === 'pending' ? 'ei-pending' : ''}}">
+            {{item.status === 'pending' ? '+' : '+'}}¥{{item.amount}}
+          </text>
+          <text class="ei-status" wx:if="{{item.status === 'pending'}}">待结算</text>
+          <text class="ei-status ei-status-done" wx:elif="{{item.status === 'settled'}}">已到账</text>
+        </view>
+      </view>
+    </view>
+    <view class="empty-wrap mt-64" wx:elif="{{!loading}}">
+      <text class="empty-icon">📊</text>
+      <text class="empty-text">暂无收益记录</text>
+      <text class="empty-sub">分享推广码，开始赚取佣金</text>
+    </view>
+  </view>
+
+  <!-- 会员列表 -->
+  <view wx:if="{{tab === 'members'}}">
+    <view class="members-list" wx:if="{{members.length > 0}}">
+      <view class="member-item" wx:for="{{members}}" wx:key="id">
+        <view class="mi-avatar-wrap">
+          <image class="member-avatar" src="{{item.avatar || '/assets/images/Logo.jpg'}}" mode="aspectFill" />
+          <view class="mi-dot {{item.active ? 'mi-dot-online' : ''}}"></view>
+        </view>
+        <view class="member-info">
+          <text class="member-name">{{item.name || '未设置昵称'}}<text class="mi-meta" wx:if="{{item.meta}}">{{item.meta}}</text></text>
+          <text class="member-status {{item.active ? 'ms-active' : 'ms-idle'}}">{{item.status || '待激活'}}</text>
+        </view>
+        <view class="member-right">
+          <text class="member-match" wx:if="{{item.matchCount > 0}}">{{item.matchCount}}次推荐</text>
+          <text class="member-match mi-no-match" wx:else>未推荐</text>
+          <text class="member-time">{{item.joinDate}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="empty-wrap mt-64" wx:elif="{{!loading}}">
+      <text class="empty-icon">👥</text>
+      <text class="empty-text">暂无推荐会员</text>
+      <text class="empty-sub">分享推广码给有缘朋友</text>
+    </view>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore && !loading}}" bindtap="onLoadMore">
+    <text class="lm-text">加载更多</text>
+  </view>
+  <view class="load-more" wx:if="{{loading}}">
+    <text class="lm-text">加载中...</text>
+  </view>
+  <view class="load-more" wx:if="{{!hasMore && (earnings.length > 0 || members.length > 0) && !loading}}">
+    <text class="lm-text">没有更多了</text>
+  </view>
+</view>

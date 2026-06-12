@@ -1,0 +1,75 @@
+.page { min-height: 100vh; background: var(--bg-page); }
+
+/* ---- 会员列表 ---- */
+.members-list { margin-top: 20rpx; }
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  background: #FFFFFF;
+  border-radius: var(--radius-md);
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: var(--shadow-sm);
+}
+.mi-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.member-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  border: 2rpx solid var(--border-light);
+}
+.mi-dot {
+  position: absolute;
+  right: 2rpx; bottom: 2rpx;
+  width: 18rpx; height: 18rpx;
+  border-radius: 50%;
+  background: #CCCCCC;
+  border: 3rpx solid #FFFFFF;
+}
+.mi-dot-online { background: #4CAF50; }
+.member-info { flex: 1; min-width: 0; }
+.member-name {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mi-meta {
+  font-size: 24rpx;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-left: 8rpx;
+}
+.member-status {
+  display: inline-block;
+  font-size: 20rpx;
+  padding: 2rpx 12rpx;
+  border-radius: 20rpx;
+  margin-top: 6rpx;
+}
+.ms-active { background: #E8F5E9; color: #2E7D32; }
+.ms-idle { background: #F5F5F5; color: #999999; }
+.member-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.member-match {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--red-primary);
+}
+.mi-no-match { color: var(--text-hint); font-weight: 400; }
+.member-time {
+  display: block;
+  font-size: 22rpx;
+  color: var(--text-hint);
+  margin-top: 4rpx;
+}

@@ -1,0 +1,230 @@
+<!-- pages/franchisee/online/apply.wxml - 线上合伙人申请页面 -->
+<view class="page-container">
+
+  <!-- 顶部标题 -->
+  <view class="header">
+    <text class="title">线上合伙人申请</text>
+    <text class="subtitle">¥10000加盟费，享受区域沉淀资金70%权益</text>
+  </view>
+
+  <!-- 合伙人身份对比 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">🏷️ 合伙人类型对比</text>
+    </view>
+    
+    <view class="comparison-table">
+      <view class="comparison-header">
+        <text class="comparison-title">对比项</text>
+        <text class="comparison-title">线上合伙人</text>
+        <text class="comparison-title">城市合伙人</text>
+      </view>
+      
+      <view class="comparison-row">
+        <text class="comparison-cell">加盟费用</text>
+        <text class="comparison-cell">¥10000</text>
+        <text class="comparison-cell">¥10000</text>
+      </view>
+      
+      <view class="comparison-row">
+        <text class="comparison-cell">线下沙龙权限</text>
+        <text class="comparison-cell">❌ 不能开办线下沙龙</text>
+        <text class="comparison-cell">✅ 可自主举办线下沙龙</text>
+      </view>
+      
+      <view class="comparison-row">
+        <text class="comparison-cell">线上推广权益</text>
+        <text class="comparison-cell">✅ 可将会员导流到其他线下沙龙</text>
+        <text class="comparison-cell">✅ 可将会员导流到其他线下沙龙</text>
+      </view>
+      
+      <view class="comparison-row">
+        <text class="comparison-cell">收益规则</text>
+        <text class="comparison-cell">平台统一抽取30%</text>
+        <text class="comparison-cell">平台统一抽取30%</text>
+      </view>
+      
+      <view class="comparison-row">
+        <text class="comparison-cell">沙龙收益</text>
+        <text class="comparison-cell">推荐会员参加沙龙仅拿99元红包</text>
+        <text class="comparison-cell">可自主举办沙龙，获得全额沙龙收益</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 线上合伙人核心权益 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">🎯 线上合伙人核心权益</text>
+    </view>
+    
+    <view class="benefits-list">
+      <view class="benefit-item">
+        <view class="benefit-icon">💰</view>
+        <view class="benefit-content">
+          <text class="benefit-title">全业务推广收益</text>
+          <text class="benefit-desc">自己推荐的所有会员产生的全部业绩计入本人账户，平台统一抽取30%</text>
+        </view>
+      </view>
+      
+      <view class="benefit-item">
+        <view class="benefit-icon">🔄</view>
+        <view class="benefit-content">
+          <text class="benefit-title">沙龙导流收益</text>
+          <text class="benefit-desc">可将自己推荐的会员导流到其他线下沙龙参与，仅拿99元红包</text>
+        </view>
+      </view>
+      
+      <view class="benefit-item">
+        <view class="benefit-icon">📈</view>
+        <view class="benefit-content">
+          <text class="benefit-title">升级推荐官资格</text>
+          <text class="benefit-desc">具备升级为专业推荐官的资格，享受全业务收益权限</text>
+        </view>
+      </view>
+      
+      <view class="benefit-item">
+        <view class="benefit-icon">👥</view>
+        <view class="benefit-content">
+          <text class="benefit-title">平台资源共享</text>
+          <text class="benefit-desc">享受平台会员资源、运营支持、技术系统等全方位支持</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 申请表单 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">📝 合伙人申请</text>
+    </view>
+    
+    <form bindsubmit="onSubmitForm">
+      <view class="form-group">
+        <text class="form-label">申请人姓名</text>
+        <input 
+          class="form-input" 
+          name="name" 
+          placeholder="请输入真实姓名" 
+          value="{{formData.name}}"
+          bindinput="onFormInput"
+          data-field="name"
+        />
+      </view>
+      
+      <view class="form-group">
+        <text class="form-label">手机号码</text>
+        <input 
+          class="form-input" 
+          name="phone" 
+          type="number" 
+          placeholder="请输入手机号码" 
+          value="{{formData.phone}}"
+          bindinput="onFormInput"
+          data-field="phone"
+        />
+      </view>
+      
+      <view class="form-group">
+        <text class="form-label">微信号</text>
+        <input 
+          class="form-input" 
+          name="wechat" 
+          placeholder="请输入微信号（用于联系）" 
+          value="{{formData.wechat}}"
+          bindinput="onFormInput"
+          data-field="wechat"
+        />
+      </view>
+      
+      <view class="form-group">
+        <text class="form-label">所在城市</text>
+        <input 
+          class="form-input" 
+          name="city" 
+          placeholder="请输入所在城市" 
+          value="{{formData.city}}"
+          bindinput="onFormInput"
+          data-field="city"
+        />
+      </view>
+      
+      <view class="form-group">
+        <text class="form-label">申请原因</text>
+        <textarea 
+          class="form-textarea" 
+          name="reason" 
+          placeholder="请简要说明您申请成为线上合伙人的原因和优势" 
+          value="{{formData.reason}}"
+          bindinput="onFormInput"
+          data-field="reason"
+        />
+      </view>
+      
+      <!-- 支付区域 -->
+      <view class="payment-card">
+        <view class="payment-header">
+          <text class="payment-title">线上合伙人加盟费</text>
+          <text class="payment-price">¥10000</text>
+        </view>
+        
+        <view class="payment-details">
+          <view class="payment-detail-item">
+            <text class="detail-label">加盟周期</text>
+            <text class="detail-value">1年（到期可续费）</text>
+          </view>
+          <view class="payment-detail-item">
+            <text class="detail-label">平台抽成</text>
+            <text class="detail-value">统一抽取30%</text>
+          </view>
+          <view class="payment-detail-item">
+            <text class="detail-label">收益方式</text>
+            <text class="detail-value">推荐会员业绩计入账户，平台抽成后结算</text>
+          </view>
+        </view>
+        
+        <!-- 支付方式 -->
+        <view class="payment-methods">
+          <text class="methods-title">支付方式</text>
+          <view class="methods-list">
+            <view class="method-item" wx:for="{{paymentMethods}}" wx:key="id" 
+                  data-id="{{item.id}}" bindtap="selectPaymentMethod">
+              <view class="method-left">
+                <image class="method-icon" src="{{item.icon}}" />
+                <text class="method-name">{{item.name}}</text>
+              </view>
+              <view class="method-right" wx:if="{{selectedPaymentId === item.id}}">
+                <text class="method-check">✓</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 提交按钮 -->
+      <button class="btn btn-primary btn-lg" form-type="submit" loading="{{loading}}">
+        <text>立即支付 ¥10000 申请加盟</text>
+      </button>
+    </form>
+  </view>
+
+  <!-- 常见问题 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">❓ 常见问题</text>
+    </view>
+    
+    <view class="faq-list">
+      <view class="faq-item" wx:for="{{faqs}}" wx:key="id">
+        <view class="faq-question" data-index="{{index}}" bindtap="toggleFaq">
+          <text class="faq-q">Q: {{item.question}}</text>
+          <text class="faq-arrow">{{item.expanded ? '▲' : '▼'}}</text>
+        </view>
+        <view class="faq-answer" wx:if="{{item.expanded}}">
+          <text class="faq-a">A: {{item.answer}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+</view>

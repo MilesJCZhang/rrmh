@@ -1,0 +1,79 @@
+<!-- pages/user/orders/detail.wxml -->
+<view class="page-detail" wx:if="{{!loading && order}}">
+  <!-- 状态头部 -->
+  <view class="status-header status-{{order.statusClass}}">
+    <text class="status-icon">{{order.statusIcon}}</text>
+    <text class="status-text">{{order.statusText}}</text>
+  </view>
+
+  <!-- 订单信息 -->
+  <view class="info-card">
+    <view class="info-row">
+      <text class="info-label">订单号</text>
+      <text class="info-value">{{order.orderNo || order.order_no || order.id}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">支付类型</text>
+      <text class="info-value">{{order.typeLabel || '人人媒好服务'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">支付金额</text>
+      <text class="info-value amount">{{order.amountDisplay}}</text>
+    </view>
+    <view class="info-row" wx:if="{{order.payTypeText}}">
+      <text class="info-label">支付方式</text>
+      <text class="info-value">{{order.payTypeText}}</text>
+    </view>
+    <view class="info-row" wx:if="{{order.transactionId}}">
+      <text class="info-label">交易号</text>
+      <text class="info-value">{{order.transactionId}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">创建时间</text>
+      <text class="info-value">{{order.dateText}}</text>
+    </view>
+    <view class="info-row" wx:if="{{order.payTimeText}}">
+      <text class="info-label">支付时间</text>
+      <text class="info-value">{{order.payTimeText}}</text>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-bar">
+    <button
+      wx:if="{{order.status === 0}}"
+      class="btn btn-primary btn-block"
+      bindtap="onRetryPay"
+    >重新支付</button>
+
+    <button
+      wx:if="{{order.status === 1 && !order.refunded}}"
+      class="btn btn-outline btn-block"
+      bindtap="onRefund"
+    >申请退款</button>
+
+    <button
+      class="btn btn-ghost btn-block"
+      bindtap="onContactService"
+    >联系客服</button>
+
+    <button
+      class="btn btn-ghost btn-block"
+      bindtap="onGoBack"
+    >返回列表</button>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>
+
+<!-- 加载中 -->
+<view class="loading-state" wx:if="{{loading}}">
+  <text>加载中...</text>
+</view>
+
+<!-- 加载失败 -->
+<view class="error-state" wx:if="{{!loading && !order}}">
+  <text class="error-icon">❌</text>
+  <text class="error-text">加载订单失败</text>
+  <button class="btn btn-outline" bindtap="loadOrderDetail">重试</button>
+</view>

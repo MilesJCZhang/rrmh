@@ -1,0 +1,13 @@
+<!-- pages/user/orders/orders -->
+<view class="page-container">
+  <view class="page-header">
+    <text class="page-title">我的订单</text>
+  </view>
+  <view class="page-content">
+    <view class="placeholder-content">
+      <text class="placeholder-icon">🚧</text>
+      <text class="placeholder-text">我的订单</text>
+      <text class="placeholder-desc">功能开发中，敬请期待</text>
+    </view>
+  </view>
+</view>

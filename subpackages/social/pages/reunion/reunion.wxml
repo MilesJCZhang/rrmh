@@ -1,0 +1,110 @@
+<!-- pages/reunion/reunion.wxml - 再出发社区（情感互助） -->
+<view class="page">
+  <!-- 顶部横幅 -->
+  <view class="reunion-hero">
+    <view class="hero-bg"></view>
+    <view class="hero-content">
+      <text class="hero-emoji">💕</text>
+      <view class="hero-title">再出发社区</view>
+      <view class="hero-subtitle">用AI记录真实想法，让沟通更轻松 <text style="font-size: 22rpx; background: rgba(255,255,255,0.3); border-radius: 8rpx; padding: 2rpx 10rpx;">人工智能生成</text></view>
+      <view class="hero-tags">
+        <text class="hero-tag">隐私保护</text>
+        <text class="hero-tag">AI陪伴</text>
+        <text class="hero-tag">情感互助</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 适用人群 -->
+  <view class="section px-32">
+    <view class="section-title">适合这样的您</view>
+    <view class="scenario-list">
+      <view class="scenario-item">
+        <text class="scenario-icon">😔</text>
+        <view class="scenario-text">经历了一段关系后，想整理自己的真实想法</view>
+      </view>
+      <view class="scenario-item">
+        <text class="scenario-icon">🤐</text>
+        <view class="scenario-text">想和重要的人沟通，但不知如何开口</view>
+      </view>
+      <view class="scenario-item">
+        <text class="scenario-icon">😰</text>
+        <view class="scenario-text">担心当面沟通产生误解，希望有缓冲</view>
+      </view>
+      <view class="scenario-item">
+        <text class="scenario-icon">💭</text>
+        <view class="scenario-text">需要一个中间人帮助整理和传递真实想法</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 服务流程 -->
+  <view class="section px-32">
+    <view class="section-title">如何运作</view>
+    <view class="process-list">
+      <view class="process-item" wx:for="{{processes}}" wx:key="step">
+        <view class="process-dot">{{item.step}}</view>
+        <view class="process-connector" wx:if="{{index < processes.length - 1}}"></view>
+        <view class="process-content">
+          <view class="process-title">{{item.title}}</view>
+          <view class="process-desc">{{item.desc}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 服务选项 -->
+  <view class="section px-32">
+    <view class="section-title">选择服务方式</view>
+
+    <!-- 免费交流群 -->
+    <view class="service-card free-card" bindtap="onEnterFreeGroup">
+      <view class="service-header">
+        <view class="service-icon-wrap free">👥</view>
+        <view class="service-info">
+          <view class="service-name">情感互助交流群</view>
+          <view class="service-price">
+            <text class="price-tag free-tag">第1个月免费</text>
+            <text class="price-after">之后 ¥99/月</text>
+          </view>
+        </view>
+        <text class="service-arrow">›</text>
+      </view>
+      <view class="service-features">
+        <text class="sf-item">✅ AI画像群内交流</text>
+        <text class="sf-item">✅ 情感支持导师在线指导</text>
+        <text class="sf-item">✅ 不暴露真实信息</text>
+      </view>
+    </view>
+
+    <!-- 一对一深度沟通（收费399） -->
+    <view class="service-card premium-card" bindtap="onEnterPremium">
+      <view class="premium-badge">推荐</view>
+      <view class="service-header">
+        <view class="service-icon-wrap premium">💌</view>
+        <view class="service-info">
+          <view class="service-name">专属AI陪伴对话</view>
+          <view class="service-price">
+            <text class="price-num">¥399</text>
+            <text class="price-unit">/人</text>
+          </view>
+        </view>
+        <text class="service-arrow">›</text>
+      </view>
+      <view class="service-features">
+        <text class="sf-item">✅ 建立专属AI陪伴画像</text>
+        <text class="sf-item">✅ 画像整理并传递真实想法</text>
+        <text class="sf-item">✅ 画像帮助化解误会、增进理解</text>
+        <text class="sf-item">✅ 理解加深后，建议线下见面</text>
+      </view>
+      <view class="service-note">双方各缴 ¥399，共同启动AI陪伴对话</view>
+      <!-- AIGC 合规声明 -->
+      <view class="aigc-notice">
+        <text class="aigc-notice-icon">🤖</text>
+        <text class="aigc-notice-text">本服务中的对话内容由人工智能生成，不代表真实用户，请知悉</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

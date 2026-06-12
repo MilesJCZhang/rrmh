@@ -1,0 +1,367 @@
+<!-- pages/recommender/recommender.wxml - 专业推荐官平台 -->
+<view class="page-container">
+
+  <!-- 下拉刷新 -->
+  <scroll-view scroll-y class="scroll-area" refresher-enabled="{{true}}" refresher-triggered="{{isRefreshing}}" bindrefresherrefresh="onRefresh" bindscrolltolower="onLoadMore">
+
+  <!-- 顶部身份卡 -->
+  <view class="hero-card">
+    <view class="hero-top">
+      <view>
+        <text class="hero-title">🏅 专业推荐官平台</text>
+        <text class="hero-sub">ID: {{userId}} | 升级时间: {{upgradeTime}}</text>
+      </view>
+      <view class="hero-right">
+        <view class="hero-badge" wx:if="{{recommenderLevel}}">{{recommenderLevel}}</view>
+        <view class="hero-badge-active">已激活</view>
+      </view>
+    </view>
+    <!-- 收益概览四格 -->
+    <view class="income-row">
+      <view class="income-cell">
+        <text class="inc-val">¥{{todayIncome}}</text>
+        <text class="inc-lbl">今日收益</text>
+      </view>
+      <view class="income-cell">
+        <text class="inc-val">¥{{monthIncome}}</text>
+        <text class="inc-lbl">本月收益</text>
+      </view>
+      <view class="income-cell">
+        <text class="inc-val">¥{{totalIncome}}</text>
+        <text class="inc-lbl">累计收益</text>
+      </view>
+      <view class="income-cell income-cell-highlight" bindtap="onWithdraw">
+        <text class="inc-val-highlight">¥{{withdrawable}}</text>
+        <text class="inc-lbl">可提现 ›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 全局搜索框 -->
+  <view class="search-section">
+    <view class="search-box">
+      <input
+        class="search-input"
+        placeholder="搜索姓名"
+        placeholder-class="search-placeholder"
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
+      />
+      <text class="search-clear" wx:if="{{searchKeyword}}" bindtap="onClearSearch">✕</text>
+    </view>
+  </view>
+
+  <!-- 四大分类数据看板 -->
+  <view class="dashboard-section">
+    <view class="dashboard-card" bindtap="onToggleDetail" data-type="partner_matchmaker">
+      <view class="dashboard-header">
+        <view class="dashboard-left"><text class="dashboard-label">累计联创推荐官</text></view>
+        <view class="dashboard-right">
+          <text class="dashboard-count">{{workbenchStats.partner_matchmaker_count || 0}}</text>
+          <text class="dashboard-arrow {{expandedType === 'partner_matchmaker' ? 'arrow-up' : ''}}">›</text>
+        </view>
+      </view>
+      <view class="dashboard-detail" wx:if="{{expandedType === 'partner_matchmaker'}}">
+        <view wx:if="{{detailList.length > 0}}">
+          <view class="detail-item" wx:for="{{detailList}}" wx:key="id">
+            <view class="detail-left">
+              <text class="detail-name">{{item.name || item.nickname || '未设置'}}</text>
+              <text class="detail-time">入驻时间：{{item.joinTime || item.created_at || '--'}}</text>
+            </view>
+            <view class="detail-right">
+              <text class="detail-status {{item.status === 'active' ? 'status-active' : 'status-inactive'}}">{{item.status === 'active' ? '已激活' : '未激活'}}</text>
+            </view>
+          </view>
+          <view class="load-more" wx:if="{{hasMore}}" bindtap="onLoadMore">加载更多</view>
+          <view class="load-more load-more-end" wx:elif="{{detailList.length > 0}}">— 已加载全部 —</view>
+        </view>
+        <view class="empty-box dashboard-empty" wx:else><text class="empty-text">暂无对应人员数据</text></view>
+      </view>
+    </view>
+    <view class="dashboard-card" bindtap="onToggleDetail" data-type="public_matchmaker">
+      <view class="dashboard-header">
+        <view class="dashboard-left"><text class="dashboard-label">累计公益推荐官</text></view>
+        <view class="dashboard-right">
+          <text class="dashboard-count">{{workbenchStats.public_matchmaker_count || 0}}</text>
+          <text class="dashboard-arrow {{expandedType === 'public_matchmaker' ? 'arrow-up' : ''}}">›</text>
+        </view>
+      </view>
+      <view class="dashboard-detail" wx:if="{{expandedType === 'public_matchmaker'}}">
+        <view wx:if="{{detailList.length > 0}}">
+          <view class="detail-item" wx:for="{{detailList}}" wx:key="id">
+            <view class="detail-left">
+              <text class="detail-name">{{item.name || item.nickname || '未设置'}}</text>
+              <text class="detail-time">注册时间：{{item.joinTime || item.created_at || '--'}}</text>
+            </view>
+          </view>
+          <view class="load-more" wx:if="{{hasMore}}" bindtap="onLoadMore">加载更多</view>
+          <view class="load-more load-more-end" wx:elif="{{detailList.length > 0}}">— 已加载全部 —</view>
+        </view>
+        <view class="empty-box dashboard-empty" wx:else><text class="empty-text">暂无对应人员数据</text></view>
+      </view>
+    </view>
+    <view class="dashboard-card" bindtap="onToggleDetail" data-type="registered_member">
+      <view class="dashboard-header">
+        <view class="dashboard-left"><text class="dashboard-label">累计已注册单身会员</text></view>
+        <view class="dashboard-right">
+          <text class="dashboard-count">{{workbenchStats.registered_member_count || 0}}</text>
+          <text class="dashboard-arrow {{expandedType === 'registered_member' ? 'arrow-up' : ''}}">›</text>
+        </view>
+      </view>
+      <view class="dashboard-detail" wx:if="{{expandedType === 'registered_member'}}">
+        <view wx:if="{{detailList.length > 0}}">
+          <view class="detail-item" wx:for="{{detailList}}" wx:key="id">
+            <view class="detail-left">
+              <text class="detail-name">{{item.name || item.nickname || '未设置'}}</text>
+              <text class="detail-time">注册时间：{{item.joinTime || item.created_at || '--'}}</text>
+            </view>
+          </view>
+          <view class="load-more" wx:if="{{hasMore}}" bindtap="onLoadMore">加载更多</view>
+          <view class="load-more load-more-end" wx:elif="{{detailList.length > 0}}">— 已加载全部 —</view>
+        </view>
+        <view class="empty-box dashboard-empty" wx:else><text class="empty-text">暂无对应人员数据</text></view>
+      </view>
+    </view>
+    <view class="dashboard-card" bindtap="onToggleDetail" data-type="visitor">
+      <view class="dashboard-header">
+        <view class="dashboard-left"><text class="dashboard-label">累计未注册访客</text></view>
+        <view class="dashboard-right">
+          <text class="dashboard-count">{{workbenchStats.visitor_count || 0}}</text>
+          <text class="dashboard-arrow {{expandedType === 'visitor' ? 'arrow-up' : ''}}">›</text>
+        </view>
+      </view>
+      <view class="dashboard-detail" wx:if="{{expandedType === 'visitor'}}">
+        <view wx:if="{{detailList.length > 0}}">
+          <view class="detail-item" wx:for="{{detailList}}" wx:key="id">
+            <view class="detail-left">
+              <text class="detail-name">{{item.visitor_nickname || '访客'}}</text>
+              <text class="detail-time">到访时间：{{item.visit_time || '--'}}</text>
+            </view>
+          </view>
+          <view class="load-more" wx:if="{{hasMore}}" bindtap="onLoadMore">加载更多</view>
+          <view class="load-more load-more-end" wx:elif="{{detailList.length > 0}}">— 已加载全部 —</view>
+        </view>
+        <view class="empty-box dashboard-empty" wx:else><text class="empty-text">暂无对应人员数据</text></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 三大业务统计 -->
+  <view class="stats-section">
+    <view class="stats-title">📊 业务数据统计</view>
+    <view class="stats-grid">
+      <view class="stat-card" bindtap="navigateToIncome">
+        <view class="stat-icon">💑</view>
+        <view class="stat-body">
+          <text class="stat-num">{{promotionData.singles}}</text>
+          <text class="stat-lbl">会员建档</text>
+        </view>
+        <view class="stat-income-wrap">
+          <text class="stat-income">+¥{{promotionData.singlesIncome}}</text>
+          <text class="stat-income-lbl">建档收益</text>
+        </view>
+      </view>
+
+      <view class="stat-card" bindtap="navigateToIncome">
+        <view class="stat-icon">👩‍💼</view>
+        <view class="stat-body">
+          <text class="stat-num">{{promotionData.matchmakers}}</text>
+          <text class="stat-lbl">推荐推荐官</text>
+        </view>
+        <view class="stat-income-wrap">
+          <text class="stat-income">+¥{{promotionData.matchmakersIncome}}</text>
+          <text class="stat-income-lbl">推荐收益</text>
+        </view>
+      </view>
+
+      <view class="stat-card" bindtap="navigateToIncome">
+        <view class="stat-icon">🎉</view>
+        <view class="stat-body">
+          <text class="stat-num">{{promotionData.salons}}</text>
+          <text class="stat-lbl">沙龙活动</text>
+        </view>
+        <view class="stat-income-wrap">
+          <text class="stat-income">+¥{{promotionData.salonsIncome}}</text>
+          <text class="stat-income-lbl">沙龙补贴</text>
+        </view>
+      </view>
+
+      <view class="stat-card" bindtap="navigateToIncome">
+        <view class="stat-icon">🏙️</view>
+        <view class="stat-body">
+          <text class="stat-num">{{promotionData.franchises}}</text>
+          <text class="stat-lbl">城市合伙人</text>
+        </view>
+        <view class="stat-income-wrap">
+          <text class="stat-income">+¥{{promotionData.franchisesIncome}}</text>
+          <text class="stat-income-lbl">推荐收益</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷操作 -->
+  <view class="quick-section">
+    <view class="stats-title">⚡ 快捷操作</view>
+    <view class="quick-grid">
+      <view class="quick-item" bindtap="navigateToPromotion">
+        <text class="quick-icon">📱</text>
+        <text class="quick-lbl">推广物料</text>
+      </view>
+      <view class="quick-item" bindtap="onGoQrcode">
+        <text class="quick-icon">🖼️</text>
+        <text class="quick-lbl">推广码</text>
+      </view>
+      <view class="quick-item" bindtap="navigateToTeam">
+        <text class="quick-icon">👥</text>
+        <text class="quick-lbl">推广团队</text>
+      </view>
+      <view class="quick-item" bindtap="navigateToProfitRules">
+        <text class="quick-icon">📋</text>
+        <text class="quick-lbl">分润规则</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 升级入口 -->
+  <view class="quick-section" wx:if="{{upgradeTargets.length > 0}}">
+    <view class="stats-title">🚀 身份升级</view>
+    <view class="upgrade-grid">
+      <view
+        class="upgrade-item"
+        wx:for="{{upgradeTargets}}"
+        wx:key="role"
+        bindtap="onUpgrade"
+        data-role="{{item.role}}"
+        data-fee="{{item.fee}}"
+        data-label="{{item.label}}"
+      >
+        <view class="upgrade-icon">{{item.icon}}</view>
+        <view class="upgrade-info">
+          <text class="upgrade-name">{{item.label}}</text>
+          <text class="upgrade-fee" wx:if="{{item.fee > 0}}">¥{{item.fee}}</text>
+          <text class="upgrade-fee upgrade-fee-free" wx:else>免费入驻</text>
+        </view>
+        <text class="upgrade-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 最近收益记录 -->
+  <view class="records-section">
+    <view class="records-head">
+      <text class="stats-title">📝 最近收益记录</text>
+      <text class="records-more" bindtap="navigateToPromotionRecords">查看全部 ›</text>
+    </view>
+
+    <view wx:if="{{recentRecords.length > 0}}">
+      <view class="record-item" wx:for="{{recentRecords}}" wx:key="id">
+        <view class="ri-left">
+          <text class="ri-icon">{{item.icon}}</text>
+          <view class="ri-info">
+            <text class="ri-name">{{item.type}}</text>
+            <text class="ri-time">{{item.time}}</text>
+          </view>
+        </view>
+        <view class="ri-right">
+          <text class="ri-amount">+¥{{item.commission}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-box" wx:else>
+      <text class="empty-icon">📊</text>
+      <text class="empty-text">暂无收益记录</text>
+      <text class="empty-sub">分享推广码，开始赚取佣金</text>
+    </view>
+  </view>
+
+  <!-- 推荐码使用记录 -->
+  <view class="records-section">
+    <view class="records-head">
+      <text class="stats-title">📋 推荐码使用记录</text>
+      <text class="records-more" bindtap="navigateToUsageRecords">查看全部 ›</text>
+    </view>
+
+    <view wx:if="{{usageRecords.length > 0}}">
+      <view class="usage-item" wx:for="{{usageRecords}}" wx:key="id">
+        <view class="ui-left">
+          <text class="ui-icon">🎯</text>
+          <view class="ui-info">
+            <text class="ui-name">{{item.user_name}}</text>
+            <text class="ui-scene">{{item.scene_name}}</text>
+          </view>
+        </view>
+        <view class="ui-right">
+          <text class="ui-time">{{item.time_ago}}</text>
+          <text class="ui-code">{{item.code}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-box" wx:else>
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">暂无使用记录</text>
+      <text class="empty-sub">推荐码被使用时将显示在这里</text>
+    </view>
+  </view>
+
+  <!-- 分润规则速查 -->
+  <view class="rules-section">
+    <view class="stats-title">📋 分润规则速查</view>
+    <view class="rules-cards">
+      <view class="rule-card rule-card-primary" data-id="1" bindtap="viewProfitDetail">
+        <view class="rc-top">
+          <text class="rc-icon">💑</text>
+          <view class="rc-info">
+            <text class="rc-name">推荐会员建档</text>
+            <text class="rc-fee">建档费¥199</text>
+          </view>
+        </view>
+        <view class="rc-bottom">
+          <text class="rc-commission">+¥99/人</text>
+          <text class="rc-note">无首推限制，推荐即得</text>
+        </view>
+      </view>
+
+      <view class="rule-card" data-id="2" bindtap="viewProfitDetail">
+        <view class="rc-top">
+          <text class="rc-icon">👑</text>
+          <view class="rc-info">
+            <text class="rc-name">推荐联创推荐官</text>
+            <text class="rc-fee">入驻费¥399</text>
+          </view>
+        </view>
+        <view class="rc-bottom">
+          <text class="rc-commission-zero">+¥0 第①个</text>
+          <text class="rc-note">第②个起：全额¥399/人</text>
+        </view>
+      </view>
+
+      <view class="rule-card" data-id="3" bindtap="viewProfitDetail">
+        <view class="rc-top">
+          <text class="rc-icon">🏙️</text>
+          <view class="rc-info">
+            <text class="rc-name">推荐城市合伙人</text>
+            <text class="rc-fee">加盟费¥10000</text>
+          </view>
+        </view>
+        <view class="rc-bottom">
+          <text class="rc-commission-zero">+¥0 第①个</text>
+          <text class="rc-note">第②个起：全额¥10000+永久3%沉淀分红</text>
+        </view>
+      </view>
+    </view>  <!-- 闭合 rules-cards -->
+    </view>  <!-- 闭合 rules-section -->
+    </scroll-view>
+
+    <view class="rules-tip">💡 规则详情请点击卡片查看</view>
+
+  <!-- 底部推广入口 -->
+  <view class="bottom-share" bindtap="onShareAppMessage">
+    <text class="share-icon">📱</text>
+    <text class="share-text">分享推广码给好友</text>
+    <text class="share-arrow">›</text>
+  </view>
+</view>

@@ -1,0 +1,118 @@
+.score-bar {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.score-bar--compact {
+  padding: 16rpx;
+  border-radius: 12rpx;
+}
+
+/* 头部：分数 + 等级 */
+.score-bar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.score-bar__score-wrap {
+  display: flex;
+  align-items: baseline;
+}
+
+.score-bar__score {
+  font-size: 56rpx;
+  font-weight: 700;
+  color: #333;
+  line-height: 1;
+}
+
+.score-bar__score-unit {
+  font-size: 24rpx;
+  color: #999;
+  margin-left: 8rpx;
+}
+
+.score-bar__tier {
+  font-size: 22rpx;
+  font-weight: 600;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  border: 2rpx solid;
+}
+
+/* 总进度条 */
+.score-bar__progress {
+  margin-bottom: 20rpx;
+}
+
+.score-bar__progress-track {
+  height: 16rpx;
+  background: #f0f0f0;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.score-bar__progress-fill {
+  height: 100%;
+  border-radius: 8rpx;
+  transition: width 0.5s ease;
+  background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+}
+
+/* 维度详情 */
+.score-bar__groups {
+  margin-top: 16rpx;
+}
+
+.score-bar__group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.score-bar__group-label {
+  font-size: 22rpx;
+  color: #666;
+  width: 120rpx;
+  flex-shrink: 0;
+}
+
+.score-bar__group-progress {
+  flex: 1;
+  margin: 0 16rpx;
+}
+
+.score-bar__group-track {
+  height: 8rpx;
+  background: #f0f0f0;
+  border-radius: 4rpx;
+  overflow: hidden;
+}
+
+.score-bar__group-fill {
+  height: 100%;
+  border-radius: 4rpx;
+  background: var(--theme-color, #e74c3c);
+  transition: width 0.4s ease;
+}
+
+.score-bar__group-score {
+  font-size: 22rpx;
+  color: #999;
+  width: 80rpx;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* 紧凑模式 */
+.score-bar--compact .score-bar__score {
+  font-size: 36rpx;
+}
+
+.score-bar--compact .score-bar__progress-track {
+  height: 10rpx;
+}

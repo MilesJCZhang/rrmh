@@ -1,0 +1,142 @@
+<!-- subpackages/activity/pages/salon-create/salon-create.wxml -->
+<view class="page">
+
+  <!-- 类型锁定展示 -->
+  <view class="type-banner" style="background: {{themeGradient}};">
+    <view class="type-banner-icon">
+      <text wx:if="{{salonType === 'male_salon'}}">♂</text>
+      <text wx:elif="{{salonType === 'female_salon'}}">♀</text>
+    </view>
+    <view class="type-banner-info">
+      <text class="type-banner-title">{{typeLabel}}</text>
+      <text class="type-banner-desc">类型已锁定，将根据您的性别自动确定</text>
+    </view>
+  </view>
+
+  <!-- 表单 -->
+  <view class="form-section">
+
+    <!-- 封面图 -->
+    <view class="form-group">
+      <text class="form-label">封面图片</text>
+      <view class="cover-upload" bindtap="chooseCoverImage">
+        <image wx:if="{{coverImageTempPath}}" src="{{coverImageTempPath}}" mode="aspectFill" class="cover-preview" />
+        <view wx:else class="cover-placeholder">
+          <text class="cover-placeholder-icon">+</text>
+          <text class="cover-placeholder-text">上传封面</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 标题 -->
+    <view class="form-group">
+      <text class="form-label">沙龙标题 <text class="required">*</text></text>
+      <input
+        class="form-input"
+        placeholder="请输入沙龙标题"
+        value="{{title}}"
+        bindinput="onTitleInput"
+        maxlength="50"
+      />
+    </view>
+
+    <!-- 时间选择 -->
+    <view class="form-group">
+      <text class="form-label">开始时间 <text class="required">*</text></text>
+      <view class="datetime-row">
+        <picker mode="date" value="{{startDate}}" start="{{minDate}}" bindchange="onStartDateChange">
+          <view class="datetime-picker">
+            <text class="{{startDate ? '' : 'placeholder'}}">{{startDate || '选择日期'}}</text>
+          </view>
+        </picker>
+        <picker mode="time" value="{{startTimeVal}}" bindchange="onStartTimeChange">
+          <view class="datetime-picker">
+            <text class="{{startTimeVal ? '' : 'placeholder'}}">{{startTimeVal || '选择时间'}}</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">结束时间</text>
+      <view class="datetime-row">
+        <picker mode="date" value="{{endDate}}" start="{{startDate || minDate}}" bindchange="onEndDateChange">
+          <view class="datetime-picker">
+            <text class="{{endDate ? '' : 'placeholder'}}">{{endDate || '选择日期'}}</text>
+          </view>
+        </picker>
+        <picker mode="time" value="{{endTimeVal}}" bindchange="onEndTimeChange">
+          <view class="datetime-picker">
+            <text class="{{endTimeVal ? '' : 'placeholder'}}">{{endTimeVal || '选择时间'}}</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+
+    <!-- 地点 -->
+    <view class="form-group">
+      <text class="form-label">活动地点 <text class="required">*</text></text>
+      <input
+        class="form-input"
+        placeholder="请输入活动地点"
+        value="{{location}}"
+        bindinput="onLocationInput"
+        maxlength="100"
+      />
+    </view>
+
+    <!-- 人数上限 -->
+    <view class="form-group">
+      <text class="form-label">人数上限</text>
+      <input
+        class="form-input"
+        type="number"
+        placeholder="请输入人数上限"
+        value="{{maxParticipants}}"
+        bindinput="onMaxInput"
+      />
+      <text class="form-hint">含报名者本人及随行人员</text>
+    </view>
+
+    <!-- 报名费用 -->
+    <view class="form-group">
+      <text class="form-label">报名费用（元/人）</text>
+      <input
+        class="form-input"
+        type="digit"
+        placeholder="请输入报名费用"
+        value="{{registrationFee}}"
+        bindinput="onFeeInput"
+      />
+    </view>
+
+    <!-- 描述 -->
+    <view class="form-group">
+      <text class="form-label">沙龙描述 <text class="required">*</text></text>
+      <textarea
+        class="form-textarea"
+        placeholder="请详细描述沙龙内容、亮点、注意事项等"
+        value="{{description}}"
+        bindinput="onDescInput"
+        maxlength="2000"
+        auto-height
+      />
+    </view>
+
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-wrap">
+    <button
+      class="submit-btn"
+      style="background: {{themeGradient}};"
+      bindtap="submitForm"
+      loading="{{submitting}}"
+      disabled="{{submitting}}"
+    >
+      提交审核
+    </button>
+    <text class="submit-hint">提交后需管理员审核通过，方可发布</text>
+  </view>
+
+</view>

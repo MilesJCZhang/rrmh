@@ -1,0 +1,205 @@
+<!-- pages/user/user.wxml - 个人中心 -->
+<view class="page-container">
+
+  <!-- 头部用户信息 -->
+  <view class="user-header">
+    <view class="user-avatar-section">
+      <image class="user-avatar" src='{{avatarUrl || "/assets/images/default-avatar.png"}}' mode="aspectFill" binderror="onAvatarError" />
+      <view class="user-badges">
+        <view class="badge identity" wx:if="{{isRecommender}}">
+          <text class="badge-text">{{currentRoleLabel}}</text>
+        </view>
+        <view class="badge identity" wx:if="{{isVip}}">
+          <text class="badge-text">💎 VIP</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="user-info-section">
+      <text class="user-name">{{nickName || '未登录'}}</text>
+      <text class="user-id">ID: {{userId || '---'}}</text>
+      
+      <!-- 手机号绑定 -->
+      <view class="phone-section">
+        <text class="phone-label">手机号：</text>
+        <text wx:if="{{phone}}" class="phone-number">{{phone}}</text>
+        <button 
+          wx:else 
+          class="btn-bind-phone" 
+          open-type="getPhoneNumber" 
+          bindgetphonenumber="onGetPhone"
+        >绑定手机号</button>
+      </view>
+      
+      <view class="user-status">
+        <view class="status-item">
+          <text class="status-label">等级</text>
+          <text class="status-value">{{userLevel || '普通会员'}}</text>
+        </view>
+        <view class="status-item">
+          <text class="status-label">积分</text>
+          <text class="status-value">{{points || 0}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 身份切换区（多身份用户可见） -->
+  <view class="section" wx:if="{{identityList.length > 1}}">
+    <view class="section-header">
+      <text class="section-title">🔄 身份切换</text>
+    </view>
+    <view class="identity-switcher">
+      <view
+        class="identity-card {{item.isCurrent ? 'identity-card-current' : ''}}"
+        wx:for="{{identityList}}"
+        wx:key="role"
+        data-index="{{index}}"
+        bindtap="onSwitchIdentity"
+      >
+        <text class="ic-icon">{{item.icon}}</text>
+        <text class="ic-label">{{item.label}}</text>
+        <text class="ic-current" wx:if="{{item.isCurrent}}">当前</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 社区服务站入口 -->
+  <view class="section" wx:if="{{identityList.length > 0 || isCommunityStation}}">
+    <view class="section-header">
+      <text class="section-title">🏘️ 社区服务站</text>
+    </view>
+    <view class="menu-grid">
+      <view class="menu-item menu-item-community" bindtap="navigateToCommunityStation">
+        <image class="menu-icon" src="/images/icon/community.png" />
+        <text class="menu-text">服务站工作台</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 推荐官专区（未开通时显示） -->
+  <view class="section" wx:if="{{!isRecommender}}">
+    <view class="section-header">
+      <text class="section-title">🌟 升级推荐官</text>
+      <text class="section-subtitle">全业务推广，多重收益</text>
+    </view>
+
+    <view class="upgrade-card">
+      <view class="upgrade-header">
+        <text class="upgrade-title">专业推荐官</text>
+        <text class="upgrade-price">¥3999</text>
+      </view>
+
+      <view class="upgrade-features">
+        <view class="feature-item">
+          <text class="feature-icon">✅</text>
+          <text class="feature-text">全业务收益权限（公益/联创推荐官/服务站/合伙人）</text>
+        </view>
+        <view class="feature-item">
+          <text class="feature-icon">✅</text>
+          <text class="feature-text">推荐联创第②个起¥399，推荐城市合伙人第②个起¥10000</text>
+        </view>
+        <view class="feature-item">
+          <text class="feature-icon">✅</text>
+          <text class="feature-text">专属推广物料，推广关系永久绑定</text>
+        </view>
+      </view>
+
+      <button class="btn btn-primary btn-lg" bindtap="navigateToRecommenderOpen">
+        <text>立即升级推荐官</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 推荐官收益面板（开通后显示） -->
+  <view class="section" wx:if="{{isRecommender}}">
+    <view class="section-header">
+      <text class="section-title">💰 推荐官收益</text>
+      <view class="section-actions">
+        <button class="btn-mini" size="mini" bindtap="navigateToRecommenderIncome">查看详情</button>
+      </view>
+    </view>
+
+    <view class="income-summary">
+      <view class="income-item">
+        <text class="income-label">今日收益</text>
+        <text class="income-value income-green">+{{todayIncome || 0}}</text>
+      </view>
+      <view class="income-item">
+        <text class="income-label">本月收益</text>
+        <text class="income-value income-green">+{{monthIncome || 0}}</text>
+      </view>
+      <view class="income-item">
+        <text class="income-label">累计收益</text>
+        <text class="income-value income-green">{{totalIncome || 0}}</text>
+      </view>
+      <view class="income-item">
+        <text class="income-label">可提现</text>
+        <text class="income-value income-blue">{{withdrawable || 0}}</text>
+      </view>
+    </view>
+
+    <button class="btn btn-primary" bindtap="navigateToRecommender">
+      <text>进入推荐官中心</text>
+    </button>
+  </view>
+
+  <!-- 我的功能菜单 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">📱 我的服务</text>
+    </view>
+
+    <view class="menu-grid">
+      <view class="menu-item" bindtap="navigateToProfile">
+        <image class="menu-icon" src="/images/icon/profile.png" />
+        <text class="menu-text">个人资料</text>
+      </view>
+
+      <view class="menu-item" bindtap="navigateToOrders">
+        <image class="menu-icon" src="/images/icon/order.png" />
+        <text class="menu-text">我的订单</text>
+      </view>
+
+      <view class="menu-item" bindtap="navigateToMembership">
+        <image class="menu-icon" src="/images/icon/vip.png" />
+        <text class="menu-text">会员中心</text>
+      </view>
+
+      <view class="menu-item" bindtap="navigateToRecommender" wx:if="{{isRecommender}}">
+        <image class="menu-icon" src="/images/icon/recommender.png" />
+        <text class="menu-text">推荐官中心</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 常用工具 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">🔧 常用工具</text>
+    </view>
+
+    <view class="menu-grid">
+      <view class="menu-item" bindtap="navigateToSettings">
+        <image class="menu-icon" src="/images/icon/setting.png" />
+        <text class="menu-text">设置</text>
+      </view>
+
+      <view class="menu-item" bindtap="navigateToCustomerService">
+        <image class="menu-icon" src="/images/icon/service.png" />
+        <text class="menu-text">联系客服</text>
+      </view>
+
+      <view class="menu-item" bindtap="navigateToFeedback">
+        <image class="menu-icon" src="/images/icon/feedback.png" />
+        <text class="menu-text">意见反馈</text>
+      </view>
+
+      <view class="menu-item" bindtap="shareApp">
+        <image class="menu-icon" src="/images/icon/share.png" />
+        <text class="menu-text">分享好友</text>
+      </view>
+    </view>
+  </view>
+
+</view>

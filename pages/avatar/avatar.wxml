@@ -1,0 +1,314 @@
+<!-- pages/avatar/avatar.wxml - AI画像页 -->
+<view class="page">
+
+  <!-- ==================== 推荐官视图：管理会员画像社交动态 ==================== -->
+  <view wx:if="{{isMatchmaker}}">
+    <!-- 头部 -->
+    <view class="mk-avatar-header gradient-bg">
+      <view class="mk-ah-title">我的会员画像</view>
+      <view class="mk-ah-subtitle">实时掌握会员AI画像社交动态</view>
+    </view>
+
+    <!-- 统计卡片 -->
+    <view class="px-32 mt-24">
+      <view class="mk-av-stats">
+        <view class="mkavs-card mkavs-highlight">
+          <text class="mkavs-num">{{mkStats.total}}</text>
+          <text class="mkavs-label">总会员</text>
+        </view>
+        <view class="mkavs-card">
+          <text class="mkavs-num">{{mkStats.active}}</text>
+          <text class="mkavs-label">活跃中</text>
+        </view>
+        <view class="mkavs-card">
+          <text class="mkavs-num">{{mkStats.matched}}</text>
+          <text class="mkavs-label">已推荐</text>
+        </view>
+        <view class="mkavs-card">
+          <text class="mkavs-num">{{mkStats.chatting}}</text>
+          <text class="mkavs-label">画像聊中</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 会员画像列表 -->
+    <view class="px-32 mt-24">
+      <view class="mk-av-list" wx:if="{{memberAvatarList.length > 0}}">
+        <view class="mkav-item" wx:for="{{memberAvatarList}}" wx:key="id" bindtap="onViewMember" data-id="{{item.id}}">
+          <view class="mkav-avatar-wrap">
+            <image class="mkav-avatar" src="{{item.avatar}}" mode="aspectFill" />
+            <view class="mkav-dot {{item.online ? 'online' : 'off'}}"></view>
+          </view>
+          <view class="mkav-info">
+            <view class="mkav-name">{{item.name}}</view>
+            <view class="mkav-status">{{item.age}}岁 · {{item.city}} · {{item.statusText}}</view>
+          </view>
+          <view class="mkav-right">
+            <view class="mkav-time">{{item.lastActive}}</view>
+            <view class="mkav-badge {{item.matching ? 'active' : 'pending'}}">{{item.matching ? '社交中' : '待激活'}}</view>
+          </view>
+        </view>
+      </view>
+      <view class="empty-wrap mt-40" wx:else>
+        <text class="empty-icon">👥</text>
+        <text class="empty-text">暂无会员，快去推荐好友建档吧</text>
+      </view>
+    </view>
+
+    <!-- 推荐官引导提示 -->
+    <view class="px-32 mt-24 mb-24">
+      <view class="mkav-guide">
+        <view class="mkavg-title">推荐官画像管理指南</view>
+        <view class="mkavg-item">查看会员AI画像创建状态和活跃情况</view>
+        <view class="mkavg-item">实时了解会员画像社交和聊天动态</view>
+        <view class="mkavg-item">对活跃度高的会员及时跟进服务</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ==================== 会员视图：画像未生成 ==================== -->
+  <view wx:elif="{{!hasAvatar && step === 'intro'}}">
+    <!-- 说明横幅 -->
+    <view class="intro-banner gradient-bg">
+      <view class="intro-icon">🤖</view>
+      <view class="intro-title">专属AI画像</view>
+      <!-- 显著AI生成标识 -->
+      <view class="ai-generate-badge">🤖 人工智能生成内容</view>
+      <view class="intro-desc">基于您的声音和回答，由人工智能生成具有您真实性格的虚拟社交助手</view>
+      <view class="intro-tags">
+        <text class="intro-tag">真实性格</text>
+        <text class="intro-tag">原声特征</text>
+        <text class="intro-tag">隐私保护</text>
+      </view>
+    </view>
+
+    <!-- 功能说明 -->
+    <view class="features px-32 mt-24">
+      <view class="feature-item">
+        <text class="feature-icon">💬</text>
+        <view class="feature-text">
+          <view class="feature-title">代替您深度聊天</view>
+          <view class="feature-desc">画像自动与心仪对象的画像交流，摸清三观和性格</view>
+        </view>
+      </view>
+      <view class="feature-item">
+        <text class="feature-icon">🛡️</text>
+        <view class="feature-text">
+          <view class="feature-title">隐私安全保障</view>
+          <view class="feature-desc">全程不暴露真实姓名、电话、微信、工作单位</view>
+        </view>
+      </view>
+      <view class="feature-item">
+        <text class="feature-icon">📊</text>
+        <view class="feature-text">
+          <view class="feature-title">聊天结果汇报</view>
+          <view class="feature-desc">画像聊完后向您汇报：是否合适、建议是否见面</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 开始录入按钮 -->
+    <view class="px-32 mt-24">
+      <button class="btn btn-primary btn-block" bindtap="onStartRecording">开始录入语音，建立AI身份 🎤</button>
+    </view>
+
+    <!-- AI生成内容固定免责声明 -->
+    <view class="ai-disclaimer-bar">
+      <text class="ai-disclaimer-icon">🤖</text>
+      <text class="ai-disclaimer-text">本服务为AI生成内容，结果仅供参考</text>
+    </view>
+  </view>
+
+  <!-- ==================== 会员视图：语音录入中 ==================== -->
+  <view wx:elif="{{!hasAvatar && step === 'recording'}}">
+    <!-- 当前问题 -->
+    <view class="question-card" wx:if="{{currentQuestion}}">
+      <view class="q-number">问题 {{currentQuestionIndex + 1}} / {{totalQuestions}}</view>
+      <view class="q-progress-bar">
+        <view class="q-progress-fill" style="width: {{(currentQuestionIndex / totalQuestions) * 100}}%"></view>
+      </view>
+      <view class="q-text">{{currentQuestion}}</view>
+      <!-- 显著AI生成提醒 -->
+      <view class="ai-reminder">⚠️ 温馨提示：该画像由人工智能生成，仅用于辅助社交沟通，不代表真实本人</view>
+    </view>
+
+    <!-- 录音状态 -->
+    <view class="record-area">
+      <view class="record-waves" wx:if="{{recording}}">
+        <view class="wave wave1"></view>
+        <view class="wave wave2"></view>
+        <view class="wave wave3"></view>
+        <view class="wave wave4"></view>
+        <view class="wave wave5"></view>
+      </view>
+
+      <view
+        class="record-btn {{recording ? 'recording' : ''}}"
+        bindtouchstart="onRecordStart"
+        bindtouchend="onRecordEnd"
+        catchtouchmove="onRecordCancelMove"
+      >
+        <text class="record-btn-icon">{{recording ? '🎙️' : '🎤'}}</text>
+        <text class="record-btn-text">{{recording ? '松开完成' : '按住说话'}}</text>
+      </view>
+      <view class="record-hint" wx:if="{{!recording}}">长按录音，回答上方问题</view>
+      <view class="record-time" wx:if="{{recording}}">{{recordTime}}秒</view>
+    </view>
+
+    <!-- 已录制列表 -->
+    <view class="recorded-list" wx:if="{{recordedAnswers.length > 0}}">
+      <view class="section-title">已回答 ({{recordedAnswers.length}}/{{totalQuestions}})</view>
+      <view class="recorded-item" wx:for="{{recordedAnswers}}" wx:key="index">
+        <text class="ri-num">{{index + 1}}</text>
+        <text class="ri-q">{{item.question}}</text>
+        <view class="ri-actions">
+          <text class="ri-play" bindtap="onPlayAnswer" data-index="{{index}}">▶</text>
+          <text class="ri-del" bindtap="onDeleteAnswer" data-index="{{index}}">✕</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部操作 -->
+    <view class="record-footer">
+      <button class="btn btn-outline" bindtap="onSkipRecording">跳过，稍后录入</button>
+      <button
+        class="btn btn-primary flex-1"
+        wx:if="{{recordedAnswers.length >= 5}}"
+        bindtap="onGenerateAvatar"
+        disabled="{{generating}}"
+      >🤖 AI生成 · 生成我的画像 ✨</button>
+    </view>
+
+    <!-- AI生成内容固定免责声明 -->
+    <view class="ai-disclaimer-bar">
+      <text class="ai-disclaimer-icon">🤖</text>
+      <text class="ai-disclaimer-text">本服务为AI生成内容，结果仅供参考</text>
+    </view>
+  </view>
+
+  <!-- ==================== 会员视图：AI生成中 ==================== -->
+  <view wx:elif="{{!hasAvatar && step === 'generating'}}">
+    <!-- 生成进度 -->
+    <view class="generate-section gradient-bg">
+      <view class="generate-icon">🤖</view>
+      <view class="generate-title">AI正在为您生成专属画像</view>
+      <view class="generate-subtitle">基于您的语音特征，人工智能正在分析您的性格、兴趣和价值观</view>
+
+      <!-- 进度条 -->
+      <view class="progress-bar-wrap">
+        <view class="progress-bar">
+          <view class="progress-fill" style="width: {{generateProgress}}%"></view>
+        </view>
+        <text class="progress-text">{{generateProgress}}%</text>
+      </view>
+
+      <!-- 状态文本 -->
+      <view class="generate-status">{{generateStatusText}}</view>
+
+      <!-- 显著AI生成标识 -->
+      <view class="ai-generate-badge">🤖 人工智能生成内容</view>
+    </view>
+
+    <!-- 生成说明 -->
+    <view class="generate-tips px-32 mt-24">
+      <view class="tips-title">生成过程中</view>
+      <view class="tips-item">AI正在分析您的语音特征和回答内容</view>
+      <view class="tips-item">生成时间约1-3分钟，请耐心等待</view>
+      <view class="tips-item">生成完成后将自动跳转到画像管理页</view>
+    </view>
+
+    <!-- AI生成内容固定免责声明 -->
+    <view class="ai-disclaimer-bar">
+      <text class="ai-disclaimer-icon">🤖</text>
+      <text class="ai-disclaimer-text">本服务为AI生成内容，结果仅供参考</text>
+    </view>
+  </view>
+
+  <!-- ==================== 会员视图：画像已生成 ==================== -->
+  <view wx:else>
+    <!-- 画像卡片 -->
+    <view class="avatar-card-wrap gradient-bg">
+      <view class="avatar-card">
+        <view class="avatar-head">
+          <image class="avatar-photo" src="{{userAvatar}}" mode="aspectFill" />
+          <!-- 显著的AI生成标识 -->
+          <view class="avatar-ai-badge">🤖 AI画像（人工智能生成）</view>
+        </view>
+        <view class="avatar-name">{{avatarName}}</view>
+        <view class="avatar-tags">
+          <text class="tag tag-pink" wx:for="{{avatarTags}}" wx:key="*this">{{item}}</text>
+        </view>
+        <view class="avatar-status">
+          <text class="status-dot {{avatarOnline ? 'online' : ''}}"></text>
+          <text class="status-text">{{avatarOnline ? '画像活跃中' : '画像休眠中'}} · 🤖 人工智能生成</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 功能入口（仅自己的画像显示） -->
+    <view class="avatar-actions px-32 mt-24" wx:if="{{!viewingMemberId}}">
+      <!-- 进群聊天 -->
+      <view class="action-card group-card" bindtap="onEnterGroup">
+        <view class="action-card-left">
+          <text class="action-icon">👥</text>
+          <view class="action-info">
+            <view class="action-title">画像进群</view>
+            <view class="action-desc">加入智能推荐群，画像代您沟通</view>
+          </view>
+        </view>
+        <view class="action-right">
+          <view class="free-badge" wx:if="{{groupFreeRemain > 0}}">免费 {{groupFreeRemain}}天</view>
+          <view class="price-badge" wx:else>¥99/月</view>
+          <text class="action-arrow">›</text>
+        </view>
+      </view>
+
+      <!-- 一对一聊天 -->
+      <view class="action-card chat-card" bindtap="onOneOnOne">
+        <view class="action-card-left">
+          <text class="action-icon">💌</text>
+          <view class="action-info">
+            <view class="action-title">精准一对一</view>
+            <view class="action-desc">系统智能推荐，画像代为交流</view>
+          </view>
+        </view>
+        <view class="action-right">
+          <view class="price-badge">¥199/次</view>
+          <text class="action-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 画像动态 -->
+    <view class="px-32 mt-24">
+      <view class="section-title">画像最新动态</view>
+      <view class="activity-list" wx:if="{{activities.length > 0}}">
+        <view class="activity-item" wx:for="{{activities}}" wx:key="id">
+          <text class="activity-icon">{{item.icon}}</text>
+          <view class="activity-content">
+            <text class="activity-text">{{item.text}}</text>
+            <text class="activity-time">{{item.time}}</text>
+          </view>
+          <button wx:if="{{item.action}}" class="btn btn-sm btn-primary" bindtap="onActivityAction" data-id="{{item.id}}" data-type="{{item.type}}">{{item.action}}</button>
+        </view>
+      </view>
+      <view class="empty-wrap" wx:else>
+        <text class="empty-icon">🤖</text>
+        <text class="empty-text">画像正在等待推荐，稍后会有动态</text>
+      </view>
+    </view>
+
+    <!-- 重新录音（仅自己的画像显示） -->
+    <view class="px-32 mt-16" wx:if="{{!viewingMemberId}}">
+      <button class="btn btn-outline btn-block" bindtap="onReRecord">重新录入语音，优化画像 🎙️</button>
+    </view>
+
+    <!-- AI生成内容固定免责声明 -->
+    <view class="ai-disclaimer-bar">
+      <text class="ai-disclaimer-icon">🤖</text>
+      <text class="ai-disclaimer-text">本服务为AI生成内容，结果仅供参考</text>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

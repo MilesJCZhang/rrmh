@@ -1,0 +1,94 @@
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#ff6b6b', 'primaryTextColor':'#fff', 'secondaryColor':'#4ecdc4', 'tertiaryColor':'#95e1d3'}}}%%
+%%{init: {'sequence': {'mirrorActors': false, 'bottomMarginAdj': 10}}}%%
+
+sequenceDiagram
+    title: 推荐码验证与绑定流程
+    
+    participant U as 用户小程序
+    participant R as ReferralJS
+    participant A as ReferralAPI
+    participant S as ReferralCodeService
+    participant D as Database
+    
+    Note over U,D: === 场景1: 推荐码验证（失败） ===
+    
+    U->>R: bindByCode('INVALID_CODE')
+    R->>A: POST /api/referral-codes/verify
+    Note over A: {code: 'INVALID_CODE'}
+    A->>S: verifyCode('INVALID_CODE')
+    S->>D: SELECT * FROM referral_codes WHERE code=?
+    D-->>S: null (未找到)
+    S-->>A: {valid: false, message: '推荐码不存在'}
+    A-->>R: {code: 404, message: '推荐码不存在'}
+    R-->>U: reject('推荐码不存在')
+    U->>U: 提示用户：推荐码无效
+    
+    Note over U,D: === 场景2: 推荐码验证（成功）并绑定 ===
+    
+    U->>R: bindByCode('LCRG001')
+    R->>A: POST /api/referral-codes/verify
+    Note over A: {code: 'LCRG001'}
+    A->>S: verifyCode('LCRG001')
+    S->>D: SELECT * FROM referral_codes WHERE code=?
+    D-->>S: {code:'LCRG001', type:'creator', referrer_id:123, status:'active', use_count:5, max_uses:0}
+    S-->>A: {valid: true, data: {code:'LCRG001', type:'creator', referrer_id:123, referrer_name:'张三'}}
+    A-->>R: {code: 0, data: {referrer_id: 123, referrer_name: '张三'}}
+    
+    R->>R: bindReferrer(123)
+    Note over R: 调用现有推荐关系绑定逻辑
+    R->>R: wx.setStorageSync('referrer_id', 123)
+    R->>R: wx.setStorageSync('referrer_locked', true)
+    R->>A: POST /referral/bind
+    Note over A: {referrer_id: 123}
+    A-->>R: {code: 0, data: {bound: true}}
+    R-->>U: resolve({bound: true, locked: true, isNew: true})
+    U->>U: 提示用户：已绑定推荐官
+    
+    Note over U,D: === 场景3: 推荐码绑定（事务） ===
+    
+    U->>R: register(userInfo, 'LCRG001')
+    R->>A: POST /api/referral-codes/bind
+    Note over A: {code: 'LCRG001', user_id: 456}
+    
+    Note over A,D: 数据库事务开始
+    A->>S: bindCode('LCRG001', 456)
+    S->>D: START TRANSACTION
+    S->>D: SELECT * FROM referral_codes WHERE code='LCRG001' FOR UPDATE
+    D-->>S: {code:'LCRG001', status:'active', use_count:5, max_uses:0}
+    
+    alt 推荐码不可用（已过期/已用完/已失效）
+        S-->>A: Error: '推荐码已失效'
+        S->>D: ROLLBACK
+        A-->>R: {code: 409, message: '推荐码已失效'}
+        R-->>U: reject('推荐码已失效')
+    else 推荐码可用
+        S->>D: UPDATE referral_codes SET use_count=use_count+1, last_bound_user_id=456, last_bound_at=NOW() WHERE code='LCRG001'
+        S->>D: INSERT INTO user_referrals (user_id, referrer_id, bind_type, code) VALUES (456, 123, 'code', 'LCRG001')
+        S->>D: COMMIT
+        S-->>A: {success: true, referrer_id: 123}
+        A-->>R: {code: 0, data: {bound: true, referrer_id: 123}}
+        R-->>U: resolve({bound: true})
+    end
+    
+    Note over U,D: === 场景4: 推荐码使用次数超限 ===
+    
+    U->>R: bindByCode('LCRG002')
+    R->>A: POST /api/referral-codes/verify
+    A->>S: verifyCode('LCRG002')
+    S->>D: SELECT * FROM referral_codes WHERE code='LCRG002'
+    D-->>S: {code:'LCRG002', status:'depleted', use_count:10, max_uses:10}
+    S-->>A: {valid: false, message: '推荐码已用完'}
+    A-->>R: {code: 409, message: '推荐码已用完'}
+    R-->>U: reject('推荐码已用完')
+    
+    Note over U,D: === 场景5: 与现有系统兼容性（无推荐码） ===
+    
+    U->>R: register(userInfo)
+    Note over R: 用户未输入推荐码
+    R->>R: 检查是否已锁定推荐关系
+    alt 已锁定
+        R-->>U: resolve({bound: true, locked: true, isNew: false})
+    else 未锁定
+        R->>R: 继续注册流程（无推荐人）
+        R-->>U: resolve({bound: false})
+    end

@@ -1,0 +1,342 @@
+/* ============================================================
+   pages/user/user.wxss
+   用户主页 · 国风红渐变 + 金色升级卡
+   ============================================================ */
+
+.page-container {
+  min-height: 100vh;
+  background: var(--bg-page);
+  padding-bottom: 40rpx;
+}
+
+/* ---- 用户头部 ---- */
+.user-header {
+  position: relative;
+  padding: 72rpx 32rpx 48rpx;
+  overflow: hidden;
+}
+.header-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 320rpx;
+  background: linear-gradient(160deg, var(--red-primary) 0%, var(--red-dark) 100%);
+  border-bottom-left-radius: 40rpx;
+  border-bottom-right-radius: 40rpx;
+}
+.header-bg::before {
+  content: '❃';
+  position: absolute;
+  right: -20rpx; top: -20rpx;
+  font-size: 280rpx;
+  color: rgba(255,255,255,0.05);
+  pointer-events: none;
+}
+.header-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+}
+.user-avatar-section { position: relative; margin-right: 24rpx; }
+.user-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 60rpx;
+  border: 4rpx solid rgba(255,255,255,0.5);
+  background: #FFFFFF;
+  box-shadow: 0 8rpx 32rpx rgba(0,0,0,0.2);
+}
+.avatar-tag {
+  position: absolute;
+  bottom: -8rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #FFFFFF;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.12);
+  white-space: nowrap;
+}
+.role-name { font-size: 20rpx; color: var(--red-primary); font-weight: 600; }
+.user-info-section { flex: 1; }
+.user-name  {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 8rpx;
+  font-family: STKaiti, KaiTi, serif;
+  letter-spacing: 2rpx;
+}
+.user-phone { display: block; font-size: 24rpx; color: rgba(255,255,255,0.80); }
+.user-action { margin-left: 20rpx; }
+.btn-login, .btn-logout, .btn-auth-wechat {
+  background: rgba(255,255,255,0.18);
+  border: 2rpx solid rgba(255,255,255,0.35);
+  color: #FFFFFF;
+  font-size: 24rpx;
+  padding: 12rpx 24rpx;
+  border-radius: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  line-height: 1;
+}
+.btn-auth-wechat {
+  background: #07C160;
+  border-color: #07C160;
+  font-size: 22rpx;
+  padding: 10rpx 20rpx;
+}
+.btn-edit {
+  background: rgba(255,255,255,0.18);
+  border: 2rpx solid rgba(255,255,255,0.35);
+  color: #FFFFFF;
+  font-size: 24rpx;
+  padding: 12rpx 24rpx;
+  border-radius: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.logout-icon { width: 32rpx; height: 32rpx; }
+
+/* 内联昵称输入 */
+.nickname-input-inline {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  font-family: STKaiti, KaiTi, serif;
+  letter-spacing: 2rpx;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-bottom: 8rpx;
+  height: auto;
+  min-height: 50rpx;
+}
+.nickname-input-inline::placeholder {
+  color: rgba(255,255,255,0.6);
+  font-size: 28rpx;
+}
+
+/* 用户状态文字 */
+.user-status {
+  display: inline-block;
+  font-size: 24rpx;
+  color: rgba(255,255,255,0.80);
+}
+
+/* 身份标签容器 */
+.user-tags {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 4rpx;
+}
+
+/* 身份标识标签 */
+.user-role-tag {
+  display: inline-block;
+  font-size: 20rpx;
+  font-weight: 600;
+  padding: 2rpx 12rpx;
+  border-radius: 10rpx;
+  background: rgba(255,255,255,0.25);
+  color: #FFFFFF;
+  border: 1rpx solid rgba(255,255,255,0.3);
+}
+
+/* 各身份颜色 */
+.user-role-tag.city_franchisee {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #8B4513;
+  border: none;
+}
+.user-role-tag.partner_matchmaker {
+  background: linear-gradient(135deg, #E8D5B7, #C9A96E);
+  color: #5D4E37;
+  border: none;
+}
+.user-role-tag.professional_recommender {
+  background: linear-gradient(135deg, #D4AF37, #B8860B);
+  color: #FFFFFF;
+  border: none;
+}
+.user-role-tag.public_matchmaker {
+  background: linear-gradient(135deg, #90EE90, #32CD32);
+  color: #1B5E20;
+  border: none;
+}
+.user-role-tag.community_station {
+  background: linear-gradient(135deg, #87CEEB, #4682B4);
+  color: #FFFFFF;
+  border: none;
+}
+
+/* ---- Section ---- */
+.section { margin: 24rpx 32rpx 0; }
+
+/* ---- 收益卡片 ---- */
+.income-card {
+  background: linear-gradient(135deg, var(--red-primary), var(--red-dark));
+  border-radius: var(--radius-xl);
+  padding: 36rpx;
+  color: #FFFFFF;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+.income-card::before {
+  content: '❃';
+  position: absolute;
+  right: -20rpx; top: -20rpx;
+  font-size: 240rpx;
+  color: rgba(255,255,255,0.04);
+  pointer-events: none;
+}
+.income-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 36rpx;
+}
+.income-title {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.income-icon { width: 40rpx; height: 40rpx; }
+.income-title text { font-size: 32rpx; font-weight: 700; font-family: STKaiti, KaiTi, serif; }
+.income-arrow {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 24rpx;
+  opacity: 0.85;
+}
+.income-arrow image { width: 24rpx; height: 24rpx; }
+.income-stats {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.income-item { display: flex; flex-direction: column; align-items: center; }
+.income-value { font-size: 40rpx; font-weight: 700; margin-bottom: 8rpx; }
+.income-label { font-size: 22rpx; opacity: 0.82; }
+.income-divider { width: 2rpx; height: 64rpx; background: rgba(255,255,255,0.25); }
+
+/* ---- 快捷操作 ---- */
+.quick-actions {
+  display: flex;
+  background: #FFFFFF;
+  border-radius: var(--radius-xl);
+  padding: 36rpx 24rpx;
+  justify-content: space-around;
+  box-shadow: var(--shadow-md);
+}
+.action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+}
+.action-icon  { width: 80rpx; height: 80rpx; }
+.action-title { font-size: 24rpx; color: var(--text-secondary); }
+
+/* ---- 功能菜单 ---- */
+.menu-list {
+  background: #FFFFFF;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 32rpx;
+  border-bottom: 1rpx solid var(--border-light);
+}
+.menu-item:last-child { border-bottom: none; }
+.menu-item:active     { background: var(--red-pale); }
+.menu-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+.menu-icon  { width: 48rpx; height: 48rpx; }
+.menu-info  { flex: 1; display: flex; flex-direction: column; gap: 6rpx; }
+.menu-title { font-size: 28rpx; color: var(--text-primary); font-weight: 500; }
+.menu-desc  { font-size: 22rpx; color: var(--text-muted); }
+.menu-arrow { width: 28rpx; height: 28rpx; opacity: 0.45; }
+
+/* ---- 升级卡片 ---- */
+.upgrade-card {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  border-radius: var(--radius-xl);
+  padding: 32rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 8rpx 32rpx rgba(212,160,23,0.4);
+}
+.upgrade-left { display: flex; align-items: center; gap: 20rpx; }
+.upgrade-icon { font-size: 60rpx; }
+.upgrade-info { display: flex; flex-direction: column; gap: 8rpx; }
+.upgrade-title { font-size: 30rpx; font-weight: 700; color: #FFFFFF; font-family: STKaiti, KaiTi, serif; }
+.upgrade-desc  { font-size: 22rpx; color: rgba(255,255,255,0.88); }
+.upgrade-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8rpx; }
+.upgrade-fee   { font-size: 36rpx; font-weight: 800; color: #FFFFFF; }
+.upgrade-tag {
+  background: rgba(255,255,255,0.25);
+  padding: 6rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  color: #FFFFFF;
+  border: 1rpx solid rgba(255,255,255,0.3);
+}
+
+/* ---- 底部 ---- */
+.footer {
+  margin-top: 48rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+.footer-text      { font-size: 24rpx; color: var(--text-muted); }
+.footer-copyright { font-size: 20rpx; color: var(--text-light); }
+
+/* ---- 手机号绑定 ---- */
+.phone-section {
+  display: flex;
+  align-items: center;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: rgba(255,255,255,0.85);
+}
+.phone-label {
+  margin-right: 8rpx;
+}
+.phone-number {
+  color: #FFFFFF;
+  font-weight: 500;
+}
+.btn-bind-phone {
+  display: inline-block;
+  margin: 0;
+  padding: 8rpx 24rpx;
+  font-size: 22rpx;
+  color: #FFFFFF;
+  background: rgba(255,255,255,0.2);
+  border: 2rpx solid rgba(255,255,255,0.4);
+  border-radius: 24rpx;
+  line-height: 1.5;
+}
+.btn-bind-phone::after {
+  border: none;
+}

@@ -1,0 +1,113 @@
+<!-- pages/chat/chat.wxml - AI画像聊天旁观页 / 真人聊天页 -->
+<view class="page">
+  <!-- 顶部信息 -->
+  <view class="chat-header px-32">
+    <view class="chat-header-avatars">
+      <view class="header-avatar-wrap">
+        <image class="header-avatar" src="{{myAvatarImg}}" mode="aspectFill" binderror="onAvatarError" data-field="myAvatarImg" />
+        <text class="header-ai-badge" wx:if="{{mode !== 'real'}}">🤖 我的画像</text>
+        <text class="header-ai-badge" wx:else>我</text>
+      </view>
+      <view class="vs-icon">💬</view>
+      <view class="header-avatar-wrap">
+        <image class="header-avatar" src="{{targetAvatarImg}}" mode="aspectFill" binderror="onAvatarError" data-field="targetAvatarImg" />
+        <text class="header-ai-badge" wx:if="{{mode !== 'real'}}">🤖 TA的画像</text>
+        <text class="header-ai-badge" wx:else>TA</text>
+      </view>
+    </view>
+    <view class="chat-header-names">
+      <text>{{myAvatarName}}</text>
+      <text>·</text>
+      <text>{{targetAvatarName}}</text>
+    </view>
+    <view class="chat-status-bar">
+      <text class="chat-status {{chatStatus}}">{{chatStatusText}}</text>
+    </view>
+  </view>
+
+  <!-- 旁观说明（仅AI画像模式） -->
+  <view class="observer-tip px-32" wx:if="{{mode !== 'real'}}">
+    <text class="observer-icon">👁️</text>
+    <text class="observer-text">您正在旁观画像聊天，聊天内容由人工智能生成</text>
+  </view>
+
+  <!-- 真人聊天模式提示 -->
+  <view class="real-chat-tip px-32" wx:if="{{mode === 'real'}}">
+    <text class="real-chat-icon">🔒</text>
+    <text class="real-chat-text">已解锁线上了解，您正在与对方真人聊天</text>
+  </view>
+
+  <!-- 聊天消息列表 -->
+  <scroll-view
+    class="chat-messages {{mode === 'real' ? 'chat-messages-real' : ''}}"
+    scroll-y
+    scroll-into-view="{{scrollToMsg}}"
+    scroll-with-animation
+  >
+    <view class="msg-list px-32">
+      <view
+        class="msg-item {{item.from === 'me' ? 'msg-right' : 'msg-left'}}"
+        wx:for="{{messages}}"
+        wx:key="id"
+        id="msg-{{item.id}}"
+      >
+        <image class="msg-avatar" src="{{item.avatar}}" mode="aspectFill" binderror="onMsgAvatarError" data-index="{{index}}" />
+        <view class="msg-bubble-wrap">
+          <text class="msg-sender">{{item.senderName}}</text>
+          <view class="msg-bubble {{item.from === 'me' ? 'bubble-right' : 'bubble-left'}}">
+            <text class="msg-text">{{item.content}}</text>
+          </view>
+          <view class="msg-aigc-tag" wx:if="{{mode !== 'real'}}">🤖 AI生成</view>
+          <text class="msg-time">{{item.time}}</text>
+        </view>
+      </view>
+
+      <!-- 画像汇报 -->
+      <view class="avatar-report" wx:if="{{report}}">
+        <view class="report-card">
+          <view class="report-icon">📊</view>
+          <view class="report-title">画像聊天报告 <text style="font-size: 22rpx; color: #999;">（人工智能生成）</text></view>
+          <view class="report-content">{{report.summary}}</view>
+          <view class="report-result {{report.isMatch ? 'match' : 'no-match'}}">
+            {{report.isMatch ? '✅ 画像建议：值得见面' : '❌ 画像评估：推荐度较低'}}
+          </view>
+          <view class="report-actions" wx:if="{{report.isMatch}}">
+            <button class="btn btn-primary" hover-class="btn-hover" bindtap="onApplySalon">报名沙龙活动</button>
+            <button class="btn btn-outline" hover-class="btn-hover" bindtap="onApplyMeet">申请推荐官邀约</button>
+          </view>
+          <view class="report-actions" wx:else>
+            <button class="btn btn-secondary" hover-class="btn-hover" bindtap="onChangeTarget">换一个人继续聊</button>
+          </view>
+        </view>
+      </view>
+
+      <view class="msg-loading" wx:if="{{chatStatus === 'chatting' && mode !== 'real'}}">
+        <view class="typing-dot"></view>
+        <view class="typing-dot"></view>
+        <view class="typing-dot"></view>
+        <text class="typing-text">人工智能对话中…</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 真人聊天输入框（仅mode=real） -->
+  <view class="chat-input-bar" wx:if="{{mode === 'real'}}">
+    <input
+      class="chat-input"
+      placeholder="输入消息..."
+      value="{{inputText}}"
+      bindinput="onInputChange"
+      bindconfirm="onSendMsg"
+      confirm-type="send"
+    />
+    <button class="chat-send-btn" bindtap="onSendMsg" disabled="{{!inputText}}">发送</button>
+  </view>
+
+  <!-- AI生成内容固定免责声明（仅AI模式） -->
+  <view class="ai-disclaimer-bar" wx:if="{{mode !== 'real'}}">
+    <text class="ai-disclaimer-icon">🤖</text>
+    <text class="ai-disclaimer-text">本服务为AI生成内容，结果仅供参考</text>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

@@ -1,0 +1,19 @@
+<!-- components/privacy-popup/privacy-popup.wxml -->
+<view class="privacy-mask" wx:if="{{show}}">
+  <view class="privacy-dialog">
+    <view class="pd-title">用户隐私保护提示</view>
+    <view class="pd-content">
+      <text>感谢您使用「人人媒好」！\n\n在您使用服务前，请您仔细阅读并同意我们的</text>
+      <text class="pd-link" bindtap="onViewPrivacy">《隐私政策》</text>
+      <text>。\n\n我们重视您的隐私权益，将严格遵守相关法律法规，保护您的个人信息安全。如您同意，请点击"同意"后继续使用。</text>
+    </view>
+    <view class="pd-btns">
+      <view class="pd-btn pd-btn--reject" bindtap="onReject">拒绝</view>
+      <button class="pd-btn pd-btn--agree" id="agree-btn"
+        open-type="agreePrivacyAuthorization"
+        bindagreeprivacyauthorization="onAgree">
+        同意
+      </button>
+    </view>
+  </view>
+</view>

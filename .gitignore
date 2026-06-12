@@ -1,0 +1,59 @@
+# 环境变量（包含密钥，绝不能提交）
+.env
+.env.local
+.env.production
+.env.development
+
+# 依赖
+node_modules/
+
+# 数据库文件
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# 日志
+logs/
+*.log
+npm-debug.log*
+
+# 调试/临时文件
+verify_debug_head.txt
+income.b64
+mock_users.json
+referral_codes.json
+referral_network.json
+
+# Python 修复脚本
+fix_all_endpoints.py
+fix_generate_endpoint.py
+fix_payment.py
+fix_verify.py
+fix_verify2.py
+inspect_verify.py
+check_env.js
+
+# 备份/损坏文件
+*.broken
+*.backup
+*.bak
+*_updated.js
+
+# 编辑器/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 构建产物
+admin-panel/build/
+admin-panel/node_modules/
+
+# 公共目录（运行时生成）
+public/

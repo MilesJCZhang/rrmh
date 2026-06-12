@@ -1,0 +1,186 @@
+<!-- pages/recommender/open/open.wxml - 推荐官开通页面 -->
+<view class="page-container">
+
+  <!-- 顶部标题 -->
+  <view class="header">
+    <text class="title">升级专业推荐官</text>
+  </view>
+
+  <!-- 推荐官身份介绍 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">🎯 核心定位</text>
+    </view>
+    
+    <view class="intro-card">
+      <view class="intro-item">
+        <view class="intro-icon">🏆</view>
+        <view class="intro-content">
+          <text class="intro-title">平台全业务专属推广官</text>
+          <text class="intro-desc">推荐平台所有业务/身份，享受全业务推广分润</text>
+        </view>
+      </view>
+      
+      <view class="intro-item">
+        <view class="intro-icon">💰</view>
+        <view class="intro-content">
+          <text class="intro-title">城市合伙人推荐服务费</text>
+          <text class="intro-desc">成功推荐城市合伙人，按季享该合伙人月营收3%推荐服务费</text>
+        </view>
+      </view>
+      
+      <view class="intro-item">
+        <view class="intro-icon">🚫</view>
+        <view class="intro-content">
+          <text class="intro-title">无推广业务限制</text>
+          <text class="intro-desc">不受任何推广业务类型限制，全平台业务均可推广</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+    <!-- 开通条件 -->
+    <view class="section">
+    <view class="section-header">
+      <text class="section-title">📋 开通条件</text>
+    </view>
+    
+    <view class="conditions-list">
+      <view class="condition-item">
+        <text class="condition-icon">✅</text>
+        <text class="condition-text">可升级人群：公益推荐官、联创推荐官、社区服务站、城市合伙人</text>
+      </view>
+      
+      <view class="condition-item">
+        <text class="condition-icon">✅</text>
+        <text class="condition-text">升级费用：缴纳3999元【推荐官升级培训费】</text>
+      </view>
+      
+      <view class="condition-item">
+        <text class="condition-icon">✅</text>
+        <text class="condition-text">升级流程：个人中心→升级推荐官→缴纳3999元→审核开通</text>
+      </view>
+      
+      <view class="condition-item">
+        <text class="condition-icon">✅</text>
+        <text class="condition-text">升级后权益：全业务收益权限 + 专属推荐城市合伙人权限（独家）</text>
+      </view>
+    </view>
+  </view>
+
+    <!-- 分润规则概览 -->
+    <view class="section">
+    <view class="section-header">
+      <text class="section-title">📊 专业推荐官收益规则</text>
+    </view>
+    
+    <view class="profit-overview">
+      <view class="profit-header">
+        <text class="profit-title">推荐业务</text>
+        <text class="profit-title">费用</text>
+        <text class="profit-title">推荐官收益</text>
+        <text class="profit-title">详细规则</text>
+      </view>
+      
+      <view class="profit-row">
+        <text class="profit-cell">推荐会员建档</text>
+        <text class="profit-cell">¥199</text>
+        <text class="profit-cell profit-green">¥99/人</text>
+        <text class="profit-cell">无首推限制，推荐任意数量均享受99元/人</text>
+      </view>
+      
+      <view class="profit-row">
+        <text class="profit-cell">推荐联创推荐官</text>
+        <text class="profit-cell">¥399</text>
+        <text class="profit-cell profit-green">¥399/人</text>
+        <text class="profit-cell">第1个：无收益；第2个起：全额399元</text>
+      </view>
+      
+      <view class="profit-row">
+        <text class="profit-cell">推荐城市合伙人</text>
+        <text class="profit-cell">¥10000</text>
+        <text class="profit-cell profit-green">¥10000/人②</text>
+        <text class="profit-cell">第1个：无收益；第2个起：全额10000元+永久3%沉淀资金分红（独家推荐权）</text>
+      </view>
+    </view>
+    
+    <view class="profit-notice">
+      <text class="notice-title">📌 核心规则说明：</text>
+      <text class="notice-text">1. 首推无收益规则：付费业务第1个推荐均不拿提成，第2个起全额拿对应费用</text>
+      <text class="notice-text">2. 会员建档无限制：推荐任意数量均享受99元/人，无首推限制</text>
+      <text class="notice-text">3. 城市合伙人专属推荐权：专业推荐官独享推荐城市合伙人权限，永久享3%沉淀资金分红</text>
+      <text class="notice-text">4. 推广关系永久绑定：通过专属推广码/海报扫码的用户，推广关系永久绑定</text>
+    </view>
+  </view>
+
+  <!-- 支付区域 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">💳 支付开通</text>
+    </view>
+    
+    <view class="payment-card">
+      <view class="payment-header">
+        <text class="payment-title">专业推荐官升级费</text>
+        <text class="payment-price">¥3990</text>
+      </view>
+      
+      <view class="payment-details">
+        <view class="payment-detail-item">
+          <text class="detail-label">升级性质</text>
+          <text class="detail-value">在现有身份基础上升级，终身权益</text>
+        </view>
+        <view class="payment-detail-item">
+          <text class="detail-label">升级后获得</text>
+          <text class="detail-value">全业务收益权限 + 专属推广物料 + 分润权限</text>
+        </view>
+        <view class="payment-detail-item">
+          <text class="detail-label">当前身份</text>
+          <text class="detail-value">{{currentRoleName}}</text>
+        </view>
+      </view>
+      
+      <!-- 支付按钮 -->
+      <button class="btn btn-primary btn-lg payment-btn" bindtap="onPayment">
+        <text>立即支付 ¥3999 升级推荐官</text>
+      </button>
+      
+      <!-- 支付方式 -->
+      <view class="payment-methods">
+        <text class="methods-title">支付方式</text>
+        <view class="methods-list">
+          <view class="method-item" wx:for="{{paymentMethods}}" wx:key="id" 
+                data-id="{{item.id}}" bindtap="selectPaymentMethod">
+            <view class="method-left">
+              <image class="method-icon" src="{{item.icon}}" />
+              <text class="method-name">{{item.name}}</text>
+            </view>
+            <view class="method-right" wx:if="{{selectedPaymentId === item.id}}">
+              <text class="method-check">✓</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 常见问题 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">❓ 常见问题</text>
+    </view>
+    
+    <view class="faq-list">
+      <view class="faq-item" wx:for="{{faqs}}" wx:key="id">
+        <view class="faq-question" data-index="{{index}}" bindtap="toggleFaq">
+          <text class="faq-q">Q: {{item.question}}</text>
+          <text class="faq-arrow">{{item.expanded ? '▲' : '▼'}}</text>
+        </view>
+        <view class="faq-answer" wx:if="{{item.expanded}}">
+          <text class="faq-a">A: {{item.answer}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+</view>

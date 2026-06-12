@@ -1,0 +1,69 @@
+<!-- subpackages/premium/pages/match/match.wxml -->
+<view class="page">
+
+  <!-- 加载中 -->
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">AI正在为您精准匹配中...</text>
+  </view>
+
+  <!-- AI匹配结果 -->
+  <view class="match-result" wx:if="{{!loading && aiMatch}}">
+    <view class="result-header">
+      <text class="result-icon">🤖</text>
+      <text class="result-title">AI匹配结果</text>
+    </view>
+
+    <view class="match-card">
+      <image class="match-avatar" src="{{aiMatch.avatar || '/assets/images/default-avatar.png'}}" mode="aspectFill" />
+      <view class="match-info">
+        <view class="match-name">{{aiMatch.nickname}}</view>
+        <view class="match-meta">
+          <text wx:if="{{aiMatch.age}}">{{aiMatch.age}}岁</text>
+          <text wx:if="{{aiMatch.city}}"> · {{aiMatch.city}}</text>
+        </view>
+        <view class="match-score">
+          <text class="score-dot" style="background:{{aiMatch.score_tier === 'gold' ? '#FFD700' : '#C0C0C0'}};"></text>
+          <text>{{aiMatch.profile_score}}分 {{aiMatch.score_tier === 'gold' ? '优质' : '良好'}}会员</text>
+        </view>
+        <text class="match-occupation" wx:if="{{aiMatch.occupation}}">{{aiMatch.occupation}}</text>
+      </view>
+    </view>
+
+    <!-- 匹配度 -->
+    <view class="match-score-bar" wx:if="{{matchRecord.ai_match_score}}">
+      <text class="msb-label">匹配度</text>
+      <view class="msb-track">
+        <view class="msb-fill" style="width:{{matchRecord.ai_match_score}}%;"></view>
+      </view>
+      <text class="msb-value">{{matchRecord.ai_match_score.toFixed(0)}}%</text>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="match-actions" wx:if="{{!confirmed}}">
+      <button class="btn btn-primary btn-block btn-lg" bindtap="onConfirmMatch" loading="{{confirming}}" disabled="{{confirming}}" style="background: linear-gradient(135deg, #D4A017, #A07820);">
+        确认匹配对象
+      </button>
+      <button class="btn btn-outline btn-block" bindtap="onRetryMatch">重新匹配</button>
+    </view>
+
+    <!-- 已确认 -->
+    <view class="confirmed-card" wx:if="{{confirmed}}">
+      <text class="confirmed-icon">✅</text>
+      <text class="confirmed-text">已确认匹配对象</text>
+      <button class="btn btn-primary btn-block btn-lg" bindtap="onGoCustody" style="background: linear-gradient(135deg, #D4A017, #A07820);">
+        进入基金托管
+      </button>
+    </view>
+  </view>
+
+  <!-- 无匹配结果 -->
+  <view class="no-match" wx:if="{{!loading && !aiMatch && matchRecord}}">
+    <text class="no-match-icon">🔍</text>
+    <text class="no-match-title">正在为您安排人工匹配</text>
+    <text class="no-match-desc">AI暂未找到理想对象，专业红娘将为您一对一服务</text>
+    <button class="btn btn-outline" bindtap="onRetryMatch">重新尝试AI匹配</button>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

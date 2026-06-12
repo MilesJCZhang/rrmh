@@ -1,0 +1,111 @@
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#ff6b6b', 'primaryTextColor':'#fff', 'secondaryColor':'#4ecdc4', 'tertiaryColor':'#95e1d3', 'edgeLabelBackground':'#fff'}}}%%
+
+classDiagram
+    title 推荐码系统 - 类图与关系
+    
+    class ReferralCode {
+        +Integer id
+        +String code
+        +Enum code_type
+        +Integer referrer_id
+        +Enum status
+        +Integer use_count
+        +Integer max_uses
+        +DateTime last_used_at
+        +Integer last_bound_user_id
+        +DateTime last_bound_at
+        +DateTime created_at
+        +DateTime updated_at
+        +DateTime expires_at
+        +Integer created_by
+        +String batch_id
+        +String notes
+        +Boolean validateCode() bool
+        +Boolean canUse() bool
+        +void incrementUseCount()
+        +void updateLastBound(Integer userId)
+    }
+    
+    class User {
+        +Integer id
+        +String nickname
+        +String role
+        +String openid
+        +DateTime created_at
+    }
+    
+    class UserReferral {
+        +Integer id
+        +Integer user_id
+        +Integer referrer_id
+        +String bind_type
+        +String code
+        +DateTime created_at
+    }
+    
+    class ReferralCodeService {
+        +Promise verifyCode(code) Object
+        +Promise bindCode(code, userId) Object
+        +Promise generateCode(type, count, options) Array
+        +Promise getCodeInfo(code) Object
+        +Promise batchGenerate(type, count, batchId) Array
+        -String _generateUniqueCode(type) String
+        -Boolean _checkCodeExists(code) bool
+    }
+    
+    class ReferralCodeModel {
+        +static findById(id) ReferralCode
+        +static findByCode(code) ReferralCode
+        +static findByReferrerId(referrerId) Array
+        +static create(data) ReferralCode
+        +static update(id, data) Boolean
+        +static incrementUseCount(id) Boolean
+        +static findByBatchId(batchId) Array
+    }
+    
+    class ReferralAPI {
+        +POST /api/referral-codes/verify
+        +POST /api/referral-codes/bind
+        +POST /api/referral-codes/generate
+    }
+    
+    class ReferralJS {
+        +bindReferrer(referrerId, options) Promise
+        +bindByCode(referralCode, options) Promise
+        +verifyCode(referralCode) Promise
+        +isReferralLocked() Boolean
+        +getReferrerId() String
+        +getReferrerInfo() Object
+    }
+    
+    class RegisterPage {
+        +data.referralCode String
+        +onReferralCodeInput(e) void
+        +onRegister() void
+        +doRegister() void
+    }
+    
+    class RequestUtil {
+        +request(options) Promise
+    }
+    
+    %% 关系定义
+    ReferralCode "1" --> "0..1" User : referrer_id\n关联推荐官
+    ReferralCode "1" --> "0..*" UserReferral : code\n记录绑定历史
+    User "1" --> "0..*" UserReferral : user_id\n被推荐人
+    User "1" --> "0..*" UserReferral : referrer_id\n推荐人
+    
+    ReferralCodeService --> ReferralCodeModel : 使用
+    ReferralCodeService --> ReferralCode : 操作
+    ReferralAPI --> ReferralCodeService : 调用
+    
+    ReferralJS --> ReferralAPI : HTTP调用
+    ReferralJS --> RequestUtil : 使用
+    ReferralJS --> ReferralJS : 复用bindReferrer()
+    
+    RegisterPage --> ReferralJS : 调用
+    RegisterPage --> RequestUtil : 调用
+    
+    Note for ReferralCode "推荐码实体\n状态: active/inactive/expired/depleted"
+    Note for ReferralCodeService "业务逻辑层\n事务控制、验证规则"
+    Note for ReferralJS "前端工具类\n兼容现有推荐关系绑定"

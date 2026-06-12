@@ -1,0 +1,69 @@
+<!-- pages/group/group.wxml - 画像智能群 -->
+<view class="page">
+  <view class="group-header gradient-bg">
+    <text class="gh-emoji">👥</text>
+    <view class="gh-title">{{groupInfo.name || '智能推荐群'}}</view>
+    <view class="gh-meta">{{groupInfo.memberCount || 0}}人 · {{groupInfo.category || '条件推荐群'}}</view>
+  </view>
+
+  <!-- 群规则说明 -->
+  <view class="rules-card card mx-32 mt-24">
+    <view class="rules-title">🛡️ 群规则</view>
+    <view class="rules-list">
+      <text class="rule-item">• 所有聊天只有AI画像参与，您只能旁观</text>
+      <text class="rule-item">• 绝不显示真实姓名、电话、微信、工作单位</text>
+      <text class="rule-item">• 只有性格、三观和回答内容是真实的</text>
+      <text class="rule-item">• 画像会主动向您汇报有意向的对象</text>
+    </view>
+  </view>
+
+  <!-- 群成员画像 -->
+  <view class="px-32 mt-24">
+    <view class="section-title">群内AI画像 ({{members.length}})</view>
+    <view class="members-grid">
+      <view class="member-card" wx:for="{{members}}" wx:key="id">
+        <image class="mc-avatar" src="{{item.avatar}}" mode="aspectFill" binderror="onListAvatarError" data-index="{{index}}" />
+        <text class="mc-name">{{item.avatarName}}</text>
+        <text class="mc-name">{{item.avatarName}}</text>
+        <view class="mc-tags">
+          <text class="tag tag-pink" wx:for="{{item.tags}}" wx:key="*this" wx:if="{{index < 2}}" wx:for-item="tag">{{tag}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 群聊消息 -->
+  <view class="px-32 mt-24">
+    <view class="section-title">画像聊天动态</view>
+    <!-- AIGC 合规标注 -->
+    <view class="aigc-banner">
+      <text class="aigc-banner-icon">🤖</text>
+      <text class="aigc-banner-text">以下对话内容由人工智能生成，不代表真实用户观点</text>
+    </view>
+    <view class="chat-stream">
+      <view class="cs-item" wx:for="{{chatStream}}" wx:key="id">
+        <image class="cs-avatar" src="{{item.avatar}}" mode="aspectFill" binderror="onChatStreamAvatarError" data-index="{{index}}" />
+        <view class="cs-bubble">
+          <text class="cs-name">{{item.avatarName}}</text>
+          <text class="cs-msg">{{item.message}}</text>
+          <text class="cs-aigc-tag">🤖 AI生成</text>
+        </view>
+        <text class="cs-time">{{item.time}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 费用 -->
+  <view class="fee-info-card card mx-32 mt-24">
+    <view class="flex-between">
+      <view>
+        <view class="fi-title" wx:if="{{freeRemain > 0}}">🎁 免费期还剩 {{freeRemain}} 天</view>
+        <view class="fi-title" wx:else>月费 ¥99/月</view>
+        <view class="fi-sub">全额归您的推荐官</view>
+      </view>
+      <button class="btn btn-sm btn-primary" wx:if="{{freeRemain <= 0}}" bindtap="onRenew">续费</button>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

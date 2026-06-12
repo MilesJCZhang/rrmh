@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "单身会员建档",
+  "navigationBarBackgroundColor": "#C8102E",
+  "navigationBarTextStyle": "white",
+  "usingComponents": {
+    "score-bar": "../../components/score-bar/score-bar"
+  }
+}

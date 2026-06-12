@@ -1,0 +1,154 @@
+/* ============================================================
+   pages/reunion/reunion.wxss
+   再出发社区 · 紫色专属色（与国风红互补）
+   ============================================================ */
+.page { min-height: 100vh; background: var(--bg-page); padding-bottom: 60rpx; }
+
+/* ---- 再出发社区 Hero ---- */
+.reunion-hero {
+  position: relative;
+  padding: 88rpx 48rpx 64rpx;
+  overflow: hidden;
+  background: linear-gradient(135deg, #7649A4 0%, #4A2870 100%);
+}
+.reunion-hero::before {
+  content: '✦';
+  position: absolute;
+  right: -20rpx; top: -20rpx;
+  font-size: 280rpx;
+  color: rgba(255,255,255,0.05);
+  pointer-events: none;
+}
+.hero-content  { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; }
+.hero-emoji    { font-size: 88rpx; margin-bottom: 20rpx; filter: drop-shadow(0 8rpx 16rpx rgba(0,0,0,0.2)); }
+.hero-title    { font-size: 52rpx; font-weight: 800; color: #FFFFFF; margin-bottom: 14rpx; font-family: STKaiti, KaiTi, serif; letter-spacing: 3rpx; }
+.hero-subtitle { font-size: 26rpx; color: rgba(255,255,255,0.85); text-align: center; line-height: 1.7; margin-bottom: 28rpx; }
+.hero-tags     { display: flex; gap: 16rpx; flex-wrap: wrap; justify-content: center; }
+.hero-tag {
+  background: rgba(255,255,255,0.16);
+  color: #FFFFFF;
+  font-size: 22rpx;
+  padding: 8rpx 24rpx;
+  border-radius: 100rpx;
+  border: 1rpx solid rgba(255,255,255,0.25);
+}
+
+.section { margin-top: 32rpx; }
+
+/* ---- 适用场景 ---- */
+.scenario-list { display: flex; flex-direction: column; gap: 16rpx; }
+.scenario-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 18rpx;
+  background: #FFFFFF;
+  border-radius: var(--radius-md);
+  padding: 28rpx;
+  box-shadow: var(--shadow-sm);
+  border: 1rpx solid rgba(118,73,164,0.07);
+}
+.scenario-icon { font-size: 44rpx; flex-shrink: 0; }
+.scenario-text { font-size: 28rpx; color: var(--text-primary); line-height: 1.7; }
+
+/* ---- 流程 ---- */
+.process-list { display: flex; flex-direction: column; padding: 0 16rpx; }
+.process-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  position: relative;
+  padding-bottom: 36rpx;
+}
+.process-dot {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7649A4, #4A2870);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: 0 4rpx 16rpx rgba(118,73,164,0.4);
+}
+.process-connector {
+  position: absolute;
+  left: 27rpx;
+  top: 56rpx;
+  width: 2rpx;
+  height: calc(100% - 56rpx);
+  background: linear-gradient(to bottom, #7649A4, var(--border));
+}
+.process-content { padding-top: 10rpx; }
+.process-title   { font-size: 30rpx; font-weight: 700; margin-bottom: 8rpx; color: var(--text-primary); font-family: STKaiti, KaiTi, serif; }
+.process-desc    { font-size: 24rpx; color: var(--text-muted); line-height: 1.6; }
+
+/* ---- 服务卡片 ---- */
+.service-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
+  padding: 36rpx;
+  margin-bottom: 24rpx;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+  border: 1rpx solid rgba(118,73,164,0.07);
+}
+.service-header { display: flex; align-items: center; gap: 24rpx; margin-bottom: 24rpx; }
+.service-icon-wrap {
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44rpx;
+  flex-shrink: 0;
+}
+.service-icon-wrap.free    { background: #F0FDF4; }
+.service-icon-wrap.premium { background: #F5EEFF; }
+.service-info   { flex: 1; }
+.service-name   { font-size: 32rpx; font-weight: 700; margin-bottom: 10rpx; color: var(--text-primary); font-family: STKaiti, KaiTi, serif; }
+.service-price  { display: flex; align-items: center; gap: 10rpx; }
+.free-tag       { background: #F0FDF4; color: #16a34a; font-size: 22rpx; padding: 4rpx 16rpx; border-radius: 100rpx; font-weight: 700; border: 1rpx solid #BBF7D0; }
+.price-after    { font-size: 22rpx; color: var(--text-hint); }
+.price-num      { font-size: 48rpx; font-weight: 900; color: #7649A4; }
+.price-unit     { font-size: 24rpx; color: var(--text-muted); }
+.service-arrow  { font-size: 40rpx; color: var(--text-light); }
+.service-features { display: flex; flex-direction: column; gap: 12rpx; margin-bottom: 20rpx; }
+.sf-item        { font-size: 26rpx; color: var(--text-secondary); line-height: 1.6; }
+.service-note {
+  background: #F5EEFF;
+  color: #7649A4;
+  font-size: 22rpx;
+  padding: 14rpx 24rpx;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  border: 1rpx solid #D8B4FE;
+}
+.premium-badge {
+  position: absolute;
+  top: 0; right: 0;
+  background: linear-gradient(135deg, #7649A4, #4A2870);
+  color: #FFFFFF;
+  font-size: 20rpx;
+  padding: 8rpx 24rpx 10rpx;
+  border-bottom-left-radius: var(--radius-md);
+  font-weight: 600;
+}
+
+/* AIGC 合规声明 */
+.aigc-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10rpx;
+  background: #FFF8E1;
+  border: 1rpx solid #FFE082;
+  border-radius: 10rpx;
+  padding: 14rpx 16rpx;
+  margin-top: 16rpx;
+}
+.aigc-notice-icon { font-size: 26rpx; flex-shrink: 0; }
+.aigc-notice-text { font-size: 22rpx; color: #795548; line-height: 1.6; }

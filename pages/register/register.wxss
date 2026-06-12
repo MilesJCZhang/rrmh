@@ -1,0 +1,557 @@
+/* ============================================================
+   pages/register/register.wxss
+   单身会员建档 · 5步Tab自由跳转 + 实时评分
+   ============================================================ */
+
+/* ---- Tab导航 ---- */
+.tab-nav {
+  display: flex;
+  align-items: stretch;
+  background: #FFFFFF;
+  box-shadow: 0 2rpx 12rpx rgba(139,0,21,0.07);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 0 16rpx;
+  gap: 6rpx;
+  position: relative;
+  transition: all 0.2s ease;
+}
+.tab-item::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 6rpx;
+  border-radius: 3rpx;
+  background: linear-gradient(90deg, var(--red-primary), var(--gold));
+  transition: width 0.25s ease;
+}
+.tab-item.tab-active::after {
+  width: 48rpx;
+}
+.tab-dot {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-page);
+  border: 2rpx solid var(--border);
+  transition: all 0.25s ease;
+}
+.tab-item.tab-active .tab-dot {
+  color: #FFFFFF;
+  background: linear-gradient(135deg, var(--red-primary), var(--red-dark));
+  border-color: transparent;
+  box-shadow: 0 0 0 6rpx rgba(200,16,46,0.12);
+}
+.tab-label {
+  font-size: 20rpx;
+  color: var(--text-hint);
+  letter-spacing: 1rpx;
+  transition: color 0.2s;
+}
+.tab-item.tab-active .tab-label {
+  color: var(--red-primary);
+  font-weight: 600;
+}
+
+/* ---- 评分进度区 ---- */
+.score-section {
+  padding: 24rpx 32rpx 16rpx;
+  background: #FFFFFF;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(139,0,21,0.05);
+}
+.score-hint {
+  text-align: center;
+  font-size: 22rpx;
+  color: var(--text-muted);
+  margin-top: 8rpx;
+  letter-spacing: 1rpx;
+}
+
+/* ---- 内容区 ---- */
+.step-content {
+  padding-bottom: 160rpx;
+}
+
+/* ---- 评分徽章 ---- */
+.score-badge {
+  display: inline-block;
+  font-size: 20rpx;
+  font-weight: 600;
+  color: var(--gold-dark);
+  background: #FFF8E8;
+  border: 1rpx solid var(--gold-light);
+  border-radius: 100rpx;
+  padding: 2rpx 12rpx;
+  margin-left: 8rpx;
+  vertical-align: middle;
+}
+
+/* ---- 章节评分标记 ---- */
+.section-score {
+  font-size: 22rpx;
+  font-weight: 500;
+  color: var(--gold-dark);
+  margin-left: 12rpx;
+}
+
+/* ---- 头像上传 ---- */
+.avatar-upload {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 36rpx;
+}
+.avatar-img {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 80rpx;
+  border: 5rpx solid var(--red-light);
+  box-shadow: var(--shadow-md);
+}
+.avatar-placeholder {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 80rpx;
+  background: var(--red-pale);
+  border: 3rpx dashed var(--red-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+}
+.avatar-icon { font-size: 52rpx; }
+.avatar-text { font-size: 22rpx; color: var(--red-primary); font-weight: 600; }
+
+/* ---- 单选组 ---- */
+.radio-group { display: flex; gap: 20rpx; }
+.radio-item {
+  flex: 1;
+  height: 84rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 28rpx;
+  color: var(--text-muted);
+  background: var(--bg-page);
+  transition: all 0.15s;
+}
+.radio-item.checked {
+  border-color: var(--red-primary);
+  background: var(--red-pale);
+  color: var(--red-primary);
+  font-weight: 700;
+  box-shadow: 0 0 0 4rpx rgba(200,16,46,0.08);
+}
+
+/* ---- 多选标签 ---- */
+.select-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+.select-item {
+  padding: 14rpx 32rpx;
+  border: 2rpx solid var(--border);
+  border-radius: 100rpx;
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  background: var(--bg-page);
+  transition: all 0.15s;
+}
+.select-item.checked {
+  border-color: var(--red-primary);
+  background: var(--red-pale);
+  color: var(--red-primary);
+  font-weight: 600;
+}
+
+/* ---- 标签组 ---- */
+.tag-group { display: flex; flex-wrap: wrap; gap: 16rpx; }
+.tag-item {
+  padding: 12rpx 28rpx;
+  border: 2rpx solid var(--border);
+  border-radius: 100rpx;
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  background: var(--bg-page);
+}
+.tag-item.tag-active {
+  border-color: var(--red-primary);
+  background: var(--red-pale);
+  color: var(--red-primary);
+  font-weight: 600;
+}
+
+/* ---- 年龄范围选择 ---- */
+.range-picker {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+.range-input {
+  flex: 1;
+  height: 84rpx;
+  background: var(--bg-page);
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-size: 30rpx;
+  border: 2rpx solid var(--border);
+  color: var(--text-primary);
+}
+.range-to, .range-unit { font-size: 26rpx; color: var(--text-muted); }
+
+/* ---- Picker ---- */
+.picker-input {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+  padding: 0 28rpx;
+  background: var(--bg-page);
+  border-radius: var(--radius-md);
+  border: 2rpx solid var(--border);
+  color: var(--text-primary);
+  font-size: 28rpx;
+}
+.picker-arrow { color: var(--text-hint); font-size: 32rpx; }
+
+/* ---- Textarea ---- */
+.form-textarea {
+  width: 100%;
+  min-height: 180rpx;
+  background: var(--bg-page);
+  border-radius: var(--radius-md);
+  padding: 24rpx 28rpx;
+  font-size: 28rpx;
+  color: var(--text-primary);
+  border: 2rpx solid var(--border);
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+.word-count {
+  display: block;
+  text-align: right;
+  font-size: 22rpx;
+  color: var(--text-hint);
+  margin-top: 8rpx;
+}
+
+/* ---- 提示文字 ---- */
+.hint-text {
+  font-size: 24rpx;
+  color: var(--text-muted);
+  margin-bottom: 20rpx;
+  line-height: 1.7;
+}
+
+/* ---- 上传区域 (Step 3-4) ---- */
+.upload-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 12rpx;
+}
+.upload-box {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position: relative;
+  border: 2rpx dashed var(--border);
+  background: var(--bg-page);
+}
+.upload-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+}
+.upload-icon { font-size: 44rpx; }
+.upload-text { font-size: 22rpx; color: var(--text-muted); }
+.upload-preview {
+  width: 100%;
+  height: 100%;
+}
+.upload-remove {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.5);
+  color: #FFFFFF;
+  font-size: 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---- 人脸认证状态 ---- */
+.face-auth-status {
+  padding: 20rpx 28rpx;
+  background: var(--bg-page);
+  border-radius: var(--radius-md);
+  border: 2rpx solid var(--border);
+  font-size: 28rpx;
+}
+
+/* ---- 扫码按钮 ---- */
+.scan-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rpx;
+  padding: 8rpx 16rpx;
+  border-radius: var(--radius-md);
+  background: var(--bg-page);
+  border: 2rpx solid var(--border);
+}
+
+/* ---- Hover反馈 ---- */
+.hover-scale {
+  transform: scale(0.96);
+  opacity: 0.85;
+}
+.hover-opacity {
+  opacity: 0.75;
+}
+
+/* ---- 推荐码区 ---- */
+.referrer-card { margin-bottom: 24rpx; }
+.referrer-input-area { margin-top: 8rpx; }
+.referrer-no-hint {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 20rpx 0 24rpx;
+  font-size: 26rpx;
+  color: var(--text-muted);
+}
+.hint-icon { font-size: 32rpx; }
+.form-hint {
+  font-size: 22rpx;
+  color: var(--text-hint);
+  margin-top: 12rpx;
+  display: block;
+  line-height: 1.6;
+}
+
+/* ---- 底部固定按钮区 ---- */
+.footer-btns {
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  display: flex;
+  gap: 20rpx;
+  padding: 20rpx 32rpx env(safe-area-inset-bottom);
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(12rpx);
+  box-shadow: 0 -2rpx 20rpx rgba(139,0,21,0.10);
+  border-top: 1rpx solid var(--border-light);
+}
+.footer-btns .btn-primary {
+  color: #FFFFFF !important;
+}
+.footer-btns .btn-primary[disabled] {
+  color: rgba(255,255,255,0.6) !important;
+  opacity: 0.6;
+}
+
+/* ---- 按钮置灰状态 ---- */
+.btn-disabled {
+  flex: 1;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  font-size: 30rpx;
+  font-weight: 700;
+  background: #C0C4CC;
+  color: rgba(255,255,255,0.7) !important;
+  border: none;
+}
+
+/* ---- 输入框校验样式 ---- */
+.input-valid {
+  border-color: #67C23A !important;
+}
+.input-invalid {
+  border-color: #F56C6C !important;
+}
+.form-error {
+  display: block;
+  font-size: 22rpx;
+  color: #F56C6C;
+  margin-top: 8rpx;
+}
+
+/* ========== 会员缴费弹窗 ========== */
+.modal-mask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-content {
+  width: 620rpx;
+  max-height: 85vh;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  overflow-y: auto;
+  animation: modalFadeIn 0.25s ease;
+}
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 弹窗头部 */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx 32rpx 16rpx;
+  border-bottom: 1rpx solid var(--border-light);
+}
+.modal-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.modal-close {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: var(--text-hint);
+  border-radius: 50%;
+  background: var(--bg-page);
+}
+
+/* 弹窗主体 */
+.modal-body {
+  padding: 32rpx;
+}
+
+/* 价格展示 */
+.member-price {
+  text-align: center;
+  padding: 24rpx 0 32rpx;
+}
+.price-symbol {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #E4393D;
+  vertical-align: top;
+}
+.price-value {
+  font-size: 72rpx;
+  font-weight: 800;
+  color: #E4393D;
+  line-height: 1;
+}
+.price-unit {
+  font-size: 26rpx;
+  color: var(--text-muted);
+  margin-left: 4rpx;
+}
+.member-price-hint {
+  display: block;
+  text-align: center;
+  font-size: 24rpx;
+  color: #E4393D;
+  margin-top: -8rpx;
+  margin-bottom: 24rpx;
+}
+
+/* 会员权益 */
+.member-benefits {
+  background: #FFF8F0;
+  border-radius: var(--radius-md);
+  padding: 24rpx 28rpx;
+  margin-bottom: 28rpx;
+}
+.benefit-item {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  line-height: 2;
+}
+
+/* 支付方式 */
+.payment-methods {
+  margin-bottom: 20rpx;
+}
+.payment-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16rpx;
+}
+.payment-list {
+  display: flex;
+  gap: 16rpx;
+}
+.payment-item {
+  flex: 1;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  background: var(--bg-page);
+  transition: all 0.15s;
+}
+.payment-item.payment-selected {
+  border-color: var(--red-primary);
+  background: var(--red-pale);
+  color: var(--red-primary);
+  font-weight: 600;
+}
+
+/* 弹窗底部按钮 */
+.modal-footer {
+  padding: 16rpx 32rpx 32rpx;
+}
+.btn-block {
+  width: 100%;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  font-size: 32rpx;
+  font-weight: 700;
+}

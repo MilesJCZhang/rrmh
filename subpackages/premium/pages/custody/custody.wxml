@@ -1,0 +1,109 @@
+<!-- subpackages/premium/pages/custody/custody.wxml -->
+<view class="page">
+
+  <!-- 创建托管表单 -->
+  <view class="create-section" wx:if="{{showCreateForm}}">
+    <view class="create-header">
+      <text class="create-icon">🏦</text>
+      <view class="create-title">基金托管</view>
+      <view class="create-sub">10万元 · 合作银行第三方托管</view>
+    </view>
+
+    <view class="create-card">
+      <view class="cc-row">
+        <text class="cc-label">托管金额</text>
+        <text class="cc-value">¥100,000</text>
+      </view>
+      <view class="cc-row">
+        <text class="cc-label">服务费（结婚时扣除）</text>
+        <text class="cc-value">¥15,000</text>
+      </view>
+      <view class="cc-row">
+        <text class="cc-label">托管期限</text>
+        <view class="cc-years">
+          <input class="cc-years-input" type="number" value="{{custodyYears}}" bindinput="onYearsChange" maxlength="1" />
+          <text class="cc-years-unit">年 (3-5年)</text>
+        </view>
+      </view>
+      <view class="cc-row">
+        <text class="cc-label">到期未结婚</text>
+        <text class="cc-value cc-refund">全额退还10万</text>
+      </view>
+    </view>
+
+    <button class="btn btn-primary btn-block btn-lg" bindtap="onCreateCustody" loading="{{creating}}" disabled="{{creating}}" style="background: linear-gradient(135deg, #D4A017, #A07820);">
+      确认创建托管
+    </button>
+  </view>
+
+  <!-- 托管记录列表 -->
+  <view class="records-section">
+    <view class="section-title">托管记录</view>
+
+    <view class="custody-card" wx:for="{{custodyAccounts}}" wx:key="id">
+      <view class="cust-status-badge {{item.status}}">
+        {{item.status === 'pending' ? '待支付' : item.status === 'active' ? '托管中' : item.status === 'settled' ? '已结算' : item.status === 'refunded' ? '已退还' : item.status}}
+      </view>
+      <view class="cust-amount">
+        <text class="cust-amount-sym">¥</text>
+        <text class="cust-amount-num">{{item.amount_yuan}}</text>
+      </view>
+      <view class="cust-details">
+        <view class="cust-row">
+          <text class="cust-label">托管期限</text>
+          <text class="cust-val">{{item.custody_years}}年</text>
+        </view>
+        <view class="cust-row" wx:if="{{item.start_date}}">
+          <text class="cust-label">开始日期</text>
+          <text class="cust-val">{{item.start_date}}</text>
+        </view>
+        <view class="cust-row" wx:if="{{item.end_date}}">
+          <text class="cust-label">到期日期</text>
+          <text class="cust-val">{{item.end_date}}</text>
+        </view>
+        <view class="cust-row" wx:if="{{item.settle_type}}">
+          <text class="cust-label">结算方式</text>
+          <text class="cust-val">{{item.settle_type === 'marriage' ? '结婚结算' : '到期退还'}}</text>
+        </view>
+        <view class="cust-row" wx:if="{{item.settle_amount_yuan}}">
+          <text class="cust-label">结算金额</text>
+          <text class="cust-val">¥{{item.settle_amount_yuan}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-wrap" wx:if="{{custodyAccounts.length === 0 && !loading && !showCreateForm}}">
+      <text class="empty-icon">🏦</text>
+      <text class="empty-text">暂无托管记录</text>
+      <text class="empty-sub">完成验资和匹配后可创建基金托管</text>
+    </view>
+  </view>
+
+  <!-- 托管保障说明 -->
+  <view class="guarantee-section">
+    <view class="section-title">托管保障</view>
+    <view class="guarantee-item">
+      <text class="guarantee-icon">🏦</text>
+      <view class="guarantee-info">
+        <text class="guarantee-title">持牌银行托管</text>
+        <text class="guarantee-desc">资金存入合作银行第三方托管账户，专款专用</text>
+      </view>
+    </view>
+    <view class="guarantee-item">
+      <text class="guarantee-icon">💍</text>
+      <view class="guarantee-info">
+        <text class="guarantee-title">结婚各扣1.5万</text>
+        <text class="guarantee-desc">双方确认结婚关系后，各扣除1.5万元服务费，剩余返还</text>
+      </view>
+    </view>
+    <view class="guarantee-item">
+      <text class="guarantee-icon">💰</text>
+      <view class="guarantee-info">
+        <text class="guarantee-title">到期全额退还</text>
+        <text class="guarantee-desc">3-5年到期未结婚，10万全额返还，不收取任何费用</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

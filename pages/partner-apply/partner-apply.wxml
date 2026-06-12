@@ -1,0 +1,106 @@
+<!-- pages/partner-apply/partner-apply.wxml - 统一入驻申请页 -->
+<view class="page">
+
+  <!-- 顶部 Banner -->
+  <view class="apply-banner apply-banner--{{applyType}}">
+    <view class="ab-deco"></view>
+    <view class="ab-emoji">{{config.bannerEmoji}}</view>
+    <view class="ab-title">{{config.title}}</view>
+    <view class="ab-desc">{{config.bannerDesc}}</view>
+  </view>
+
+  <!-- 表单区域 -->
+  <view class="form-section" wx:for="{{config.fields}}" wx:key="*this" wx:for-item="field">
+    <!-- 收款账户分隔（社区服务站：在bankAccount前插入） -->
+    <block wx:if="{{applyType === 'community' && field === 'bankAccount'}}">
+      <view class="section-divider">
+        <view class="sd-line"></view>
+        <text class="sd-text">收款账户</text>
+        <view class="sd-line"></view>
+      </view>
+    </block>
+    <view class="fs-header">
+      <view class="fs-step">{{index + 1}}</view>
+      <text class="fs-title">{{config.fieldLabels[field]}}</text>
+    </view>
+    <view class="fs-body">
+      <!-- 性别选择器 -->
+      <block wx:if="{{field === 'gender'}}">
+        <picker mode="selector" range="{{genderOptions}}" value="{{genderIndex}}" bindchange="onGenderPick">
+          <view class="form-input form-picker {{formData.gender ? '' : 'placeholder'}}">
+            {{formData.gender || '请选择性别'}}
+            <text class="picker-arrow">></text>
+          </view>
+        </picker>
+      </block>
+      <!-- 机构类型单选（社区服务站专用） -->
+      <block wx:elif="{{field === 'orgType'}}">
+        <view class="form-hint">{{config.fieldHints[field] || '请选择您的单位类型'}}</view>
+        <radio-group class="org-type-group" bindchange="onOrgTypePick">
+          <label class="org-type-item" wx:for="{{orgTypeOptions}}" wx:key="*this">
+            <radio value="{{item}}" checked="{{formData.orgType === item}}" color="#C8102E" />
+            <text class="org-type-label">{{item}}</text>
+          </label>
+        </radio-group>
+      </block>
+      <!-- 长文本输入 -->
+      <block wx:elif="{{field === 'plan' || field === 'experience' || field === 'channel' || field === 'orgDescription'}}">
+        <view class="form-hint" wx:if="{{config.fieldHints[field]}}">{{config.fieldHints[field]}}</view>
+        <textarea class="form-textarea" placeholder="请填写{{config.fieldLabels[field]}}"
+          value="{{formData[field]}}" bindinput="onFormInput" data-field="{{field}}"
+          maxlength="500" auto-height="{{false}}" style="min-height:120rpx;" />
+      </block>
+      <!-- 认证资质（可选） -->
+      <block wx:elif="{{field === 'certification'}}">
+        <view class="form-hint">{{config.fieldHints[field]}}</view>
+        <textarea class="form-textarea" placeholder="请填写{{config.fieldLabels[field]}}"
+          value="{{formData[field]}}" bindinput="onFormInput" data-field="{{field}}"
+          maxlength="300" auto-height="{{false}}" style="min-height:120rpx;" />
+      </block>
+      <!-- 普通输入框 -->
+      <block wx:else>
+        <view class="form-hint" wx:if="{{config.fieldHints[field]}}">{{config.fieldHints[field]}}</view>
+        <input class="form-input"
+          type="{{field === 'phone' || field === 'age' ? 'number' : (field === 'idNumber' ? 'idcard' : 'text')}}"
+          placeholder="请输入{{config.fieldLabels[field]}}"
+          value="{{formData[field]}}" bindinput="onFormInput" data-field="{{field}}"
+          maxlength="{{field === 'phone' ? 11 : (field === 'idNumber' ? 18 : (field === 'age' ? 3 : 50))}}" />
+      </block>
+    </view>
+  </view>
+
+  <!-- 权益说明 -->
+  <view class="benefit-card benefit-card--{{applyType}}">
+    <view class="bc-title">成为{{config.title}}后</view>
+    <view class="bc-list">
+      <view class="bc-item" wx:for="{{config.benefits}}" wx:key="text">
+        <text class="bc-icon">{{item.icon}}</text>
+        <text class="bc-text">{{item.text}}</text>
+      </view>
+    </view>
+    <view class="bc-note">{{config.note}}</view>
+  </view>
+
+  <!-- 协议 + 提交 -->
+  <view class="form-bottom px-32">
+    <view class="agreement">
+      <checkbox-group bindchange="onAgreeChange">
+        <label class="agreement-label">
+          <checkbox value="agree" checked="{{agreed}}" color="#C8102E" />
+          <text class="agreement-text">我已阅读并同意</text>
+          <text class="agreement-link" bindtap="onViewAgreement" data-type="{{agreementType}}">《{{agreementName}}》</text>
+          <text class="agreement-text">和</text>
+          <text class="agreement-link" bindtap="onViewAgreement" data-type="privacy">《隐私政策》</text>
+        </label>
+      </checkbox-group>
+    </view>
+    <button class="btn btn-primary btn-block btn-lg mt-32"
+      bindtap="onSubmit"
+      disabled="{{!agreed || submitting}}"
+      loading="{{submitting}}">
+      提交{{config.title}}申请
+    </button>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

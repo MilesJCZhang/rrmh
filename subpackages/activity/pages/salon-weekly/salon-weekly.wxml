@@ -1,0 +1,198 @@
+<view class="page">
+
+  <!-- ===== 自定义导航栏 ===== -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-back" bindtap="goBack">
+      <text class="nav-arrow">‹</text>
+    </view>
+    <text class="nav-title">主题社交沙龙</text>
+    <view class="nav-placeholder"></view>
+  </view>
+
+  <!-- ===== 顶部头部区 ===== -->
+  <view class="hero-wrap" style="background: {{themeGradient}};">
+    <view class="hero-main">
+      <text class="hero-title">精品小班·同好相聚</text>
+      <text class="hero-desc">AI智能推荐志趣相投的圈友，每场仅6人，同城精品小班活动</text>
+    </view>
+    <view class="hero-stats">
+      <view class="hero-stat-item">
+        <text class="hs-num">6</text>
+        <text class="hs-unit">人</text>
+        <text class="hs-label">每场人数</text>
+      </view>
+      <view class="hero-stat-divider"></view>
+      <view class="hero-stat-item">
+        <text class="hs-num">周一至周五</text>
+        <text class="hs-label">5天</text>
+      </view>
+      <view class="hero-stat-divider"></view>
+      <view class="hero-stat-item">
+        <text class="hs-num">30</text>
+        <text class="hs-unit">对</text>
+        <text class="hs-label">每周总名额</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 场次分类 Tab ===== -->
+  <view class="session-tabs">
+    <view class="session-tab {{activeSession === 'am' ? 'active' : ''}}" bindtap="switchSession" data-session="am">
+      <view class="st-tag st-tag-am">AM</view>
+      <view class="st-body">
+        <text class="st-time">上午场 09:00-12:00</text>
+        <text class="st-desc">70后·80后 成熟专属</text>
+      </view>
+    </view>
+    <view class="session-tab {{activeSession === 'pm' ? 'active' : ''}}" bindtap="switchSession" data-session="pm">
+      <view class="st-tag st-tag-pm">PM</view>
+      <view class="st-body">
+        <text class="st-time">下午场 14:00-17:00</text>
+        <text class="st-desc">90后·00后 年轻专属</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 周切换 ===== -->
+  <view class="week-nav">
+    <view class="wn-btn" bindtap="prevWeek">
+      <text class="wn-arrow">‹</text>
+      <text class="wn-text">上一周</text>
+    </view>
+    <text class="wn-range">{{weekDateText}}</text>
+    <view class="wn-btn" bindtap="nextWeek">
+      <text class="wn-text">下一周</text>
+      <text class="wn-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ===== 近期可预约 ===== -->
+  <scroll-view class="schedule-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="section-row">
+      <view class="section-title-wrap">
+        <text class="section-title-bullet"></text>
+        <text class="section-title">近期可预约</text>
+      </view>
+      <text class="section-tip">本周报名，锁定下周名额</text>
+    </view>
+
+    <!-- 周历卡片列表 -->
+    <view class="day-card" wx:for="{{weekSchedule}}" wx:key="dayKey" wx:for-item="day" data-day-idx="{{index}}">
+      <!-- 卡片头部 -->
+      <view class="dc-header">
+        <text class="dc-day">{{day.dayLabel}}</text>
+        <text class="dc-date">{{day.dateStr}}</text>
+      </view>
+
+      <!-- Slot内容（这里模拟上下午场都有slot，但只显示当前session的） -->
+      <view class="dc-slot {{day.slot.isFull ? 'slot-full' : ''}}">
+        <!-- 左侧色块标签 -->
+        <view class="dc-badge {{activeSession === 'am' ? 'badge-am' : 'badge-pm'}}">
+          <text class="dc-badge-label">{{activeSession === 'am' ? 'AM' : 'PM'}}</text>
+          <text class="dc-badge-time">{{activeSession === 'am' ? '09:00-12:00' : '14:00-17:00'}}</text>
+        </view>
+
+        <!-- 中间名额+价格 -->
+        <view class="dc-info">
+          <view wx:if="{{!day.slot.isFull}}" class="dc-remain-text">
+            剩余 <text class="dc-remain-num">{{day.slot.remaining}}</text>/<text class="dc-remain-den">{{day.slot.maxParticipants}}</text> 人（含随行）
+          </view>
+          <view wx:else class="dc-remain-text dc-remain-full">已满员</view>
+
+          <view class="dc-price" wx:if="{{!day.slot.isFull}}">
+            <text class="dc-price-tag">优惠价</text>
+            <text class="dc-price-current">¥{{day.slot.registrationFee}}</text>
+            <text class="dc-price-unit">/人</text>
+            <text class="dc-price-original">原价¥{{day.slot.originalFee}}</text>
+          </view>
+        </view>
+
+        <!-- 右侧按钮 -->
+        <view class="dc-action">
+          <view
+            class="dc-btn {{day.slot.isFull ? 'btn-full' : (day.slot.isRegistered ? 'btn-done' : '')}}"
+            wx:if="{{!day.slot.isRegistered}}"
+            bindtap="onSlotTap"
+            data-day-idx="{{index}}"
+            data-is-full="{{day.slot.isFull}}"
+          >
+            {{day.slot.isFull ? '已满' : '立即预约'}}
+          </view>
+          <view class="dc-btn btn-done" wx:else>
+            已报名
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- ===== 预约与推荐规则 ===== -->
+    <view class="rules-card">
+      <view class="rules-header" bindtap="toggleRules">
+        <view class="rules-title-row">
+          <text class="rules-title-bullet"></text>
+          <text class="rules-title">预约与推荐规则</text>
+        </view>
+        <text class="rules-arrow {{showRules ? 'arrow-up' : ''}}">›</text>
+      </view>
+      <view class="rules-body {{showRules ? 'rules-open' : ''}}">
+        <view class="rule-item">
+          <text class="rule-num">1</text>
+          <text class="rule-text">提前一周预约：本周报名，锁定下一周沙龙名额，不接受当日报名当日参与</text>
+        </view>
+        <view class="rule-item">
+          <text class="rule-num">2</text>
+          <text class="rule-text">推荐流程：周六日启动AI推荐，优先新人再回流老用户，周一全渠道推送推荐结果</text>
+        </view>
+        <view class="rule-item">
+          <text class="rule-num">3</text>
+          <text class="rule-text">报名周期：周一至周三首轮报名，周五完成跨年龄段空位补位</text>
+        </view>
+        <view class="rule-item">
+          <text class="rule-num">4</text>
+          <text class="rule-text">连续5次未报名将暂停自动推荐，需联系客服重启</text>
+        </view>
+        <view class="rule-item">
+          <text class="rule-num">5</text>
+          <text class="rule-text">联创推荐官全程现场引荐，会员资料隐私加密，不对外公开建档</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="safe-bottom"></view>
+  </scroll-view>
+
+  <!-- ===== 预约确认弹窗 ===== -->
+  <view class="modal-mask {{showBookingModal ? 'modal-show' : ''}}" catchtap="closeModal" wx:if="{{showBookingModal}}">
+    <view class="modal-box" catchtap="preventClose">
+      <!-- 成功 -->
+      <view class="modal-success" wx:if="{{bookingStatus === 'success'}}">
+        <view class="modal-success-icon">✓</view>
+        <text class="modal-success-text">预约成功</text>
+        <text class="modal-success-sub">恭喜您已成功锁定名额！请准时参加活动</text>
+      </view>
+
+      <!-- 确认 -->
+      <view class="modal-confirm" wx:else>
+        <view class="modal-icon-area">📋</view>
+        <text class="modal-confirm-title">确认预约</text>
+        <view class="modal-info-row" wx:if="{{bookingSlot}}">
+          <text class="modal-info-label">场次</text>
+          <text class="modal-info-value">{{bookingSlot.dayLabel}} {{activeSession === 'am' ? '上午场' : '下午场'}} {{bookingSlot.dateStr}}</text>
+        </view>
+        <view class="modal-info-row">
+          <text class="modal-info-label">费用</text>
+          <text class="modal-info-value">¥{{bookingSlot.slot ? bookingSlot.slot.registrationFee : 299}}/人</text>
+        </view>
+        <view class="modal-info-row">
+          <text class="modal-info-label">人数</text>
+          <text class="modal-info-value">剩余 {{bookingSlot.slot ? bookingSlot.slot.remaining : 0}} 个名额</text>
+        </view>
+
+        <view class="modal-actions">
+          <button class="modal-btn modal-btn-cancel" bindtap="closeModal">取消</button>
+          <button class="modal-btn modal-btn-confirm" bindtap="confirmBooking">确认预约</button>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,97 @@
+<!-- pages/profile/profile.wxml -->
+<view class="page">
+
+  <!-- 头像区 -->
+  <view class="avatar-section">
+    <view class="avatar-wrap">
+      <view
+        wx:if="{{avatar}}"
+        class="avatar-circle"
+        style="background-image: url('{{avatar}}')"
+      />
+      <view wx:else class="avatar-circle avatar-placeholder">
+        <text class="avatar-icon">📷</text>
+      </view>
+
+      <!-- 透明触发层 -->
+      <button
+        class="avatar-trigger"
+        open-type="chooseAvatar"
+        bindchooseavatar="onChooseAvatar"
+      />
+
+      <!-- 相机角标 -->
+      <view class="avatar-badge">
+        <text class="avatar-badge-icon">📷</text>
+      </view>
+    </view>
+    <text class="avatar-hint">点击更换头像</text>
+  </view>
+
+  <!-- 基础信息表单 -->
+  <view class="form-group mt-24">
+    <view class="form-row">
+      <text class="form-label">昵称</text>
+      <input
+        class="form-input text-right"
+        type="nickname"
+        placeholder="点击获取微信昵称"
+        placeholder-class="placeholder"
+        value="{{form.nickname}}"
+        bindblur="onNicknameBlur"
+      />
+    </view>
+    <view class="form-row">
+      <text class="form-label">微信号</text>
+      <input
+        class="form-input text-right"
+        placeholder="请输入微信号"
+        placeholder-class="placeholder"
+        value="{{form.wechatAccount}}"
+        bindinput="onInput"
+        data-key="wechatAccount"
+      />
+    </view>
+    <view class="form-row">
+      <text class="form-label">性别</text>
+      <view class="gender-group">
+        <view class="gender-item {{form.gender === 'male' ? 'gender-active' : ''}}" bindtap="onGenderTap" data-val="male">
+          <text>👨 男</text>
+        </view>
+        <view class="gender-item {{form.gender === 'female' ? 'gender-active' : ''}}" bindtap="onGenderTap" data-val="female">
+          <text>👩 女</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 自我介绍 -->
+  <view class="intro-card">
+    <view class="intro-header">
+      <text class="intro-label">自我介绍</text>
+      <text class="intro-count">{{introCount}}/200</text>
+    </view>
+    <textarea
+      class="intro-textarea"
+      placeholder="写一段有趣的自我介绍，让更多人了解你..."
+      placeholder-class="placeholder"
+      maxlength="200"
+      value="{{form.intro}}"
+      bindinput="onInput"
+      data-key="intro"
+    />
+  </view>
+
+  <!-- 保存按钮 -->
+  <button
+    class="save-btn"
+    hover-class="save-btn-hover"
+    hover-start-time="0"
+    hover-stay-time="150"
+    bindtap="onSave"
+    disabled="{{saving}}"
+    loading="{{saving}}"
+  >{{saving ? '保存中...' : '保存'}}</button>
+
+  <view class="safe-bottom"></view>
+</view>

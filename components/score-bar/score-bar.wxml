@@ -1,0 +1,32 @@
+<view class="score-bar {{compact ? 'score-bar--compact' : ''}}" bindtap="onTapBar">
+  <!-- 总分区域 -->
+  <view class="score-bar__header">
+    <view class="score-bar__score-wrap">
+      <text class="score-bar__score">{{score}}</text>
+      <text class="score-bar__score-unit">/100分</text>
+    </view>
+    <view class="score-bar__tier" style="color: {{tierColor}}; border-color: {{tierColor}}">
+      {{tierLabel}}
+    </view>
+  </view>
+
+  <!-- 进度条 -->
+  <view class="score-bar__progress">
+    <view class="score-bar__progress-track">
+      <view class="score-bar__progress-fill" style="width: {{progressPercent}}%; background: {{tierColor}}"></view>
+    </view>
+  </view>
+
+  <!-- 维度详情 -->
+  <view class="score-bar__groups" wx:if="{{showDetail && !compact}}">
+    <view class="score-bar__group" wx:for="{{groups}}" wx:key="key">
+      <text class="score-bar__group-label">{{item.label}}</text>
+      <view class="score-bar__group-progress">
+        <view class="score-bar__group-track">
+          <view class="score-bar__group-fill" style="width: {{item.percent}}%"></view>
+        </view>
+      </view>
+      <text class="score-bar__group-score">{{item.earned}}/{{item.max}}</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,274 @@
+<!-- pages/mine/mine.wxml - 我的 -->
+<view class="page">
+  <!-- 用户信息 -->
+  <view class="user-header gradient-bg">
+    <image class="user-avatar" src="{{userInfo.avatar || '/assets/images/Logo.jpg'}}" mode="aspectFill" bindtap="onEditProfile" binderror="onAvatarError" data-field="userInfo.avatar" />
+    <view class="user-info">
+      <view class="user-name">{{userInfo.nickname || '未设置昵称'}}</view>
+      <view class="user-meta">
+        <text wx:if="{{userInfo.age}}">{{userInfo.age}}岁</text>
+        <text wx:if="{{userInfo.cityLabel}}"> · {{userInfo.cityLabel}}</text>
+        <text wx:if="{{userInfo.occupation}}"> · {{userInfo.occupation}}</text>
+      </view>
+      <!-- 开发模式：身份切换器 -->
+      <picker wx:if="{{devMode}}" class="role-switcher" range="{{roleLabels}}" value="{{currentRoleIndex}}" bindchange="onRoleChange">
+        <view class="role-switcher-inner">
+          <text class="rs-icon">🔄</text>
+          <text class="rs-label">{{currentRoleLabel}}</text>
+          <text class="rs-arrow">▾</text>
+        </view>
+      </picker>
+      <view class="user-badges">
+        <text class="badge badge-matchmaker" wx:if="{{isMatchmaker}}">{{matchmakerRoleLabel}}</text>
+        <text class="badge badge-referrer" wx:if="{{hasReferrer && referrerName && !isMatchmaker}}">推荐人：{{referrerName}}</text>
+        <text class="badge badge-verified" wx:if="{{isVerified && !isGuest}}">已实名</text>
+      </view>
+      <!-- 切换身份（多角色时显示，紧贴头像区域） -->
+      <view wx:if="{{showRoleSwitch}}" class="role-switch-inline" bindtap="onShowRoleSwitch">
+        <text class="rs-icon">🔄</text>
+        <text class="rs-label">切换身份（当前：{{currentRoleLabel}}）</text>
+        <text class="rs-arrow">›</text>
+      </view>
+    </view>
+    <view class="user-action">
+      <block wx:if="{{!isLogin}}">
+        <button class="btn-login" bindtap="onLogin">登录</button>
+      </block>
+      <block wx:elif="{{needsWechatAuth}}">
+        <view class="user-edit" bindtap="onEditProfile">完善资料 ›</view>
+      </block>
+      <block wx:else>
+        <view class="user-edit" bindtap="onEditProfile">编辑 ›</view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 快速入口：根据拥有的角色类型，独立控制"加入会员"/"成为推荐官"显隐 -->
+  <view class="quick-entry" wx:if="{{canJoinMember || canBecomeMatchmaker}}">
+    <view class="qe-card" bindtap="onJoinMember" wx:if="{{canJoinMember}}">
+      <view class="qe-icon-wrap qe-icon-vip">
+        <text class="qe-icon-text">💎</text>
+      </view>
+      <view class="qe-info">
+        <text class="qe-title">加入会员</text>
+        <text class="qe-desc">填写资料后支付0.19元完成建档（限量199个名额）</text>
+      </view>
+      <text class="qe-arrow">›</text>
+    </view>
+    <view class="qe-card" bindtap="onBecomeMatchmaker" wx:if="{{canBecomeMatchmaker}}">
+      <view class="qe-icon-wrap qe-icon-mk">
+        <text class="qe-icon-text">🌟</text>
+      </view>
+      <view class="qe-info">
+        <text class="qe-title">成为推荐官</text>
+        <text class="qe-desc">加入联创推荐官，开启收益之旅</text>
+      </view>
+      <text class="qe-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 状态提示：推荐官只显示实名认证提示；普通用户显示所有 -->
+  <view class="status-tips px-32" wx:if="{{!hasProfile || !isVerified || (!hasAvatar && !isMatchmaker) || (needsWechatAccount && isMatchmaker)}}">
+    <view class="status-tip" wx:if="{{!isGuest && !isMatchmaker && !hasProfile}}" bindtap="onGoRegister">
+      <text class="st-icon">📋</text>
+      <text class="st-text">完善建档资料，开始智能推荐</text>
+      <text class="st-arrow">›</text>
+    </view>
+    <view class="status-tip" wx:elif="{{needsWechatAccount && isMatchmaker}}" bindtap="onEditProfile">
+      <text class="st-icon">💬</text>
+      <text class="st-text">补充微信号，解锁推荐官身份</text>
+      <text class="st-arrow">›</text>
+    </view>
+    <view class="status-tip" wx:elif="{{!isVerified && isMatchmaker}}" bindtap="onGoVerify">
+      <text class="st-icon">🔒</text>
+      <text class="st-text">完成实名认证，开启提现功能</text>
+      <text class="st-arrow">›</text>
+    </view>
+    <view class="status-tip" wx:elif="{{!hasAvatar && !isMatchmaker}}" bindtap="onGoAvatar">
+      <text class="st-icon">🤖</text>
+      <text class="st-text">录入语音，生成AI画像</text>
+      <text class="st-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 菜单列表：会员/访客（登录且非推荐官即显示，兜底） -->
+  <view class="menu-list px-32 mt-24" wx:if="{{!isGuest && !isMatchmaker}}">
+    <view class="menu-group">
+      <view class="menu-item" bindtap="onGoRegister">
+        <text class="menu-icon">{{hasProfile ? '✏️' : '📋'}}</text>
+        <text class="menu-text">{{hasProfile ? '完善资料' : '会员建档'}}</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onGoVerify">
+        <text class="menu-icon">🔒</text>
+        <text class="menu-text">实名认证</text>
+        <text class="menu-tag" wx:if="{{verificationStatus === 'pending'}}">审核中</text>
+        <text class="menu-tag menu-tag-done" wx:elif="{{isVerified}}">已认证</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onGoAvatar">
+        <text class="menu-icon">🤖</text>
+        <text class="menu-text">我的AI画像</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onGoMatch">
+        <text class="menu-icon">💌</text>
+        <text class="menu-text">我的聊天记录</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onGoOrders">
+        <text class="menu-icon">📋</text>
+        <text class="menu-text">订单管理</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+
+    <view class="menu-group mt-16">
+      <view class="menu-item" bindtap="onGoMatchmaker">
+        <text class="menu-icon">💝</text>
+        <text class="menu-text">社交中心</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onGoSalon">
+        <text class="menu-icon">🎉</text>
+        <text class="menu-text">沙龙活动</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+
+    <view class="menu-group mt-16">
+      <view class="menu-item" bindtap="onGoHelp">
+        <text class="menu-icon">❓</text>
+        <text class="menu-text">帮助与反馈</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onGoAbout">
+        <text class="menu-icon">ℹ️</text>
+        <text class="menu-text">关于人人媒好</text>
+        <text class="menu-arrow">›</text>
+      </view>
+
+    </view>
+  </view>
+
+  <!-- 菜单列表：访客（未登录，可浏览社交中心/沙龙，登录后显示完整菜单） -->
+  <view class="menu-list px-32 mt-24" wx:if="{{isGuest && !isMatchmaker}}">
+    <view class="menu-group">
+      <view class="menu-item" bindtap="onGoMatch">
+        <text class="menu-icon">💌</text>
+        <text class="menu-text">社交中心</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onGoSalon">
+        <text class="menu-icon">🎉</text>
+        <text class="menu-text">沙龙活动</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+
+    <view class="menu-group mt-16">
+      <view class="menu-item" bindtap="onGoHelp">
+        <text class="menu-icon">❓</text>
+        <text class="menu-text">帮助与反馈</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onGoAbout">
+        <text class="menu-icon">ℹ️</text>
+        <text class="menu-text">关于人人媒好</text>
+        <text class="menu-arrow">›</text>
+      </view>
+
+    </view>
+  </view>
+
+  <!-- 菜单列表：工作台身份（推荐官/合伙人/服务站） -->
+  <view class="menu-list px-32 mt-24" wx:if="{{userRole === 'public_matchmaker' || userRole === 'partner_matchmaker' || userRole === 'city_franchisee' || userRole === 'professional_recommender' || userRole === 'community_station'}}">
+    <view class="menu-group">
+      <view class="menu-item" bindtap="onGoWorkbench">
+        <text class="menu-icon">📊</text>
+        <text class="menu-text">
+          {{userRole === 'city_franchisee' ? '合伙人工作台' :
+            userRole === 'professional_recommender' ? '专业推荐官平台' :
+            userRole === 'community_station' ? '服务站工作台' :
+            userRole === 'partner_matchmaker' ? '联创工作台' : '工作台'}}
+        </text>
+        <view class="menu-badge menu-badge-income" wx:if="{{pendingIncome > 0}}">¥{{pendingIncome}}待提现</view>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onGoMembers">
+        <text class="menu-icon">👥</text>
+        <text class="menu-text">我的会员</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onGoOrders">
+        <text class="menu-icon">📋</text>
+        <text class="menu-text">订单管理</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onGoQrcode">
+        <text class="menu-icon">📱</text>
+        <text class="menu-text">推广码</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+
+    <view class="menu-group mt-16">
+      <view class="menu-item" bindtap="onGoVerify">
+        <text class="menu-icon">🔒</text>
+        <text class="menu-text">实名认证</text>
+        <text class="menu-tag menu-tag-done" wx:if="{{isVerified}}">已认证</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onGoSalon">
+        <text class="menu-icon">🎉</text>
+        <text class="menu-text">沙龙活动</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+
+    <view class="menu-group mt-16">
+      <view class="menu-item" bindtap="onGoHelp">
+        <text class="menu-icon">❓</text>
+        <text class="menu-text">帮助与反馈</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onGoAbout">
+        <text class="menu-icon">ℹ️</text>
+        <text class="menu-text">关于人人媒好</text>
+        <text class="menu-arrow">›</text>
+      </view>
+
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="px-32 mt-32" wx:if="{{!isGuest}}">
+    <button class="btn btn-outline btn-block" bindtap="onLogout">退出登录</button>
+  </view>
+
+  <!-- 手动输入推荐码弹窗 -->
+  <view class="modal-mask" wx:if="{{showCodeModal}}" bindtap="onCodeCancel">
+    <view class="modal-dialog" catchtap="onCodeMaskTap">
+      <view class="modal-title">输入推荐码</view>
+      <view class="modal-desc">请输入推荐官分享的推荐码（如 LCRG001）</view>
+      <view class="modal-input-wrap">
+        <input
+          class="modal-input"
+          placeholder="请输入推荐码"
+          value="{{inputCode}}"
+          focus="{{codeInputFocus}}"
+          bindinput="onCodeInput"
+          maxlength="20"
+        />
+      </view>
+      <view class="modal-error" wx:if="{{codeError}}">{{codeError}}</view>
+      <view class="modal-btns">
+        <view class="modal-btn modal-btn-cancel" bindtap="onCodeCancel">取消</view>
+        <view class="modal-btn modal-btn-confirm" bindtap="onCodeConfirm" wx:if="{{!codeSubmitting}}">确认</view>
+        <view class="modal-btn modal-btn-confirm modal-btn-disabled" wx:else>处理中...</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

@@ -1,0 +1,274 @@
+<!-- pages/matchmaker/apply.wxml - 推荐官注册申请 -->
+<view class="page">
+
+  <!-- ====== 公益推荐官注册 ====== -->
+  <view wx:if="{{applyType === 'public'}}">
+    <!-- 顶部说明 -->
+    <view class="apply-top-banner">
+      <view class="atb-emoji">🤝</view>
+      <view class="atb-title">公益推荐官</view>
+      <view class="atb-desc">免费注册 · 提交自动通过</view>
+    </view>
+
+    <!-- Step 1: 基础身份 -->
+    <view class="form-section">
+      <view class="fs-header">
+        <view class="fs-step">1</view>
+        <text class="fs-title">基础身份信息</text>
+      </view>
+      <view class="fs-body">
+        <view class="form-group">
+          <view class="form-label">真实姓名</view>
+          <input class="form-input" type="text" placeholder="请输入真实姓名"
+            value="{{realName}}" bindinput="onNameInput" maxlength="20" />
+        </view>
+        <view class="form-group">
+          <view class="form-label">性别</view>
+          <picker mode="selector" range="{{genderOptions}}" value="{{genderIndex}}" bindchange="onGenderPick">
+            <view class="form-input form-picker {{gender ? '' : 'placeholder'}}">
+              {{gender || '请选择性别'}}
+              <text class="picker-arrow">></text>
+            </view>
+          </picker>
+        </view>
+        <view class="form-group">
+          <view class="form-label">年龄</view>
+          <input class="form-input" type="number" placeholder="请输入年龄"
+            value="{{age}}" bindinput="onAgeInput" maxlength="3" />
+        </view>
+      </view>
+    </view>
+
+    <!-- Step 2: 联系方式 -->
+    <view class="form-section">
+      <view class="fs-header">
+        <view class="fs-step">2</view>
+        <text class="fs-title">联系方式</text>
+      </view>
+      <view class="fs-body">
+        <view class="form-group">
+          <view class="form-label">手机号</view>
+          <view class="form-hint">用于收益通知、平台对接</view>
+          <input class="form-input" type="number" placeholder="请输入手机号"
+            value="{{phone}}" bindinput="onPhoneInput" maxlength="11" />
+        </view>
+      </view>
+    </view>
+
+    <!-- 协议 + 提交 -->
+    <view class="form-bottom px-32">
+      <view class="agreement">
+        <checkbox-group bindchange="onAgreeChange">
+          <label class="agreement-label">
+            <checkbox value="agree" checked="{{agreed}}" color="#C8102E" />
+            <text class="agreement-text">我已阅读并同意</text>
+            <text class="agreement-link" bindtap="onViewAgreement" data-type="matchmaker_public">《公益推荐官入驻协议》</text>
+            <text class="agreement-text">和</text>
+            <text class="agreement-link" bindtap="onViewAgreement" data-type="privacy">《隐私政策》</text>
+          </label>
+        </checkbox-group>
+      </view>
+      <button class="btn btn-primary btn-block btn-lg mt-32"
+        bindtap="onSubmit"
+        disabled="{{!agreed || submitting || !realName || !gender || !age || !phone}}"
+        loading="{{submitting}}">
+        免费申请成为公益推荐官
+      </button>
+      <view class="switch-type mt-24" bindtap="onSwitchType">
+        <text class="st-text">想获取更高收益？</text>
+        <text class="st-link">申请联创推荐官 ></text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ====== 联创推荐官注册 ====== -->
+  <view wx:if="{{applyType === 'partner'}}">
+    <!-- 顶部说明 -->
+    <view class="apply-top-banner partner-banner">
+      <view class="atb-emoji">👑</view>
+      <view class="atb-title">联创推荐官</view>
+      <view class="atb-desc">运营基金 ¥399 · 享沙龙补贴 + 全部权益</view>
+    </view>
+
+    <!-- Step 1: 基础身份信息 -->
+    <view class="form-section">
+      <view class="fs-header">
+        <view class="fs-step">1</view>
+        <text class="fs-title">基础身份信息</text>
+      </view>
+      <view class="fs-body">
+        <view class="form-group">
+          <view class="form-label">真实姓名 <text class="label-required">*</text></view>
+          <input class="form-input" type="text" placeholder="请输入真实姓名"
+            value="{{realName}}" bindinput="onNameInput" maxlength="20" />
+        </view>
+        <view class="form-group">
+          <view class="form-label">性别 <text class="label-required">*</text></view>
+          <picker mode="selector" range="{{genderOptions}}" value="{{genderIndex}}" bindchange="onGenderPick">
+            <view class="form-input form-picker {{gender ? '' : 'placeholder'}}">
+              {{gender || '请选择性别'}}
+              <text class="picker-arrow">></text>
+            </view>
+          </picker>
+        </view>
+        <view class="form-group">
+          <view class="form-label">年龄 <text class="label-required">*</text></view>
+          <input class="form-input" type="number" placeholder="请输入年龄"
+            value="{{age}}" bindinput="onAgeInput" maxlength="3" />
+        </view>
+      </view>
+    </view>
+
+    <!-- Step 2: 联系方式 -->
+    <view class="form-section">
+      <view class="fs-header">
+        <view class="fs-step">2</view>
+        <text class="fs-title">联系方式</text>
+      </view>
+      <view class="fs-body">
+        <view class="form-group">
+          <view class="form-label">手机号 <text class="label-required">*</text></view>
+          <view class="form-hint">用于客户管理、收益对接</view>
+          <input class="form-input" type="number" placeholder="请输入手机号"
+            value="{{phone}}" bindinput="onPhoneInput" maxlength="11" />
+        </view>
+        <view class="form-group">
+          <view class="form-label">常用微信号 <text class="label-tip-optional">选填</text></view>
+          <input class="form-input" type="text" placeholder="请输入微信号"
+            value="{{wechat}}" bindinput="onWechatInput" maxlength="30" />
+        </view>
+      </view>
+    </view>
+
+    <!-- Step 3: 从业资料（选填） -->
+    <view class="form-section">
+      <view class="fs-header">
+        <view class="fs-step">3</view>
+        <text class="fs-title">从业相关资料 <text class="label-tip-optional">选填</text></text>
+      </view>
+      <view class="fs-body">
+        <!-- 社交活动经验 -->
+        <view class="form-group">
+          <view class="form-label">社交活动经验 <text class="label-tip-optional">可多选</text></view>
+          <view class="form-hint">用于人工审核，请勾选符合的经历</view>
+          <view class="tag-options">
+            <view
+              class="tag-opt {{item.checked ? 'tag-opt-active' : ''}}"
+              wx:for="{{experienceTags}}"
+              wx:key="id"
+              bindtap="onToggleExpTag"
+              data-id="{{item.id}}"
+            >{{item.label}}</view>
+          </view>
+          <textarea class="form-textarea mt-16" placeholder="其他经历补充说明（选填）"
+            value="{{experienceExtra}}" bindinput="onExperienceExtraInput" maxlength="300"
+            auto-height="{{false}}" style="min-height:100rpx;" />
+        </view>
+        <!-- 推广渠道说明 -->
+        <view class="form-group">
+          <view class="form-label">推广渠道说明 <text class="label-tip-optional">可多选</text></view>
+          <view class="form-hint">您计划如何推广会员？请勾选适合您的渠道</view>
+          <view class="tag-options">
+            <view
+              class="tag-opt {{item.checked ? 'tag-opt-active' : ''}}"
+              wx:for="{{channelTags}}"
+              wx:key="id"
+              bindtap="onToggleChannelTag"
+              data-id="{{item.id}}"
+            >{{item.label}}</view>
+          </view>
+          <textarea class="form-textarea mt-16" placeholder="其他渠道补充说明（选填）"
+            value="{{channelExtra}}" bindinput="onChannelExtraInput" maxlength="300"
+            auto-height="{{false}}" style="min-height:80rpx;" />
+        </view>
+      </view>
+    </view>
+
+    <!-- Step 4: 收款账户（选填，注册后可补充） -->
+    <view class="form-section">
+      <view class="fs-header">
+        <view class="fs-step">4</view>
+        <text class="fs-title">收款账户信息 <text class="label-tip-optional">选填</text></text>
+      </view>
+      <view class="fs-body">
+        <view class="verify-notice">
+          <view class="vn-icon">🏦</view>
+          <view class="vn-text">
+            <text class="vn-title">收款账户需与实名认证信息一致</text>
+            <text class="vn-desc">提现时联创推荐官扣除13%平台服务费</text>
+          </view>
+        </view>
+        <view class="form-group mt-24">
+          <view class="form-label">收款方式</view>
+          <picker mode="selector" range="{{payTypeOptions}}" value="{{payTypeIndex}}" bindchange="onPayTypePick">
+            <view class="form-input form-picker {{payType ? '' : 'placeholder'}}">
+              {{payType || '请选择收款方式'}}
+              <text class="picker-arrow">></text>
+            </view>
+          </picker>
+        </view>
+        <view class="form-group" wx:if="{{payType}}">
+          <view class="form-label">{{payType === '微信零钱' ? '微信收款账号' : '银行卡号'}}</view>
+          <input class="form-input" type="text" placeholder="{{payType === '微信零钱' ? '请输入微信绑定手机号或微信号' : '请输入银行卡号'}}"
+            value="{{bankAccount}}" bindinput="onBankAccountInput" maxlength="30" />
+        </view>
+        <view class="form-group" wx:if="{{payType === '银行卡'}}">
+          <view class="form-label">开户银行</view>
+          <input class="form-input" type="text" placeholder="如：中国工商银行"
+            value="{{bankName}}" bindinput="onBankNameInput" maxlength="30" />
+        </view>
+      </view>
+    </view>
+
+    <!-- 联创推荐官权益说明 -->
+    <view class="benefit-card partner-benefit">
+      <view class="bc-title">联创推荐官专属权益</view>
+      <view class="bc-list">
+        <view class="bc-item">
+          <text class="bc-icon">✅</text>
+          <text class="bc-text">公益推荐官全部权益</text>
+        </view>
+        <view class="bc-item">
+          <text class="bc-icon">🎉</text>
+          <text class="bc-text">名下会员沙龙补贴 <text class="bc-amount">¥99/人</text></text>
+        </view>
+        <view class="bc-item">
+          <text class="bc-icon">👥</text>
+          <text class="bc-text">发展公益推荐官团队</text>
+        </view>
+        <view class="bc-item">
+          <text class="bc-icon">📊</text>
+          <text class="bc-text">更高收益权限</text>
+        </view>
+      </view>
+      <view class="bc-note">提现扣除13%平台服务费 · 联创基金¥399</view>
+    </view>
+
+    <!-- 协议 + 提交 -->
+    <view class="form-bottom px-32">
+      <view class="agreement">
+        <checkbox-group bindchange="onAgreeChange">
+          <label class="agreement-label">
+            <checkbox value="agree" checked="{{agreed}}" color="#C8102E" />
+            <text class="agreement-text">我已阅读并同意</text>
+            <text class="agreement-link" bindtap="onViewAgreement" data-type="matchmaker_partner">《联创推荐官入驻协议》</text>
+            <text class="agreement-text">和</text>
+            <text class="agreement-link" bindtap="onViewAgreement" data-type="privacy">《隐私政策》</text>
+          </label>
+        </checkbox-group>
+      </view>
+      <button class="btn btn-primary btn-block btn-lg mt-32"
+        bindtap="onSubmit"
+        disabled="{{!agreed || submitting}}"
+        loading="{{submitting}}">
+        提交申请并支付 ¥399 运营基金
+      </button>
+      <view class="switch-type mt-24" bindtap="onSwitchType">
+        <text class="st-text">只想免费试试？</text>
+        <text class="st-link">申请公益推荐官 ></text>
+      </view>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

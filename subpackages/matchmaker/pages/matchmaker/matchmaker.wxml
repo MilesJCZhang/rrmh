@@ -1,0 +1,347 @@
+<!-- pages/matchmaker/matchmaker.wxml - 社交中心 -->
+<view class="page">
+
+  <!-- ========== 状态1：未绑定推荐人 → 申请成为推荐官 / 绑定推荐人 ========== -->
+  <view wx:if="{{!hasReferrer && !isMatchmaker}}">
+    <view class="bind-hero gradient-bg">
+      <text class="bind-emoji">👩‍💼</text>
+      <view class="bind-title">成为推荐官 / 绑定推荐人</view>
+      <view class="bind-desc">推荐会员赚取积分，或绑定推荐人享受专业社交服务</view>
+    </view>
+
+    <!-- 两个主要入口 -->
+    <view class="dual-entry px-32 mt-32">
+      <view class="de-card de-card--apply" bindtap="onApplyMatchmaker">
+        <view class="de-emoji">💝</view>
+        <view class="de-title">申请成为推荐官</view>
+        <view class="de-desc">免费申请公益推荐官，推荐会员赚积分</view>
+        <view class="de-tags">
+          <text class="de-tag">免费申请</text>
+          <text class="de-tag">赚取积分</text>
+        </view>
+        <view class="de-arrow">></view>
+      </view>
+
+      <view class="de-card de-card--bind" bindtap="onGoBindReferrer">
+        <view class="de-emoji">🎯</view>
+        <view class="de-title">绑定推荐人</view>
+        <view class="de-desc">找推荐码，享受精准推荐服务</view>
+        <view class="de-tags">
+          <text class="de-tag">精准推荐</text>
+          <text class="de-tag">全程跟进</text>
+        </view>
+        <view class="de-arrow">></view>
+      </view>
+    </view>
+
+    <!-- 推荐官优势介绍 -->
+    <view class="bind-tips px-32 mt-32">
+      <view class="section-title">为什么选择人人媒好推荐官？</view>
+      <view class="tip-list">
+        <view class="tip-item">
+          <text class="tip-icon">🔒</text>
+          <view class="tip-body">
+            <text class="tip-title">身份审核把关</text>
+            <text class="tip-desc">推荐官会审核每位会员的真实身份，确保信息真实可靠</text>
+          </view>
+        </view>
+        <view class="tip-item">
+          <text class="tip-icon">🎯</text>
+          <view class="tip-body">
+            <text class="tip-title">精准社交推荐</text>
+            <text class="tip-desc">推荐官根据您的条件进行人工筛选，推荐最合适的圈友</text>
+          </view>
+        </view>
+        <view class="tip-item">
+          <text class="tip-icon">🤝</text>
+          <view class="tip-body">
+            <text class="tip-title">全程贴心跟进</text>
+            <text class="tip-desc">从推荐到见面全程跟踪指导，提升结识成功率</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="bind-contact px-32 mt-24">
+      <view class="contact-tip">
+        <text class="contact-tip-text">没有推荐码？点击联系客服获取</text>
+      </view>
+      <button
+        class="btn btn-outline btn-block mt-16"
+        open-type="contact"
+        session-from="matchmaker-no-code"
+      >💬 联系客服获取推荐码</button>
+    </view>
+  </view>
+
+  <!-- ========== 状态2：已绑定推荐人（非推荐官身份）→ 推荐人介绍 + 其他推荐官 ========== -->
+  <view wx:elif="{{hasReferrer && !isMatchmaker && myMatchmaker}}">
+    <!-- 我的推荐人介绍 -->
+    <view class="my-mk-hero gradient-bg">
+      <view class="mk-avatar-wrap">
+        <image class="mk-avatar" src="{{myMatchmaker.avatar || '/assets/images/Logo.jpg'}}" mode="aspectFill" binderror="onAvatarError" data-field="myMatchmaker.avatar" />
+        <view class="mk-badge">{{myMatchmaker.roleLabel}}</view>
+      </view>
+      <view class="mk-name">{{myMatchmaker.name}}</view>
+      <view class="mk-stats">
+        <view class="mks-item">
+          <text class="mks-num">{{myMatchmaker.members}}</text>
+          <text class="mks-label">服务会员</text>
+        </view>
+        <view class="mks-divider"></view>
+        <view class="mks-item">
+          <text class="mks-num">{{myMatchmaker.rating}}</text>
+          <text class="mks-label">好评评分</text>
+        </view>
+      </view>
+      <view class="mk-desc">{{myMatchmaker.desc}}</view>
+    </view>
+
+    <!-- 联系我的推荐人 -->
+    <view class="px-32 mt-24">
+      <button class="btn btn-primary btn-block btn-lg" open-type="contact" session-from="matchmaker-contact">💬 联系我的推荐人</button>
+    </view>
+
+    <!-- 其他推荐官推荐 -->
+    <view class="other-mk-section mt-32 px-32">
+      <view class="section-title">更多优秀推荐官</view>
+      <view class="section-subtitle">为您精选平台认证推荐官</view>
+
+      <view class="mk-list">
+        <view class="mk-card" wx:for="{{otherMatchmakers}}" wx:key="id" data-id="{{item.id}}" bindtap="onTapMatchmaker">
+          <view class="mkc-top">
+            <image class="mkc-avatar" src="{{item.avatar || '/assets/images/Logo.jpg'}}" mode="aspectFill" binderror="onListAvatarError" data-index="{{index}}" />
+            <view class="mkc-info">
+              <view class="mkc-name">{{item.name}}</view>
+              <view class="mkc-role {{item.role === 'partner_matchmaker' ? 'mkc-role-partner' : ''}}">{{item.roleLabel}}</view>
+            </view>
+            <view class="mkc-stats">
+              <text class="mkc-num">{{item.members}}人</text>
+            </view>
+          </view>
+          <view class="mkc-desc">{{item.desc}}</view>
+          <view class="mkc-bottom">
+            <view class="mkc-rating">
+              <text class="mkc-star">★</text>
+              <text>{{item.rating}}</text>
+            </view>
+            <view class="mkc-action">了解详情 ›</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ========== 状态3：已是推荐官 → 工作台 ========== -->
+  <!-- 包含：公益推荐官、联创推荐官、专业推荐官、社区服务站 -->
+  <view wx:elif="{{isMatchmaker || currentRole === 'community_station'}}">
+    <!-- 收益概览 -->
+    <view class="income-overview gradient-bg">
+      <view class="ov-avatar-wrap">
+        <image class="ov-avatar" src="{{matchmakerAvatar || '/assets/images/Logo.jpg'}}" mode="aspectFill" binderror="onAvatarError" data-field="matchmakerAvatar" />
+      </view>
+      <view class="ov-name">{{matchmakerName}}</view>
+      <view class="ov-role-badge">
+        <text>{{roleLabel}}</text>
+      </view>
+
+      <view class="ov-income-card">
+        <text class="ov-income-label">本月收益（元）</text>
+        <text class="ov-income-amount">¥{{monthIncome}}</text>
+      </view>
+
+      <view class="overview-stats">
+        <view class="os-item">
+          <text class="os-num">{{totalMembers}}</text>
+          <text class="os-label">服务会员</text>
+        </view>
+        <view class="os-divider"></view>
+        <view class="os-item">
+          <text class="os-num">¥{{totalIncome}}</text>
+          <text class="os-label">累计收益</text>
+        </view>
+        <view class="os-divider"></view>
+        <view class="os-item">
+          <text class="os-num os-num-highlight">¥{{availableIncome}}</text>
+          <text class="os-label">可提现</text>
+        </view>
+      </view>
+
+      <!-- 身份升级入口 -->
+      <view class="upgrade-entries" wx:if="{{upgradeOptions.length > 0}}">
+        <view class="ue-title">身份升级</view>
+        <view class="ue-list">
+          <view class="ue-item" wx:for="{{upgradeOptions}}" wx:key="role" bindtap="onUpgradeRole" data-role="{{item.role}}" data-fee="{{item.fee}}">
+            <view class="ue-left">
+              <text class="ue-icon">{{item.icon}}</text>
+              <view class="ue-info">
+                <text class="ue-name">{{item.name}}</text>
+                <text class="ue-desc">{{item.desc}}</text>
+              </view>
+            </view>
+            <view class="ue-action">
+              <text class="ue-fee" wx:if="{{item.fee > 0}}">¥{{item.fee}}</text>
+              <text class="ue-fee ue-fee-free" wx:else>免费</text>
+              <text class="ue-arrow">></text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- ========== 业务统计看板 ========== -->
+    <view class="stats-section px-32 mt-24">
+      <view class="stats-title">📊 业绩数据统计</view>
+      <view class="stats-grid">
+
+        <!-- 会员建档统计 -->
+        <view class="stat-card" bindtap="onViewMembers">
+          <view class="stat-icon">💑</view>
+          <view class="stat-body">
+            <text class="stat-num">{{memberStats.count}}</text>
+            <text class="stat-lbl">会员建档</text>
+          </view>
+          <view class="stat-income-wrap">
+            <text class="stat-income">+¥{{memberStats.income}}</text>
+            <text class="stat-income-lbl">¥99/人</text>
+          </view>
+        </view>
+
+        <!-- 推荐联创统计（联创推荐官专属） -->
+        <view class="stat-card" wx:if="{{isPartner}}" bindtap="onViewEarnings">
+          <view class="stat-icon">👑</view>
+          <view class="stat-body">
+            <text class="stat-num">{{partnerStats.count}}</text>
+            <text class="stat-lbl">推荐联创</text>
+          </view>
+          <view class="stat-income-wrap">
+            <text class="stat-income">+¥{{partnerStats.income}}</text>
+            <text class="stat-income-lbl">¥399/人②</text>
+          </view>
+        </view>
+
+        <!-- 沙龙补贴统计（联创推荐官专属） -->
+        <view class="stat-card stat-card-highlight" wx:if="{{isPartner}}" bindtap="onViewEarnings">
+          <view class="stat-icon">🎉</view>
+          <view class="stat-body">
+            <text class="stat-num">{{salonStats.count}}</text>
+            <text class="stat-lbl">沙龙补贴</text>
+          </view>
+          <view class="stat-income-wrap">
+            <text class="stat-income">+¥{{salonStats.income}}</text>
+            <text class="stat-income-lbl">¥99/次</text>
+          </view>
+        </view>
+
+      </view>
+
+      <!-- 联创推荐官收益说明 -->
+      <view class="notice-box mt-24" wx:if="{{isPartner}}">
+        <text class="notice-title">💡 联创推荐官收益说明</text>
+        <view class="notice-list">
+          <text class="notice-item">• 推荐会员建档：¥99/人（永久）</text>
+          <text class="notice-item">• 推荐联创推荐官②：¥399/人（第1个无，第2个起）</text>
+          <text class="notice-item">• 沙龙补贴：名下会员每次参加沙龙 ¥99/次（永久）</text>
+          <text class="notice-item">• 提现扣除13%平台服务费</text>
+        </view>
+      </view>
+
+      <!-- 公益推荐官收益说明 -->
+      <view class="notice-box mt-24" wx:if="{{!isPartner && isMatchmaker}}">
+        <text class="notice-title">💡 公益推荐官收益说明</text>
+        <view class="notice-list">
+          <text class="notice-item">• 推荐会员建档：¥99/人（永久）</text>
+          <text class="notice-item">• 升级联创推荐官享沙龙补贴权益（¥99/次）</text>
+          <text class="notice-item">• 提现扣除13%平台服务费</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Tab 切换 -->
+    <view class="tab-bar px-32 mt-24">
+      <view class="tab-item {{currentTab === 'overview' ? 'tab-active' : ''}}" bindtap="onSwitchTab" data-tab="overview">概览</view>
+      <view class="tab-item {{currentTab === 'earnings' ? 'tab-active' : ''}}" bindtap="onSwitchTab" data-tab="earnings">收益明细</view>
+      <view class="tab-item {{currentTab === 'members' ? 'tab-active' : ''}}" bindtap="onSwitchTab" data-tab="members">我的会员</view>
+    </view>
+
+    <!-- 概览面板 -->
+    <view class="section px-32 mt-16" wx:if="{{currentTab === 'overview'}}">
+      <view class="quick-actions">
+        <view class="qa-item" bindtap="onViewQrcode">
+          <text class="qa-icon">📱</text>
+          <text class="qa-text">推广码</text>
+        </view>
+        <view class="qa-item" bindtap="onWithdraw">
+          <text class="qa-icon">💰</text>
+          <text class="qa-text">提现</text>
+        </view>
+        <view class="qa-item" bindtap="onViewEarnings">
+          <text class="qa-icon">📊</text>
+          <text class="qa-text">收益</text>
+        </view>
+        <view class="qa-item" bindtap="onViewMembers">
+          <text class="qa-icon">👥</text>
+          <text class="qa-text">会员</text>
+        </view>
+      </view>
+      <view class="section-subtitle mt-24">最近收益</view>
+      <view class="earnings-list" wx:if="{{recentEarnings.length > 0}}">
+        <view class="earning-item" wx:for="{{recentEarnings}}" wx:key="id">
+          <view class="ei-left">
+            <text class="ei-type-icon">{{item.typeIcon}}</text>
+            <view class="ei-info">
+              <text class="ei-desc">{{item.typeName}}</text>
+              <text class="ei-time">{{item.time}}</text>
+            </view>
+          </view>
+          <text class="ei-amount">+¥{{item.amount}}</text>
+        </view>
+      </view>
+      <view class="empty-wrap" wx:else>
+        <text class="empty-icon">💰</text>
+        <text class="empty-text">暂无收益</text>
+        <text class="empty-sub">分享推广码，开始赚取佣金</text>
+      </view>
+    </view>
+
+    <!-- 收益明细面板 -->
+    <view class="section px-32 mt-16" wx:if="{{currentTab === 'earnings'}}">
+      <view class="earnings-list" wx:if="{{recentEarnings.length > 0}}">
+        <view class="earning-item" wx:for="{{recentEarnings}}" wx:key="id">
+          <view class="ei-left">
+            <text class="ei-type-icon">{{item.typeIcon}}</text>
+            <view class="ei-info">
+              <text class="ei-desc">{{item.typeName}}</text>
+              <text class="ei-time">{{item.time}}</text>
+            </view>
+          </view>
+          <text class="ei-amount">+¥{{item.amount}}</text>
+        </view>
+      </view>
+      <view class="empty-wrap mt-32" wx:else>
+        <text class="empty-icon">📊</text>
+        <text class="empty-text">暂无收益记录</text>
+      </view>
+    </view>
+
+    <!-- 会员列表面板 -->
+    <view class="section px-32 mt-16" wx:if="{{currentTab === 'members'}}">
+      <view class="members-list" wx:if="{{recentMembers.length > 0}}">
+        <view class="member-item" wx:for="{{recentMembers}}" wx:key="id">
+          <image class="member-avatar" src="{{item.avatar}}" mode="aspectFill" binderror="onListAvatarError" data-index="{{index}}" />
+          <view class="member-info">
+            <text class="member-name">{{item.nickname}}</text>
+            <text class="member-status">{{item.statusText}}</text>
+          </view>
+          <text class="member-time">{{item.joinTime}}</text>
+        </view>
+      </view>
+      <view class="empty-wrap mt-32" wx:else>
+        <text class="empty-icon">👥</text>
+        <text class="empty-text">暂无推荐会员</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

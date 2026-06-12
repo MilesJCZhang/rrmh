@@ -1,0 +1,415 @@
+<!-- pages/register/register.wxml - 单身会员建档 (5步任意跳转，全选填，免费) -->
+<view class="page">
+
+  <!-- 5步Tab导航 -->
+  <view class="tab-nav">
+    <view class="tab-item {{activeTab === item.key ? 'tab-active' : ''}}"
+      wx:for="{{steps}}" wx:key="key"
+      bindtap="onTabTap" data-tab="{{item.key}}">
+      <text class="tab-dot">{{item.key + 1}}</text>
+      <text class="tab-label">{{item.label}}</text>
+    </view>
+  </view>
+
+  <!-- 评分进度条 -->
+  <view class="score-section">
+    <score-bar score="{{scoreInfo.totalScore}}" tier="{{scoreInfo.tier}}" groupScores="{{scoreInfo.groupScores}}" showDetail="{{false}}" />
+    <view class="score-hint">全部字段选填，评分越高，匹配越精准，推荐优先级越高</view>
+  </view>
+
+  <!-- Step 0: 基础信息 -->
+  <view class="step-content" wx:if="{{activeTab === 0}}">
+    <view class="card">
+      <view class="section-title">基础信息</view>
+
+      <!-- 推荐码（选填） -->
+      <view class="form-item" wx:if="{{!form.existingReferrer}}">
+        <text class="form-label">推荐码 <text class="form-hint">（选填，推荐官分享的推荐码）</text></text>
+        <view style="display:flex;align-items:center;gap:12rpx;">
+          <input class="form-input" style="flex:1;" placeholder="选填，如 LCRG001" value="{{form.referralCode}}" bindinput="onInput" data-key="referralCode" maxlength="20" />
+          <view class="scan-btn" bindtap="onScanReferralCode" hover-class="hover-scale">
+            <text style="font-size:32rpx;">📷</text>
+            <text style="font-size:22rpx;color:#576b95;">扫码</text>
+          </view>
+        </view>
+      </view>
+      <view class="form-item" wx:else>
+        <text class="form-label">推荐码</text>
+        <view class="form-input" style="color:#999;display:flex;align-items:center;">
+          <text>✅ 已通过 {{form.referrerName}} 的推荐码进入</text>
+        </view>
+      </view>
+
+      <!-- 头像 -->
+      <view class="avatar-upload" bindtap="onAvatarUpload" hover-class="hover-opacity">
+        <image wx:if="{{form.avatar}}" src="{{form.avatar}}" class="avatar-img" mode="aspectFill" />
+        <view wx:else class="avatar-placeholder">
+          <text class="avatar-icon">📷</text>
+          <text class="avatar-text">上传照片</text>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">昵称 <text class="score-badge">+5分</text></text>
+        <input class="form-input" placeholder="选填" value="{{form.nickname}}" bindinput="onInput" data-key="nickname" maxlength="10" />
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">性别 <text class="score-badge">+3分</text></text>
+        <view class="radio-group">
+          <view class="radio-item {{form.gender === 'male' ? 'checked' : ''}}" hover-class="hover-scale" bindtap="onSelect" data-key="gender" data-val="male">
+            <text>👨 男</text>
+          </view>
+          <view class="radio-item {{form.gender === 'female' ? 'checked' : ''}}" hover-class="hover-scale" bindtap="onSelect" data-key="gender" data-val="female">
+            <text>👩 女</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">出生年份 <text class="score-badge">+3分</text></text>
+        <picker mode="date" fields="year" value="{{form.birthYear}}" start="1950" end="2005" bindchange="onBirthYearChange">
+          <view class="form-input picker-input">
+            <text>{{form.birthYear || '选填'}}</text>
+            <text class="picker-arrow">›</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">所在城市 <text class="score-badge">+3分</text></text>
+        <picker mode="region" value="{{form.city}}" bindchange="onCityChange">
+          <view class="form-input picker-input">
+            <text>{{form.cityLabel || '选填'}}</text>
+            <text class="picker-arrow">›</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">手机号码 <text class="score-badge">+3分</text></text>
+        <input class="form-input {{phoneValid ? 'input-valid' : (form.phone ? 'input-invalid' : '')}}" type="number" placeholder="必填，用于解锁会员" value="{{form.phone}}" bindinput="onPhoneInput" maxlength="11" />
+        <text wx:if="{{form.phone && !phoneValid}}" class="form-error">手机号格式不正确</text>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">微信号 <text class="score-badge">+3分</text></text>
+        <input class="form-input" placeholder="选填" value="{{form.wechatAccount}}" bindinput="onInput" data-key="wechatAccount" maxlength="20" />
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">学历 <text class="score-badge">+4分</text></text>
+        <view class="select-group">
+          <view class="select-item {{item.checked ? 'checked' : ''}}" wx:for="{{educationOptions}}" wx:key="val" hover-class="hover-scale" bindtap="onSelect" data-key="education" data-val="{{item.val}}">{{item.label}}</view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">婚姻状态 <text class="score-badge">+3分</text></text>
+        <view class="select-group">
+          <view class="select-item {{item.checked ? 'checked' : ''}}" wx:for="{{maritalOptions}}" wx:key="val" hover-class="hover-scale" bindtap="onSelect" data-key="maritalStatus" data-val="{{item.val}}">{{item.label}}</view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">自我介绍 <text class="score-badge">+5分</text></text>
+        <textarea class="form-textarea" placeholder="选填，简单介绍一下自己" value="{{form.intro}}" bindinput="onInput" data-key="intro" maxlength="200" />
+        <text class="word-count">{{form.intro.length || 0}}/200</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Step 1: 职业收入 -->
+  <view class="step-content" wx:if="{{activeTab === 1}}">
+    <view class="card">
+      <view class="section-title">职业收入</view>
+
+      <view class="form-item">
+        <text class="form-label">职业 <text class="score-badge">+5分</text></text>
+        <input class="form-input" placeholder="选填，如：工程师、教师…" value="{{form.occupation}}" bindinput="onInput" data-key="occupation" />
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">月收入 <text class="score-badge">+5分</text></text>
+        <view class="select-group">
+          <view class="select-item {{item.checked ? 'checked' : ''}}" wx:for="{{incomeOptions}}" wx:key="val" hover-class="hover-scale" bindtap="onSelect" data-key="income" data-val="{{item.val}}">{{item.label}}</view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">是否拥有自有住房 <text class="score-badge">+3分</text></text>
+        <view class="radio-group">
+          <view class="radio-item {{form.hasProperty === 'yes' ? 'checked' : ''}}" hover-class="hover-scale" bindtap="onSelect" data-key="hasProperty" data-val="yes"><text>有</text></view>
+          <view class="radio-item {{form.hasProperty === 'no' ? 'checked' : ''}}" hover-class="hover-scale" bindtap="onSelect" data-key="hasProperty" data-val="no"><text>无</text></view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">是否有私家车 <text class="score-badge">+2分</text></text>
+        <view class="radio-group">
+          <view class="radio-item {{form.hasCar === 'yes' ? 'checked' : ''}}" hover-class="hover-scale" bindtap="onSelect" data-key="hasCar" data-val="yes"><text>有</text></view>
+          <view class="radio-item {{form.hasCar === 'no' ? 'checked' : ''}}" hover-class="hover-scale" bindtap="onSelect" data-key="hasCar" data-val="no"><text>无</text></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Step 2: 兴趣偏好 + 择偶需求 -->
+  <view class="step-content" wx:if="{{activeTab === 2}}">
+    <view class="card">
+      <view class="section-title">兴趣爱好 <text class="section-score">最高15分</text></view>
+
+      <view class="form-item">
+        <text class="form-label">健康标签 <text class="score-badge">+5分</text></text>
+        <view class="hint-text">选择适合您的标签</view>
+        <view class="tag-group">
+          <view class="tag-item {{item.checked ? 'tag-active' : ''}}" wx:for="{{healthTagCheckList}}" wx:key="val" hover-class="hover-scale" bindtap="onTagToggle" data-key="healthTags" data-val="{{item.val}}">{{item.label}}</view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">作息时间 <text class="score-badge">+3分</text></text>
+        <view class="select-group">
+          <view class="select-item {{item.checked ? 'checked' : ''}}" wx:for="{{sleepHabitOptions}}" wx:key="val" hover-class="hover-scale" bindtap="onSelect" data-key="sleepHabit" data-val="{{item.val}}">{{item.label}}</view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">运动习惯 <text class="score-badge">+3分</text></text>
+        <view class="select-group">
+          <view class="select-item {{item.checked ? 'checked' : ''}}" wx:for="{{sportHabitOptions}}" wx:key="val" hover-class="hover-scale" bindtap="onSelect" data-key="sportHabit" data-val="{{item.val}}">{{item.label}}</view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">饮食偏好 <text class="score-badge">+2分</text></text>
+        <view class="tag-group">
+          <view class="tag-item {{item.checked ? 'tag-active' : ''}}" wx:for="{{dietTagCheckList}}" wx:key="val" hover-class="hover-scale" bindtap="onTagToggle" data-key="dietTags" data-val="{{item.val}}">{{item.label}}</view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">抽烟 <text class="score-badge">+1分</text></text>
+        <view class="select-group">
+          <view class="select-item {{form.smoking === 'no' ? 'checked' : ''}}" hover-class="hover-scale" bindtap="onSelect" data-key="smoking" data-val="no">不抽烟</view>
+          <view class="select-item {{form.smoking === 'occasionally' ? 'checked' : ''}}" hover-class="hover-scale" bindtap="onSelect" data-key="smoking" data-val="occasionally">偶尔</view>
+          <view class="select-item {{form.smoking === 'yes' ? 'checked' : ''}}" hover-class="hover-scale" bindtap="onSelect" data-key="smoking" data-val="yes">抽烟</view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">饮酒 <text class="score-badge">+1分</text></text>
+        <view class="select-group">
+          <view class="select-item {{form.drinking === 'no' ? 'checked' : ''}}" hover-class="hover-scale" bindtap="onSelect" data-key="drinking" data-val="no">不喝酒</view>
+          <view class="select-item {{form.drinking === 'occasionally' ? 'checked' : ''}}" hover-class="hover-scale" bindtap="onSelect" data-key="drinking" data-val="occasionally">偶尔</view>
+          <view class="select-item {{form.drinking === 'yes' ? 'checked' : ''}}" hover-class="hover-scale" bindtap="onSelect" data-key="drinking" data-val="yes">经常</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">择偶需求 <text class="section-score">最高10分</text></view>
+
+      <view class="form-item">
+        <text class="form-label">期望对方年龄 <text class="score-badge">+3分</text></text>
+        <view class="range-picker">
+          <input class="range-input" type="number" placeholder="最小" value="{{form.expectAgeMin}}" bindinput="onInput" data-key="expectAgeMin" />
+          <text class="range-to">至</text>
+          <input class="range-input" type="number" placeholder="最大" value="{{form.expectAgeMax}}" bindinput="onInput" data-key="expectAgeMax" />
+          <text class="range-unit">岁</text>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">期望对方学历 <text class="score-badge">+2分</text></text>
+        <view class="select-group">
+          <view class="select-item {{item.checked ? 'checked' : ''}}" wx:for="{{expectEducationOptions}}" wx:key="val" hover-class="hover-scale" bindtap="onSelect" data-key="expectEducation" data-val="{{item.val}}">{{item.label}}</view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">期望对方收入 <text class="score-badge">+2分</text></text>
+        <view class="select-group">
+          <view class="select-item {{item.checked ? 'checked' : ''}}" wx:for="{{expectIncomeOptions}}" wx:key="val" hover-class="hover-scale" bindtap="onSelect" data-key="expectIncome" data-val="{{item.val}}">{{item.label}}</view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">感情态度 <text class="score-badge">+3分</text></text>
+        <view class="select-group">
+          <view class="select-item {{item.checked ? 'checked' : ''}}" wx:for="{{marriageExpectOptions}}" wx:key="val" hover-class="hover-scale" bindtap="onSelect" data-key="marriageExpect" data-val="{{item.val}}">{{item.label}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Step 3: 认证资料 -->
+  <view class="step-content" wx:if="{{activeTab === 3}}">
+    <view class="card">
+      <view class="section-title">认证资料 <text class="section-score">最高12分</text></view>
+      <view class="hint-text">认证信息经审核后计入评分，提升匹配可信度</view>
+
+      <view class="form-item">
+        <text class="form-label">身份证正面 <text class="score-badge">+5分</text></text>
+        <view class="upload-area">
+          <view class="upload-box" bindtap="onUploadIdCard" data-side="front" hover-class="hover-opacity">
+            <image wx:if="{{form.idCardFrontImage}}" src="{{form.idCardFrontImage}}" class="upload-preview" mode="aspectFill" />
+            <view wx:else class="upload-placeholder">
+              <text class="upload-icon">📷</text>
+              <text class="upload-text">上传正面</text>
+            </view>
+          </view>
+          <view class="upload-box" bindtap="onUploadIdCard" data-side="back" hover-class="hover-opacity">
+            <image wx:if="{{form.idCardBackImage}}" src="{{form.idCardBackImage}}" class="upload-preview" mode="aspectFill" />
+            <view wx:else class="upload-placeholder">
+              <text class="upload-icon">📷</text>
+              <text class="upload-text">上传反面</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">人脸认证 <text class="score-badge">+7分</text></text>
+        <view class="hint-text">人脸认证需审核通过后计分</view>
+        <view class="face-auth-status">
+          <text wx:if="{{form.faceAuthStatus === 'approved'}}" style="color:#52c41a;">✅ 已通过认证</text>
+          <text wx:elif="{{form.faceAuthStatus === 'pending'}}" style="color:#faad14;">⏳ 审核中</text>
+          <text wx:else style="color:#999;">未认证</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Step 4: 资产证明 -->
+  <view class="step-content" wx:if="{{activeTab === 4}}">
+    <view class="card">
+      <view class="section-title">资产证明 <text class="section-score">最高8分</text></view>
+      <view class="hint-text">资产证明经审核后计入评分，提升匹配可信度</view>
+
+      <view class="form-item">
+        <text class="form-label">房产证明 <text class="score-badge">+3分</text></text>
+        <view class="upload-area">
+          <view class="upload-box" bindtap="onUploadAssetImage" data-type="property" hover-class="hover-opacity">
+            <view class="upload-placeholder">
+              <text class="upload-icon">🏠</text>
+              <text class="upload-text">上传房产证</text>
+            </view>
+          </view>
+          <view class="upload-box" wx:for="{{form.propertyImages}}" wx:key="*this" wx:for-index="idx">
+            <image src="{{item}}" class="upload-preview" mode="aspectFill" />
+            <view class="upload-remove" catchtap="onRemoveAssetImage" data-type="property" data-index="{{idx}}">✕</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">车辆证明 <text class="score-badge">+2分</text></text>
+        <view class="upload-area">
+          <view class="upload-box" bindtap="onUploadAssetImage" data-type="vehicle" hover-class="hover-opacity">
+            <view class="upload-placeholder">
+              <text class="upload-icon">🚗</text>
+              <text class="upload-text">上传行驶证</text>
+            </view>
+          </view>
+          <view class="upload-box" wx:for="{{form.vehicleImages}}" wx:key="*this" wx:for-index="idx">
+            <image src="{{item}}" class="upload-preview" mode="aspectFill" />
+            <view class="upload-remove" catchtap="onRemoveAssetImage" data-type="vehicle" data-index="{{idx}}">✕</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">银行存款证明 <text class="score-badge">+2分</text></text>
+        <view class="upload-area">
+          <view class="upload-box" bindtap="onUploadAssetImage" data-type="bank_deposit" hover-class="hover-opacity">
+            <image wx:if="{{form.bankDepositProof}}" src="{{form.bankDepositProof}}" class="upload-preview" mode="aspectFill" />
+            <view wx:else class="upload-placeholder">
+              <text class="upload-icon">🏦</text>
+              <text class="upload-text">上传存款证明</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">保险证明 <text class="score-badge">+1分</text></text>
+        <view class="upload-area">
+          <view class="upload-box" bindtap="onUploadAssetImage" data-type="insurance" hover-class="hover-opacity">
+            <image wx:if="{{form.insuranceProof}}" src="{{form.insuranceProof}}" class="upload-preview" mode="aspectFill" />
+            <view wx:else class="upload-placeholder">
+              <text class="upload-icon">📋</text>
+              <text class="upload-text">上传保单</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">理财证明</text>
+        <view class="upload-area">
+          <view class="upload-box" bindtap="onUploadAssetImage" data-type="finance" hover-class="hover-opacity">
+            <image wx:if="{{form.financeProof}}" src="{{form.financeProof}}" class="upload-preview" mode="aspectFill" />
+            <view wx:else class="upload-placeholder">
+              <text class="upload-icon">📊</text>
+              <text class="upload-text">上传理财证明</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="footer-btns">
+    <button class="btn {{isMemberUnlocked ? 'btn-disabled' : (phoneValid ? 'btn-primary' : 'btn-disabled')}}"
+      bindtap="onBecomeMember"
+      disabled="{{isMemberUnlocked}}"
+      loading="{{loading}}">
+      {{isMemberUnlocked ? '已成为会员' : (phoneValid ? '成为会员' : '请填写手机号解锁')}}
+    </button>
+    <button class="btn btn-outline" bindtap="onSubmit" loading="{{loading}}">{{isEditMode ? '保存修改' : '提交档案'}}</button>
+  </view>
+
+  <!-- 会员缴费弹窗 -->
+  <view class="modal-mask" wx:if="{{showPaymentModal}}" bindtap="onClosePaymentModal">
+    <view class="modal-content" catchtap="preventBubble">
+      <view class="modal-header">
+        <text class="modal-title">成为会员</text>
+        <view class="modal-close" bindtap="onClosePaymentModal">✕</view>
+      </view>
+
+      <view class="modal-body">
+        <view class="member-price">
+          <text class="price-symbol">¥</text>
+          <text class="price-value">{{memberPrice}}</text>
+        </view>
+        <text class="member-price-hint">【限时特惠】原价199元，现0.19元成为会员（限量199个名额）</text>
+
+        <view class="member-benefits">
+          <view class="benefit-item">✅ 解锁全部资料填写权限</view>
+          <view class="benefit-item">✅ 查看精准匹配推荐</view>
+          <view class="benefit-item">✅ 优先推荐展示</view>
+          <view class="benefit-item">✅ 专属客服支持</view>
+        </view>
+
+        <view class="payment-methods">
+          <text class="payment-title">选择支付方式</text>
+          <view class="payment-list">
+            <view class="payment-item {{selectedPayment === index ? 'payment-selected' : ''}}"
+              wx:for="{{paymentMethods}}" wx:key="index"
+              bindtap="onSelectPayment" data-index="{{index}}">
+              <text>{{item}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="modal-footer">
+        <button class="btn btn-primary btn-block" bindtap="onConfirmPayment" loading="{{loading}}">
+          确认支付 ¥{{memberPrice}}
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,8 @@
+<!-- pages/pay/pay.wxml -->
+<view class="page flex-center" style="min-height:100vh">
+  <view class="px-32" style="text-align:center;width:100%">
+    <view style="font-size:80rpx;margin-bottom:24rpx">💳</view>
+    <view class="section-title">支付成功</view>
+    <button class="btn btn-primary btn-block mt-32" bindtap="onBack">返回</button>
+  </view>
+</view>

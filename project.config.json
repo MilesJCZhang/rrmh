@@ -1,0 +1,276 @@
+{
+  "appid": "wx08bbe40b9429b9a4",
+  "projectname": "renrenmei-hao",
+  "description": "人人媒好 - AI社交平台",
+  "miniprogramRoot": "./",
+  "compileType": "miniprogram",
+  "setting": {
+    "urlCheck": true,
+    "es6": true,
+    "es7": true,
+    "enhance": true,
+    "postcss": true,
+    "preloadBackgroundData": false,
+    "minified": true,
+    "newFeature": true,
+    "coverView": true,
+    "nodeModules": false,
+    "autoAudits": false,
+    "showShadowRootInWxmlPanel": true,
+    "scopeDataCheck": false,
+    "uglifyFileName": false,
+    "checkInvalidKey": true,
+    "checkSiteMap": true,
+    "uploadWithSourceMap": true,
+    "compileHotReLoad": false,
+    "useMultiFrameRuntime": true,
+    "useApiHook": true,
+    "useDevTools": true,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "useStaticServer": false,
+    "compileWorklet": false,
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "libVersion": "3.15.1",
+  "packOptions": {
+    "ignore": [
+      {
+        "type": "folder",
+        "value": "admin-panel"
+      },
+      {
+        "type": "folder",
+        "value": "database"
+      },
+      {
+        "type": "folder",
+        "value": "public"
+      },
+      {
+        "type": "folder",
+        "value": "tests"
+      },
+      {
+        "type": "file",
+        "value": ".env"
+      },
+      {
+        "type": "file",
+        "value": ".gitignore"
+      },
+      {
+        "type": "file",
+        "value": "server.js"
+      },
+      {
+        "type": "file",
+        "value": "server_verify_updated.js"
+      },
+      {
+        "type": "file",
+        "value": "auth-middleware.js"
+      },
+      {
+        "type": "file",
+        "value": "config.js"
+      },
+      {
+        "type": "file",
+        "value": "commission_engine.js"
+      },
+      {
+        "type": "file",
+        "value": "check_env.js"
+      },
+      {
+        "type": "file",
+        "value": "test_commission.js"
+      },
+      {
+        "type": "file",
+        "value": "renrenmei.db"
+      },
+      {
+        "type": "file",
+        "value": "package.json"
+      },
+      {
+        "type": "file",
+        "value": "package-lock.json"
+      },
+      {
+        "type": "file",
+        "value": "income.b64"
+      },
+      {
+        "type": "file",
+        "value": "verify_debug_head.txt"
+      },
+      {
+        "type": "file",
+        "value": "mock_users.json"
+      },
+      {
+        "type": "file",
+        "value": "referral_codes.json"
+      },
+      {
+        "type": "file",
+        "value": "referral_network.json"
+      },
+      {
+        "type": "file",
+        "value": "backend_migration.sql"
+      },
+      {
+        "type": "file",
+        "value": "create_orders_table.sql"
+      },
+      {
+        "type": "file",
+        "value": "create_orders.sql"
+      },
+      {
+        "type": "file",
+        "value": "fix_payment.py"
+      },
+      {
+        "type": "file",
+        "value": "fix_verify.py"
+      },
+      {
+        "type": "file",
+        "value": "fix_verify2.py"
+      },
+      {
+        "type": "file",
+        "value": "fix_all_endpoints.py"
+      },
+      {
+        "type": "file",
+        "value": "fix_generate_endpoint.py"
+      },
+      {
+        "type": "file",
+        "value": "inspect_verify.py"
+      },
+      {
+        "type": "file",
+        "value": "deploy_guide.md"
+      },
+      {
+        "type": "file",
+        "value": "routes_auth.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_commission.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_config.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_payment.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_payment_updated.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_referral.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_referral-codes.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_referral_codes.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_admin-referral.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_admin-referral.js.backup"
+      },
+      {
+        "type": "file",
+        "value": "routes_admin.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_income.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_partners.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_stations.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_user.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_wx_auth.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_withdrawals.js"
+      },
+      {
+        "type": "file",
+        "value": "routes_referral-codes.js.broken"
+      },
+      {
+        "type": "file",
+        "value": "create_tables.js"
+      },
+      {
+        "type": "file",
+        "value": "import_referral_codes.js"
+      },
+      {
+        "type": "file",
+        "value": "import_referral_codes_sqlite.js"
+      },
+      {
+        "type": "file",
+        "value": "generate_referral_codes.js"
+      },
+      {
+        "type": "file",
+        "value": "optimize_indexes.js"
+      },
+      {
+        "type": "file",
+        "value": "jest.config.js"
+      }
+    ],
+    "include": []
+  },
+  "condition": {},
+  "simulatorPluginLibVersion": {},
+  "editorSetting": {}
+}

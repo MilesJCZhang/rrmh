@@ -1,0 +1,88 @@
+{
+  "rules": [
+    {
+      "action": "allow",
+      "page": "pages/index/index"
+    },
+    {
+      "action": "allow",
+      "page": "pages/match/match"
+    },
+    {
+      "action": "allow",
+      "page": "pages/about/about"
+    },
+    {
+      "action": "allow",
+      "page": "pages/help/help"
+    },
+    {
+      "action": "allow",
+      "page": "pages/agreement/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/mine/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/profile/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/chat/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/pay/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/user/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/register/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/matchmaker/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/recommender/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/franchisee/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/community-station/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/cooperation/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/reunion/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/group/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/verify/*"
+    },
+    {
+      "action": "disallow",
+      "page": "pages/partner-apply/*"
+    },
+    {
+      "action": "disallow",
+      "page": "*"
+    }
+  ]
+}

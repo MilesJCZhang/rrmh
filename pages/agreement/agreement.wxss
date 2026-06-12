@@ -1,0 +1,66 @@
+/* pages/agreement/agreement.wxss */
+.agreement-page {
+  min-height: 100vh;
+  background: #FDF6F0;
+  padding-bottom: 60rpx;
+}
+
+.agreement-header {
+  padding: 40rpx 32rpx 32rpx;
+  text-align: center;
+}
+
+.ah-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 16rpx;
+}
+
+.ah-date {
+  display: block;
+  font-size: 22rpx;
+  color: #999;
+}
+
+.agreement-body {
+  padding: 0 32rpx;
+}
+
+.section {
+  margin-bottom: 36rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 16rpx;
+  padding-left: 16rpx;
+  border-left: 6rpx solid #C8102E;
+}
+
+.paragraph {
+  font-size: 26rpx;
+  color: #444;
+  line-height: 1.8;
+  margin-bottom: 12rpx;
+  text-align: justify;
+}
+
+.sub-section {
+  margin-top: 16rpx;
+  padding-left: 20rpx;
+}
+
+.sub-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.safe-bottom {
+  height: 60rpx;
+}

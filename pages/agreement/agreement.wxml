@@ -1,0 +1,22 @@
+<!-- pages/agreement/agreement.wxml - 通用协议/政策页面 -->
+<view class="agreement-page">
+  <view class="agreement-header">
+    <text class="ah-title">{{title}}</text>
+    <text class="ah-date">更新日期：{{updateDate}} | 生效日期：{{effectiveDate}}</text>
+  </view>
+  <view class="agreement-body">
+    <view class="section" wx:for="{{sections}}" wx:key="index">
+      <view class="section-title" wx:if="{{item.title}}">{{item.title}}</view>
+      <view class="paragraph" wx:for="{{item.paragraphs}}" wx:for-item="para" wx:key="pIndex">
+        <text>{{para}}</text>
+      </view>
+      <view class="sub-section" wx:for="{{item.subs}}" wx:for-item="sub" wx:key="sIndex">
+        <view class="sub-title">{{sub.title}}</view>
+        <view class="paragraph" wx:for="{{sub.paragraphs}}" wx:for-item="para" wx:key="ppIndex">
+          <text>{{para}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class="safe-bottom"></view>
+</view>

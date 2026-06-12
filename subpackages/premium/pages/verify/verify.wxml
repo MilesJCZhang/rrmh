@@ -1,0 +1,149 @@
+<!-- subpackages/premium/pages/verify/verify.wxml -->
+<view class="page">
+
+  <!-- 头部说明 -->
+  <view class="verify-header">
+    <view class="vh-icon">💎</view>
+    <view class="vh-title">高端验资匹配</view>
+    <view class="vh-desc">通过资产验证后，享受AI+人工双重精准匹配，10万基金托管保障</view>
+  </view>
+
+  <!-- 流程说明 -->
+  <view class="flow-steps">
+    <view class="flow-step">
+      <view class="fs-num">1</view>
+      <text class="fs-label">提交验资</text>
+    </view>
+    <view class="fs-line"></view>
+    <view class="flow-step">
+      <view class="fs-num">2</view>
+      <text class="fs-label">AI+人工匹配</text>
+    </view>
+    <view class="fs-line"></view>
+    <view class="flow-step">
+      <view class="fs-num">3</view>
+      <text class="fs-label">基金托管</text>
+    </view>
+  </view>
+
+  <!-- 已通过验资 -->
+  <view class="approved-card" wx:if="{{hasApprovedVerification}}">
+    <text class="approved-icon">✅</text>
+    <view class="approved-info">
+      <text class="approved-title">您已通过高端验资</text>
+      <text class="approved-desc">可开始高端AI匹配服务</text>
+    </view>
+    <button class="btn btn-primary btn-sm" bindtap="onGoMatch">开始匹配</button>
+  </view>
+
+  <!-- 历史验资记录 -->
+  <view class="records-section" wx:if="{{verifyRecords.length > 0}}">
+    <view class="section-title">验资记录</view>
+    <view class="record-item" wx:for="{{verifyRecords}}" wx:key="id">
+      <view class="ri-status {{item.status}}">{{item.status === 'pending' ? '审核中' : item.status === 'approved' ? '已通过' : item.status === 'rejected' ? '未通过' : item.status}}</view>
+      <view class="ri-info">
+        <text class="ri-type">{{item.asset_type === 'property' ? '房产' : item.asset_type === 'vehicle' ? '车辆' : item.asset_type === 'deposit' ? '存款' : item.asset_type === 'income' ? '收入' : '其他'}}</text>
+        <text class="ri-time">{{item.created_at}}</text>
+      </view>
+      <text class="ri-reason" wx:if="{{item.status === 'rejected' && item.reject_reason}}">原因: {{item.reject_reason}}</text>
+    </view>
+  </view>
+
+  <!-- 验资表单 -->
+  <view class="form-section" wx:if="{{!hasApprovedVerification}}">
+    <view class="section-title">提交验资资料</view>
+
+    <!-- 验资方式 -->
+    <view class="form-item">
+      <text class="form-label">验资方式</text>
+      <view class="type-tabs">
+        <view class="type-tab {{verifyType === 'online' ? 'active' : ''}}" bindtap="onVerifyTypeChange" data-type="online">线上验证</view>
+        <view class="type-tab {{verifyType === 'offline' ? 'active' : ''}}" bindtap="onVerifyTypeChange" data-type="offline">线下预约</view>
+      </view>
+    </view>
+
+    <!-- 资产类型 -->
+    <view class="form-item">
+      <text class="form-label">资产类型</text>
+      <view class="asset-options">
+        <view class="asset-opt {{assetType === item.val ? 'active' : ''}}" wx:for="{{assetTypeOptions}}" wx:key="val" bindtap="onAssetTypeTap" data-val="{{item.val}}">{{item.label}}</view>
+      </view>
+    </view>
+
+    <!-- 资产说明 -->
+    <view class="form-item">
+      <text class="form-label">资产说明</text>
+      <textarea class="form-textarea" placeholder="简要描述您的资产情况" value="{{assetDescription}}" bindinput="onInput" data-key="assetDescription" maxlength="200" />
+    </view>
+
+    <!-- 估算价值 -->
+    <view class="form-item">
+      <text class="form-label">估算价值</text>
+      <input class="form-input" placeholder="如：500万" value="{{estimatedValue}}" bindinput="onInput" data-key="estimatedValue" />
+    </view>
+
+    <!-- 上传材料（线上验证） -->
+    <view class="form-item" wx:if="{{verifyType === 'online'}}">
+      <text class="form-label">验资材料 <text class="form-hint">（最多6张）</text></text>
+      <view class="upload-area">
+        <view class="upload-box" wx:for="{{documentUrls}}" wx:key="*this">
+          <image src="{{item}}" class="upload-preview" mode="aspectFill" />
+          <view class="upload-remove" catchtap="onRemoveDocument" data-index="{{index}}">✕</view>
+        </view>
+        <view class="upload-box upload-add" bindtap="onUploadDocument" wx:if="{{documentUrls.length < 6}}">
+          <text class="upload-add-icon">+</text>
+          <text class="upload-add-text">上传</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 联系电话 -->
+    <view class="form-item">
+      <text class="form-label">联系电话</text>
+      <input class="form-input" type="number" placeholder="方便工作人员联系您" value="{{contactPhone}}" bindinput="onInput" data-key="contactPhone" maxlength="11" />
+    </view>
+
+    <!-- 线下预约信息 -->
+    <block wx:if="{{verifyType === 'offline'}}">
+      <view class="form-item">
+        <text class="form-label">预约时间</text>
+        <input class="form-input" placeholder="如：本周六下午" value="{{preferredTime}}" bindinput="onInput" data-key="preferredTime" />
+      </view>
+      <view class="form-item">
+        <text class="form-label">预约地点</text>
+        <input class="form-input" placeholder="您方便的验资地点" value="{{preferredLocation}}" bindinput="onInput" data-key="preferredLocation" />
+      </view>
+    </block>
+
+    <button class="btn btn-primary btn-block btn-lg" bindtap="onSubmit" loading="{{submitting}}" disabled="{{submitting}}">
+      提交验资申请
+    </button>
+  </view>
+
+  <!-- 托管规则说明 -->
+  <view class="custody-rules">
+    <view class="section-title">基金托管规则</view>
+    <view class="rule-item">
+      <text class="rule-dot"></text>
+      <text class="rule-text">托管金额：10万元，存入合作银行托管账户</text>
+    </view>
+    <view class="rule-item">
+      <text class="rule-dot"></text>
+      <text class="rule-text">托管期限：3-5年，双方自主选择</text>
+    </view>
+    <view class="rule-item">
+      <text class="rule-dot"></text>
+      <text class="rule-text">结婚结算：双方各扣1.5万元服务费，剩余本金原路返还</text>
+    </view>
+    <view class="rule-item">
+      <text class="rule-dot"></text>
+      <text class="rule-text">到期退还：3-5年到期未结婚，10万全额返还，不收费用</text>
+    </view>
+    <view class="rule-item">
+      <text class="rule-dot"></text>
+      <text class="rule-text">合作机构：持牌银行第三方资金托管，安全有保障</text>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

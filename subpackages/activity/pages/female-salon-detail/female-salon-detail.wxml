@@ -1,0 +1,306 @@
+<!-- subpackages/activity/pages/female-salon-detail/female-salon-detail.wxml -->
+<!-- 女推荐官沙龙详情页 - 粉色商务风，禁用相亲类标签与文案 -->
+<view class="home-back-btn" wx:if="{{showHomeBack}}" bindtap="goBack" style="background: {{themeGradient}};">
+  <text class="home-back-icon">‹</text>
+</view>
+
+<view class="page" wx:if="{{!loading && salon}}">
+
+  <!-- 顶部封面 -->
+  <view class="cover-wrap">
+    <view class="cover-bg"></view>
+    <view class="cover-body">
+      <view class="cover-badge">女推荐官沙龙</view>
+      <view class="cover-title">{{salon.name}}</view>
+      <view class="cover-sub">{{salon.location}} | {{salon.eventDate}} {{salon.startTime || ''}}</view>
+    </view>
+  </view>
+
+  <!-- 推荐官席位可视化 -->
+  <view class="px-32 mt-24">
+    <view class="section-label">推荐官席位（{{recommenderSlots.length}}/9）</view>
+    <view class="group-visual-card">
+      <view class="gv-row">
+        <view class="gv-label">👩 女士推荐官</view>
+        <view class="gv-slots">
+          <block wx:for="{{recommenderSlots}}" wx:key="index">
+            <view class="gv-slot {{item ? 'filled' : 'empty'}}">
+              <text wx:if="{{item}}">■</text>
+              <text wx:else>□</text>
+            </view>
+          </block>
+        </view>
+        <view class="gv-remain">{{recommenderRemain}}位剩余</view>
+      </view>
+      <view class="gv-cap-tip">含随行，每场共{{totalCap || 27}}人封顶</view>
+    </view>
+  </view>
+
+  <!-- 全场人数进度 -->
+  <view class="px-32 mt-24">
+    <view class="section-label">全场人数进度</view>
+    <view class="progress-card">
+      <view class="progress-header">
+        <text class="progress-title">已报名人数</text>
+        <text class="progress-count">{{salon.femaleCount || 0}}/{{totalCap || 27}}</text>
+      </view>
+      <view class="progress-bar-bg">
+        <view class="progress-bar-fill" style="width: {{(salon.femaleCount || 0) / (totalCap || 27) * 100}}%"></view>
+      </view>
+      <view class="progress-tip">含随行人员，每场共{{totalCap || 27}}人封顶</view>
+    </view>
+  </view>
+
+  <!-- 核心规格卡片 -->
+  <view class="spec-card">
+    <view class="spec-row">
+      <view class="spec-item">
+        <text class="spec-num">{{totalCap || 27}}人</text>
+        <text class="spec-label">封顶（含随行）</text>
+      </view>
+      <view class="spec-divider"></view>
+      <view class="spec-item">
+        <text class="spec-num">¥{{salon.registrationFee}}</text>
+        <text class="spec-label">报名费</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 基本信息 -->
+  <view class="px-32 mt-24">
+    <view class="info-card">
+      <view class="info-row">
+        <view class="info-icon-wrap info-icon--date"><text class="info-icon-char">日</text></view>
+        <view class="info-content">
+          <text class="info-label">活动时间</text>
+          <text class="info-value">{{salon.eventDate}} {{salon.startTime || ''}} - {{salon.endTime || ''}}</text>
+        </view>
+      </view>
+      <view class="info-row">
+        <view class="info-icon-wrap info-icon--location"><text class="info-icon-char">地</text></view>
+        <view class="info-content">
+          <text class="info-label">活动地点</text>
+          <text class="info-value">{{salon.location}}</text>
+        </view>
+      </view>
+      <view class="info-row">
+        <view class="info-icon-wrap info-icon--slots"><text class="info-icon-char">额</text></view>
+        <view class="info-content">
+          <text class="info-label">名额状态</text>
+          <view class="slots-in-line">
+            <view class="slots-bar-mini">
+              <view class="slots-fill-mini" style="width: {{(salon.femaleCount || 0) / (totalCap || 27) * 100}}%"></view>
+            </view>
+            <text class="info-value">已报 {{(salon.femaleCount || 0)}} / {{totalCap || 27}} 人（含随行）</text>
+          </view>
+          <text class="info-sub" wx:if="{{recommenderRemain > 0}}">推荐官席位剩余 {{recommenderRemain}} 位</text>
+          <text class="info-sub row-full" wx:else>名额已满</text>
+        </view>
+      </view>
+      <view class="info-row" wx:if="{{salon.host}}">
+        <view class="info-icon-wrap info-icon--host"><text class="info-icon-char">持</text></view>
+        <view class="info-content">
+          <text class="info-label">活动主持</text>
+          <text class="info-value">{{salon.host}}</text>
+        </view>
+      </view>
+      <view class="info-row" wx:if="{{auditStatus && auditStatus !== 'approved'}}">
+        <view class="info-icon-wrap info-icon--status"><text class="info-icon-char">审</text></view>
+        <view class="info-content">
+          <text class="info-label">审核状态</text>
+          <text class="info-value" wx:if="{{auditStatus === 'pending'}}">审核中</text>
+          <text class="info-value status-rejected" wx:elif="{{auditStatus === 'rejected'}}">审核未通过</text>
+          <text class="info-value" wx:else>{{auditStatus}}</text>
+          <text class="info-sub" wx:if="{{auditStatus === 'rejected' && rejectReason}}">驳回原因：{{rejectReason}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 服务保障 -->
+  <view class="px-32 mt-24">
+    <view class="section-label">服务保障</view>
+    <view class="highlight-grid">
+      <view class="highlight-item" wx:for="{{salon.highlight}}" wx:key="*this">
+        <text class="highlight-check">✓</text>
+        <text class="highlight-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 活动说明 -->
+  <view class="px-32 mt-24" wx:if="{{salon.description}}">
+    <view class="section-label">活动说明</view>
+    <view class="desc-block"><text>{{salon.description}}</text></view>
+  </view>
+
+  <!-- 参与须知 -->
+  <view class="px-32 mt-24">
+    <view class="section-label">参与须知</view>
+    <view class="notice-card">
+      <view class="notice-item"><text class="notice-dot"></text><text class="notice-text">女推荐官专属沙龙，仅女士可报名</text></view>
+      <view class="notice-item"><text class="notice-dot"></text><text class="notice-text">每场最多27人（含随行人员）</text></view>
+      <view class="notice-item"><text class="notice-dot"></text><text class="notice-text">每人最多携带2位随行人员</text></view>
+      <view class="notice-item"><text class="notice-dot"></text><text class="notice-text">活动主持全程现场服务</text></view>
+      <view class="notice-item"><text class="notice-dot"></text><text class="notice-text">报名需审核，审核通过后方可参加</text></view>
+      <view class="notice-item"><text class="notice-dot"></text><text class="notice-text">活动开始前24小时可取消报名</text></view>
+    </view>
+  </view>
+
+  <!-- 报名资料填写弹窗 -->
+  <view class="modal-mask" wx:if="{{showSignupForm}}" catchtap="closeSignupForm">
+    <view class="modal-content" catchtap="preventModalClose">
+      <view class="modal-title">填写报名资料</view>
+
+      <!-- 必填：姓名 -->
+      <view class="form-group">
+        <view class="form-label">姓名 *</view>
+        <input class="form-input" placeholder="请输入姓名" value="{{signupForm.name}}" bindinput="onSignupNameInput" />
+      </view>
+
+      <!-- 必填：手机号码 -->
+      <view class="form-group">
+        <view class="form-label">手机号码 *</view>
+        <input class="form-input" type="number" placeholder="请输入手机号" value="{{signupForm.mobile}}" bindinput="onSignupMobileInput" />
+      </view>
+
+      <!-- 选填：性别 -->
+      <view class="form-group">
+        <view class="form-label">性别</view>
+        <picker mode="selector" range="{{genderOptions}}" value="{{signupForm.genderIndex}}" bindchange="onSignupGenderChange">
+          <view class="form-picker">{{signupForm.gender || '请选择'}}</view>
+        </picker>
+      </view>
+
+      <!-- 选填：年龄 -->
+      <view class="form-group">
+        <view class="form-label">年龄</view>
+        <input class="form-input" type="number" placeholder="请输入年龄" value="{{signupForm.age}}" bindinput="onSignupAgeInput" />
+      </view>
+
+      <!-- 选填：所在行业 -->
+      <view class="form-group">
+        <view class="form-label">所在行业</view>
+        <input class="form-input" placeholder="如：互联网、金融" value="{{signupForm.industry}}" bindinput="onSignupIndustryInput" />
+      </view>
+
+      <!-- 选填：身份属性 -->
+      <view class="form-group">
+        <view class="form-label">身份属性</view>
+        <radio-group bindchange="onSignupIdentityChange">
+          <label><radio value="上班族" checked="{{signupForm.identity === '上班族'}}" />上班族</label>
+          <label><radio value="个体老板" checked="{{signupForm.identity === '个体老板'}}" />个体老板</label>
+          <label><radio value="自由职业" checked="{{signupForm.identity === '自由职业'}}" />自由职业</label>
+          <label><radio value="其他" checked="{{signupForm.identity === '其他'}}" />其他</label>
+        </radio-group>
+      </view>
+
+      <!-- 选填：上班岗位/职务 -->
+      <view class="form-group">
+        <view class="form-label">岗位/职务</view>
+        <input class="form-input" placeholder="如：工程师、销售总监" value="{{signupForm.position}}" bindinput="onSignupPositionInput" />
+      </view>
+
+      <!-- 选填：经营主营项目 -->
+      <view class="form-group">
+        <view class="form-label">经营主营项目</view>
+        <textarea class="form-textarea" placeholder="个体老板填写主营产品、主营业务" value="{{signupForm.business}}" bindinput="onSignupBusinessInput" />
+      </view>
+
+      <!-- 选填：个人优势/资源简介 -->
+      <view class="form-group">
+        <view class="form-label">个人优势/资源简介</view>
+        <textarea class="form-textarea" placeholder="简短自我介绍" value="{{signupForm.advantage}}" bindinput="onSignupAdvantageInput" />
+      </view>
+
+      <!-- 随行人员 -->
+      <view class="section-title mt-16">随行人员（最多2人）</view>
+      <view wx:for="{{signupForm.companions}}" wx:key="index">
+        <view class="form-group">
+          <view class="form-label">随行{{index+1}}姓名 *</view>
+          <input class="form-input" placeholder="请输入姓名" value="{{item.name}}" data-index="{{index}}" bindinput="onSignupCompanionNameInput" />
+        </view>
+        <view class="form-group">
+          <view class="form-label">随行{{index+1}}手机 *</view>
+          <input class="form-input" type="number" placeholder="请输入手机号" value="{{item.mobile}}" data-index="{{index}}" bindinput="onSignupCompanionMobileInput" />
+        </view>
+        <view class="form-group" wx:if="{{item.name}}">
+          <view class="form-label">随行{{index+1}}性别</view>
+          <picker mode="selector" range="{{genderOptions}}" value="{{item.genderIndex}}" data-index="{{index}}" bindchange="onSignupCompanionGenderChange">
+            <view class="form-picker">{{item.gender || '请选择'}}</view>
+          </picker>
+        </view>
+      </view>
+      <button bindtap="addSignupCompanion" wx:if="{{signupForm.companions.length < 2}}" class="btn-add-companion">+ 添加随行人员</button>
+
+      <view class="modal-actions mt-24">
+        <button class="btn btn-secondary" bindtap="closeSignupForm">取消</button>
+        <button class="btn btn-primary" bindtap="submitSignupForm" loading="{{submitting}}">确认报名</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 我的报名信息（已报名时） -->
+  <view class="px-32 mt-24" wx:if="{{isRegistered && myRegistration}}">
+    <view class="section-label">我的报名</view>
+    <view class="my-reg-card">
+      <view class="my-reg-row">
+        <text class="my-reg-label">状态</text>
+        <text class="my-reg-value">{{myRegistration.status === 'registered' ? '已报名' : myRegistration.status === 'checked_in' ? '已签到' : myRegistration.status}}</text>
+      </view>
+      <view class="my-reg-row" wx:if="{{myRegistration.companionsText}}">
+        <text class="my-reg-label">随行人员</text>
+        <text class="my-reg-value">{{myRegistration.companionsText}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 咨询 -->
+  <view class="px-32 mt-24 mb-160">
+    <button class="btn btn-outline btn-block" open-type="contact" session-from="female-salon-detail">💬 咨询客服</button>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="footer-bar">
+    <view class="footer-inner safe-bottom">
+      <view class="footer-price">
+        <text wx:if="{{salon.registrationFee > 0}}">
+          <text class="price-symbol">¥</text>
+          <text class="price-num">{{salon.registrationFee}}</text>
+          <text class="price-unit">/人</text>
+        </text>
+        <text wx:else class="price-free">免费</text>
+      </view>
+
+      <!-- 已报名 -->
+      <button class="btn btn-cancel-reg footer-btn" bindtap="onCancelRegistration" wx:if="{{isRegistered}}">取消报名</button>
+
+      <!-- 创建者管理按钮 -->
+      <button class="btn btn-primary footer-btn" bindtap="onManageSalon" wx:elif="{{isCreator}}">管理沙龙</button>
+
+      <!-- 报名按钮 -->
+      <button class="btn btn-primary btn-block footer-btn" bindtap="onSignup" loading="{{signing}}" disabled="{{signing || !canSignup}}" wx:elif="{{!isRegistered && (salon.status === 'published' || salon.status === 'open')}}">
+        {{!canSignup ? signupBlockReason : '立即报名'}}
+      </button>
+
+      <!-- 其他状态 -->
+      <view class="footer-status-text" wx:else>
+        <text wx:if="{{auditStatus === 'pending'}}">等待审核</text>
+        <text wx:elif="{{auditStatus === 'rejected'}}">审核未通过</text>
+        <text wx:elif="{{salon.status === 'full'}}">名额已满</text>
+        <text wx:elif="{{salon.status === 'completed'}}">活动已结束</text>
+        <text wx:else>{{salon.status}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 加载中 -->
+<view class="loading-wrap" wx:if="{{loading}}">
+  <view class="loading-text">加载中...</view>
+</view>
+
+<!-- 无数据 -->
+<view class="empty-wrap" wx:if="{{!loading && !salon}}">
+  <text class="empty-text">活动不存在或已下架</text>
+</view>

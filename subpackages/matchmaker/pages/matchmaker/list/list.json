@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "推荐官服务",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#f8f9fa",
+  "backgroundTextStyle": "dark",
+  "usingComponents": {}
+}

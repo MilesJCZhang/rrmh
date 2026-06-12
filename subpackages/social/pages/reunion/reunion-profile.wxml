@@ -1,0 +1,124 @@
+<!-- pages/reunion/reunion-profile.wxml - 再出发社区AI陪伴建档 + 收费确认 -->
+<view class="page">
+  <!-- 步骤：建档 → 付款 → 等待对方 -->
+  <view wx:if="{{step === 'profile'}}">
+    <view class="step-header px-32">
+      <view class="step-h-title">建立专属AI陪伴</view>
+      <view class="step-h-desc">诚实回答，画像才能准确整理和传达您的真实想法</view>
+    </view>
+
+    <view class="card mx-32">
+      <view class="form-item">
+        <text class="form-label">对方的称呼（选填）</text>
+        <input class="form-input" placeholder="如：小明、小华…" value="{{form.exName}}" bindinput="onInput" data-key="exName" />
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">当前关系状态</text>
+        <view class="radio-group">
+          <view class="radio-item {{form.divorceStatus === 'divorced' ? 'checked' : ''}}" bindtap="onSelect" data-key="divorceStatus" data-val="divorced">已结束</view>
+          <view class="radio-item {{form.divorceStatus === 'separated' ? 'checked' : ''}}" bindtap="onSelect" data-key="divorceStatus" data-val="separated">关系紧张</view>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">过往经历简述</text>
+        <textarea class="form-textarea" placeholder="帮助画像理解您这段关系的基本情况…" value="{{form.divorceReason}}" bindinput="onInput" data-key="divorceReason" maxlength="300" />
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">成长与反思</text>
+        <textarea class="form-textarea" placeholder="您认为自己在这段经历中有哪些成长和改变？" value="{{form.reflection}}" bindinput="onInput" data-key="reflection" maxlength="300" />
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">真实想法</text>
+        <textarea class="form-textarea" placeholder="您内心真实的想法是什么？希望达成什么结果？" value="{{form.innerThought}}" bindinput="onInput" data-key="innerThought" maxlength="300" />
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">对未来的期待</text>
+        <textarea class="form-textarea" placeholder="您希望这段关系未来朝什么方向发展？" value="{{form.future}}" bindinput="onInput" data-key="future" maxlength="300" />
+      </view>
+
+      <!-- 语音录入（可选） -->
+      <view class="voice-section">
+        <view class="voice-header">
+          <text class="voice-title">🎙️ 语音录入（推荐）</text>
+          <text class="voice-sub">用原声表达更真实，画像更准确</text>
+        </view>
+        <view
+          class="voice-btn {{recording ? 'recording' : ''}}"
+          bindtouchstart="onVoiceStart"
+          bindtouchend="onVoiceEnd"
+        >
+          <text>{{recording ? '松开完成' : '按住录音'}}</text>
+        </view>
+        <text class="voice-status" wx:if="{{voiceRecorded}}">✅ 语音已录入</text>
+      </view>
+    </view>
+
+    <view class="footer-btns px-32 safe-bottom">
+      <button class="btn btn-primary btn-block btn-lg" bindtap="onGoToPay" loading="{{loading}}">下一步：确认付款</button>
+    </view>
+  </view>
+
+  <!-- 付款步骤 -->
+  <view wx:elif="{{step === 'pay'}}">
+    <view class="pay-confirm-page px-32">
+      <view class="pay-icon">💌</view>
+      <view class="pay-title">专属AI陪伴对话</view>
+      <view class="pay-amount">¥ <text class="pay-num">399</text></view>
+
+      <view class="pay-info-card">
+        <view class="pay-info-item">
+          <text class="pii-label">服务内容</text>
+          <text class="pii-val">AI陪伴深度一对一沟通</text>
+        </view>
+        <view class="pay-info-item">
+          <text class="pii-label">注意事项</text>
+          <text class="pii-val">双方各缴 ¥399，支付后等待对方参与</text>
+        </view>
+      </view>
+
+      <view class="pay-desc-list">
+        <view class="pay-desc-item">✅ 建立您的专属AI陪伴画像</view>
+        <view class="pay-desc-item">✅ 画像整理并传递您的真实想法</view>
+        <view class="pay-desc-item">✅ 画像帮助化解误会、增进理解</view>
+        <view class="pay-desc-item">🔒 全程严格隐私保护</view>
+      </view>
+
+      <button class="btn btn-primary btn-block btn-lg mt-32" bindtap="onPay" loading="{{paying}}">立即支付 ¥399</button>
+      <button class="btn btn-outline btn-block mt-16" bindtap="onBackToProfile">修改建档信息</button>
+    </view>
+  </view>
+
+  <!-- 等待对方 -->
+  <view wx:elif="{{step === 'waiting'}}">
+    <view class="waiting-page px-32">
+      <view class="waiting-icon">⏳</view>
+      <view class="waiting-title">支付成功！</view>
+      <view class="waiting-desc">您的专属AI陪伴已创建，正在等待对方参与</view>
+
+      <view class="share-card">
+        <view class="share-title">邀请对方参与</view>
+        <view class="share-desc">将以下邀请发给对方，双方完成建档后AI陪伴开始对话</view>
+        <button class="btn btn-primary mt-24" bindtap="onShareInvite">生成邀请图片 📱</button>
+        <button class="btn btn-outline mt-16" bindtap="onCopyInviteCode">复制邀请码</button>
+      </view>
+
+      <view class="my-avatar-preview mt-32">
+        <view class="section-title">我的AI陪伴</view>
+        <view class="avatar-preview-card">
+          <text class="avatar-preview-icon">🤖</text>
+          <view class="avatar-preview-info">
+            <view class="avatar-preview-name">AI陪伴</view>
+            <view class="avatar-preview-status">创建完成，等待对方</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

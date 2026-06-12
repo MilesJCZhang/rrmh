@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "男推荐官沙龙",
+  "navigationBarBackgroundColor": "#1565C0",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#F5F7FA",
+  "enablePullDownRefresh": true,
+  "onReachBottomDistance": 100
+}

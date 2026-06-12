@@ -1,0 +1,167 @@
+<!-- pages/about/about.wxml - 关于人人媒好 -->
+<view class="page">
+
+  <!-- 品牌头部 -->
+  <view class="brand-header">
+    <view class="brand-logo-wrap">
+      <image class="brand-logo" src="/assets/images/Logo.jpg" mode="aspectFit" />
+    </view>
+    <view class="brand-name">人人媒好</view>
+    <view class="brand-slogan">AI赋能 · 社区社交 · 让同频的人相聚</view>
+    <view class="brand-version">{{version}}</view>
+  </view>
+
+  <!-- 平台介绍 -->
+  <view class="section px-32 mt-24">
+    <view class="info-card">
+      <view class="info-card-title">关于平台</view>
+      <view class="info-card-body">
+        <text class="info-text">
+          人人媒好是一家专注社交服务的智能平台，结合AI智能画像技术与专业推荐官服务，为70后、80后、90后、00后及各年龄段人群提供分龄精准社交推荐。
+        </text>
+        <text class="info-text">
+          我们相信每个人都值得拥有丰富的社交生活。通过AI画像辅助社交沟通，通过推荐官把关保障真实可信，通过线下沙龙创造面对面交流的机会。
+        </text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 核心特色 -->
+  <view class="section px-32 mt-16">
+    <view class="info-card">
+      <view class="info-card-title">核心特色</view>
+      <view class="feature-list">
+        <view class="feature-item">
+          <view class="feature-icon-wrap fi-ai">
+            <text class="feature-emoji">🤖</text>
+          </view>
+          <view class="feature-info">
+            <view class="feature-name">AI智能画像（人工智能生成）</view>
+            <view class="feature-desc">基于人工智能技术生成的虚拟画像，辅助您进行社交沟通，更好地了解对方</view>
+          </view>
+        </view>
+        <view class="feature-item">
+          <view class="feature-icon-wrap fi-mm">
+            <text class="feature-emoji">👩‍❤️‍👨</text>
+          </view>
+          <view class="feature-info">
+            <view class="feature-name">专业推荐官服务</view>
+            <view class="feature-desc">认证推荐官一对一跟进，身份审核把关，全程服务支持</view>
+          </view>
+        </view>
+        <view class="feature-item">
+          <view class="feature-icon-wrap fi-age">
+            <text class="feature-emoji">🎯</text>
+          </view>
+          <view class="feature-info">
+            <view class="feature-name">分龄精准推荐</view>
+            <view class="feature-desc">70后到00后专属分区，同年龄段人群更有共同语言</view>
+          </view>
+        </view>
+        <view class="feature-item">
+          <view class="feature-icon-wrap fi-salon">
+            <text class="feature-emoji">🎉</text>
+          </view>
+          <view class="feature-info">
+            <view class="feature-name">线下精品沙龙</view>
+            <view class="feature-desc">威海本地每周主题活动，小班制30人面对面认识真实的人</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 联系我们 -->
+  <view class="section px-32 mt-16">
+    <view class="info-card">
+      <view class="info-card-title">联系我们</view>
+      <view class="contact-list">
+        <view class="contact-row">
+          <text class="contact-label">服务时间</text>
+          <text class="contact-value">周一至周日 9:00-21:00</text>
+        </view>
+      </view>
+      <button
+        class="btn btn-primary btn-block mt-24"
+        open-type="contact"
+        session-from="about-page"
+      >💬 联系在线客服</button>
+      <button
+        class="btn btn-outline btn-block mt-16"
+        open-type="contact"
+        session-from="about-business"
+      >🤝 商务合作咨询</button>
+    </view>
+  </view>
+
+  <!-- 法律信息 -->
+  <view class="section px-32 mt-16">
+    <view class="info-card">
+      <view class="info-card-title">法律信息</view>
+      <view class="legal-list">
+        <view class="legal-row">
+          <text class="legal-label">ICP备案号</text>
+          <text class="legal-value">{{legalInfo.icpNo}}</text>
+        </view>
+        <view class="legal-row">
+          <text class="legal-label">营业执照号</text>
+          <text class="legal-value">{{legalInfo.businessLicense}}</text>
+        </view>
+        <view class="legal-row">
+          <text class="legal-label">公司名称</text>
+          <text class="legal-value">{{legalInfo.companyName}}</text>
+        </view>
+        <view class="legal-row">
+          <text class="legal-label">客服邮箱</text>
+          <text class="legal-value">{{legalInfo.supportEmail}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 退订政策与未成年人声明 -->
+  <view class="section px-32 mt-16">
+    <view class="info-card">
+      <view class="info-card-title">服务说明</view>
+      <view class="policy-list">
+        <view class="policy-item">
+          <text class="policy-icon">⚠️</text>
+          <text class="policy-text">{{legalInfo.unsubscribePolicy}}</text>
+        </view>
+        <view class="policy-item">
+          <text class="policy-icon">🔞</text>
+          <text class="policy-text">{{legalInfo.minorStatement}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 服务协议 -->
+  <view class="section px-32 mt-16">
+    <view class="info-card">
+      <view class="info-card-title">法律文件</view>
+      <view class="link-list">
+        <view class="link-row" bindtap="onViewAgreement" data-type="privacy">
+          <text class="link-text">隐私政策</text>
+          <text class="link-arrow">›</text>
+        </view>
+        <view class="link-row" bindtap="onViewAgreement" data-type="terms">
+          <text class="link-text">平台入驻协议</text>
+          <text class="link-arrow">›</text>
+        </view>
+        <view class="link-row" bindtap="onViewAgreement" data-type="refund">
+          <text class="link-text">退款政策</text>
+          <text class="link-arrow">›</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部版权 -->
+  <view class="footer">
+    <text class="footer-text">人人媒好</text>
+    <text class="footer-text">连接每一段真实的相遇</text>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

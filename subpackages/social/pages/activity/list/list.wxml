@@ -1,0 +1,109 @@
+<!-- 活动列表页面 -->
+<view class="activity-list-page">
+  <!-- 顶部搜索和筛选区域 -->
+  <view class="search-bar">
+    <view class="search-container">
+      <input 
+        class="search-input" 
+        placeholder="搜索活动或地点" 
+        bindinput="onSearchInput"
+        value="{{searchKeyword}}"
+      />
+      <view class="search-icon">🔍</view>
+    </view>
+  </view>
+  
+  <!-- 活动筛选标签 -->
+  <scroll-view class="filter-tags" scroll-x="true">
+    <view class="tag {{item.active ? 'active' : ''}}" 
+          wx:for="{{filterTags}}" 
+          wx:key="id" 
+          bindtap="onTagTap" 
+          data-index="{{index}}">
+      {{item.name}}
+    </view>
+  </scroll-view>
+  
+  <!-- 活动列表 -->
+  <view class="activity-list">
+    <view class="activity-item" wx:for="{{activityList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+      <view class="activity-header">
+        <image class="activity-image" src="{{item.coverImage}}" mode="aspectFill"></image>
+        <view class="activity-status {{item.status === '已满' ? 'full' : item.status === '进行中' ? 'ongoing' : 'upcoming'}}">
+          {{item.status}}
+        </view>
+        <view class="activity-price" wx:if="{{item.price > 0}}">
+          ¥{{item.price}}
+        </view>
+      </view>
+      
+      <view class="activity-content">
+        <view class="activity-title">{{item.title}}</view>
+        <view class="activity-meta">
+          <view class="meta-item">
+            <text class="icon">📅</text>
+            <text>{{item.date}} {{item.time}}</text>
+          </view>
+          <view class="meta-item">
+            <text class="icon">📍</text>
+            <text>{{item.location}}</text>
+          </view>
+          <view class="meta-item">
+            <text class="icon">👥</text>
+            <text>{{item.participants}}/{{item.capacity}}人</text>
+          </view>
+        </view>
+        
+        <!-- 参与情况显示 -->
+        <view class="gender-ratio">
+          <view class="ratio-label">参与情况:</view>
+          <view class="ratio-bar">
+            <view class="male-ratio" style="width: {{item.genderRatio.male}}%"></view>
+            <view class="female-ratio" style="width: {{item.genderRatio.female}}%"></view>
+          </view>
+          <view class="ratio-text">
+            {{item.genderRatio.male}}%男 / {{item.genderRatio.female}}%女
+          </view>
+        </view>
+        
+        <!-- 活动标签 -->
+        <view class="activity-tags">
+          <view class="tag" wx:for="{{item.tags}}" wx:key="index">{{item}}</view>
+        </view>
+      </view>
+      
+      <view class="activity-footer">
+        <view class="organizer">
+          <image class="organizer-avatar" src="{{item.organizer.avatar}}"></image>
+          <view class="organizer-info">
+            <view class="organizer-name">{{item.organizer.name}}</view>
+            <view class="organizer-type">{{item.organizer.type}}</view>
+          </view>
+        </view>
+        <view class="action-buttons">
+          <button class="btn-detail" bindtap="goToDetail" data-id="{{item.id}}">查看详情</button>
+          <button class="btn-join" 
+                  wx:if="{{item.status !== '已满' && !item.joined}}"
+                  bindtap="joinActivity" 
+                  data-id="{{item.id}}"
+                  data-type="{{item.type}}">
+            立即报名
+          </button>
+          <button class="btn-joined" wx:if="{{item.joined}}">已报名</button>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore}}">
+    <text bindtap="loadMore">加载更多</text>
+  </view>
+  
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{activityList.length === 0 && !loading}}">
+    <image src="/images/empty-activity.png" class="empty-image"></image>
+    <view class="empty-text">暂无活动</view>
+    <view class="empty-subtext">快去创建或关注新的活动吧</view>
+  </view>
+</view>

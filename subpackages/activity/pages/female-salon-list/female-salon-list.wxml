@@ -1,0 +1,94 @@
+<!-- subpackages/activity/pages/female-salon-list/female-salon-list.wxml -->
+<!-- 女推荐官沙龙列表页 - 粉色商务风，禁用相亲类标签与文案 -->
+<view class="page">
+
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <text class="page-header-title">女推荐官沙龙</text>
+    <text class="page-header-desc">商务对接 · 人脉拓展 · 资源合作</text>
+    <view class="header-badges">
+      <view class="badge-item">
+        <text class="badge-num">每场27人</text>
+        <text class="badge-label">含随行人员</text>
+      </view>
+      <view class="badge-item">
+        <text class="badge-num">可带朋友</text>
+        <text class="badge-label">最多2人</text>
+      </view>
+      <view class="badge-item">
+        <text class="badge-num">审核制</text>
+        <text class="badge-label">品质保障</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 沙龙列表 -->
+  <view class="salon-cards" wx:if="{{salonList.length > 0}}">
+    <view class="salon-card" wx:for="{{salonList}}" wx:key="id" bindtap="onTap" data-id="{{item.id}}">
+      <view class="sc-header">
+        <view class="sc-title">{{item.title}}</view>
+        <view class="sc-status-badge {{item.isAuditPending ? 'status-pending' : (item.isFull ? 'status-full' : 'status-open')}}">
+          {{item.isAuditPending ? '审核中' : (item.isFull ? '名额已满' : '可报名')}}
+        </view>
+      </view>
+      
+      <view class="sc-meta">
+        <text class="sc-date">📅 {{item.event_date}}</text>
+        <text class="sc-time" wx:if="{{item.start_time}}">🕒 {{item.start_time}}-{{item.end_time || ''}}</text>
+        <text class="sc-location" wx:if="{{item.location}}">📍 {{item.location}}</text>
+      </view>
+
+      <!-- 推荐官席位可视化 -->
+      <view class="sc-recommender-bar">
+        <view class="sc-bar-title">推荐官席位（{{item.recommenderCount}}/{{maxRecommenders}}）</view>
+        <view class="sc-slot-dots">
+          <view class="sc-dot {{idx < item.recommenderCount ? 'filled' : ''}}" 
+                wx:for="{{maxRecommenders}}" 
+                wx:for-index="idx" 
+                wx:key="idx"></view>
+        </view>
+        <text class="sc-remain-text">剩余 {{item.recommenderRemain}} 位推荐官席位</text>
+      </view>
+
+      <!-- 全场人数进度 -->
+      <view class="sc-total-bar">
+        <view class="sc-bar-title">全场人数（{{item.totalRegistered}}/{{totalCap}}）</view>
+        <view class="sc-progress-bg">
+          <view class="sc-progress-fill" style="width: {{item.totalRegistered / totalCap * 100}}%"></view>
+        </view>
+        <text class="sc-cap-tip">含随行人员，每场共{{totalCap}}人封顶</text>
+      </view>
+
+      <view class="sc-footer">
+        <view class="sc-price">
+          <text class="sc-price-sym">¥</text>
+          <text class="sc-price-num">{{item.registrationFee}}</text>
+          <text class="sc-price-unit">/人</text>
+        </view>
+        <view class="sc-cta {{item.isRegistered ? 'sc-cta-done' : (item.isFull || item.isAuditPending ? 'sc-cta-disabled' : '')}}">
+          {{item.isRegistered ? '已报名' : (item.isAuditPending ? '审核中' : (item.isFull ? '已满员' : '立即报名'))}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-wrap" wx:if="{{!loading && salonList.length === 0}}">
+    <text class="empty-icon-text">💼</text>
+    <text class="empty-hint">暂无女推荐官沙龙场次</text>
+    <text class="empty-sub">等待推荐官发布商务对接活动</text>
+  </view>
+
+  <!-- 推荐官浮动按钮（仅认证推荐官可见） -->
+  <view class="fab-create" wx:if="{{isMatchmaker}}" bindtap="goCreateSalon">
+    <text class="fab-create-icon">+</text>
+    <text class="fab-create-text">申请发布</text>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

@@ -1,0 +1,68 @@
+<!-- pages/reunion/reunion-chat.wxml - AI陪伴对话/邀请分享 -->
+<view class="page">
+  <!-- 邀请分享模式 -->
+  <view wx:if="{{mode === 'share'}}">
+    <view class="share-page px-32">
+      <view class="share-poster">
+        <view class="poster-content">
+          <text class="poster-emoji">💕</text>
+          <view class="poster-title">有人想和你说说话</view>
+          <view class="poster-desc">对方通过「人人媒好」发起了AI陪伴对话邀请</view>
+          <view class="poster-code">
+            <text class="code-label">邀请码</text>
+            <text class="code-val">{{inviteCode}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="share-tips">
+        <view class="tip-item">1. 将此页面截图发给对方</view>
+        <view class="tip-item">2. 对方打开人人媒好小程序</view>
+        <view class="tip-item">3. 选择「再出发社区」→「使用邀请码」</view>
+        <view class="tip-item">4. 双方AI陪伴开始深度对话</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 聊天旁观模式 -->
+  <view wx:else>
+    <view class="chat-header-reunion px-32">
+      <view class="reunion-avatars">
+        <view class="r-avatar-wrap">
+          <image class="r-avatar" src="{{myAvatarImg}}" mode="aspectFill" />
+          <text class="r-ai-tag">我的AI陪伴</text>
+        </view>
+        <view class="reunion-heart">💕</view>
+        <view class="r-avatar-wrap">
+          <image class="r-avatar" src="{{targetAvatarImg}}" mode="aspectFill" />
+          <text class="r-ai-tag">TA的AI陪伴</text>
+        </view>
+      </view>
+      <view class="reunion-status">{{statusText}}</view>
+    </view>
+
+    <scroll-view class="reunion-messages" scroll-y scroll-into-view="{{scrollToMsg}}">
+      <view class="msg-list px-32">
+        <view class="msg-item {{item.from === 'me' ? 'msg-right' : 'msg-left'}}" wx:for="{{messages}}" wx:key="id" id="msg-{{item.id}}">
+          <image class="msg-avatar" src="{{item.avatar}}" mode="aspectFill" />
+          <view class="msg-bubble-wrap">
+            <view class="msg-bubble {{item.from === 'me' ? 'bubble-right-purple' : 'bubble-left'}}">
+              <text class="msg-text">{{item.content}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 最终报告 -->
+        <view class="reunion-result" wx:if="{{result}}">
+          <view class="result-card">
+            <text class="result-icon">{{result.isSuccess ? '🕊️' : '💭'}}</text>
+            <view class="result-title">{{result.isSuccess ? '双方达成共识' : '沟通报告'}}</view>
+            <view class="result-summary">{{result.summary}}</view>
+            <view class="result-action" wx:if="{{result.isSuccess}}">
+              <button class="btn btn-primary" bindtap="onArrangeMeet">安排线下见面</button>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

@@ -1,0 +1,286 @@
+<!-- 活动详情页面 -->
+<view class="activity-detail-page">
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-text">加载中...</view>
+  </view>
+  
+  <!-- 活动详情内容 -->
+  <scroll-view class="detail-content" scroll-y="true" wx:else>
+    <!-- 活动封面 -->
+    <view class="activity-cover">
+      <image class="cover-image" src="{{activity.coverImage}}" mode="widthFix"></image>
+      <view class="cover-overlay">
+        <view class="activity-status {{activity.status === '已满' ? 'full' : activity.status === '进行中' ? 'ongoing' : 'upcoming'}}">
+          {{activity.status}}
+        </view>
+        <view class="activity-price" wx:if="{{activity.price > 0}}">
+          ¥{{activity.price}}
+        </view>
+      </view>
+    </view>
+    
+    <!-- 活动基本信息 -->
+    <view class="activity-info">
+      <view class="activity-title">{{activity.title}}</view>
+      
+      <view class="basic-info">
+        <view class="info-item">
+          <text class="icon">📅</text>
+          <text>{{activity.date}} {{activity.time}}</text>
+        </view>
+        <view class="info-item">
+          <text class="icon">📍</text>
+          <text>{{activity.location}}</text>
+          <text class="nav-btn" bindtap="navigateToLocation">导航</text>
+        </view>
+        <view class="info-item">
+          <text class="icon">👥</text>
+          <text>{{activity.currentParticipants}}/{{activity.capacity}}人</text>
+          <text class="view-participants" bindtap="viewParticipants" wx:if="{{activity.currentParticipants > 0}}">
+            查看报名者
+          </text>
+        </view>
+        <view class="info-item">
+          <text class="icon">🎯</text>
+          <text>{{activity.type}}</text>
+        </view>
+      </view>
+      
+      <!-- 活动标签 -->
+      <view class="activity-tags">
+        <view class="tag" wx:for="{{activity.tags}}" wx:key="index">{{item}}</view>
+      </view>
+    </view>
+    
+    <!-- 报名状态区域 -->
+    <view class="join-section" wx:if="{{!isOrganizer}}">
+      <view class="join-status">
+        <text class="status-text">报名状态: </text>
+        <text class="status-value {{hasJoined ? 'joined' : 'not-joined'}}">
+          {{joinStatus}}
+        </text>
+      </view>
+      
+      <view class="join-buttons">
+        <button class="btn-join" 
+                wx:if="{{!hasJoined && activity.status !== '已满'}}"
+                bindtap="joinActivity">
+          立即报名
+        </button>
+        <button class="btn-cancel" 
+                wx:if="{{hasJoined && activity.status !== '已结束'}}"
+                bindtap="cancelJoin">
+          取消报名
+        </button>
+        <button class="btn-full" wx:if="{{activity.status === '已满'}}">
+          名额已满
+        </button>
+        <button class="btn-finished" wx:if="{{activity.status === '已结束'}}">
+          活动已结束
+        </button>
+      </view>
+    </view>
+    
+    <!-- 活动详情标签页 -->
+    <view class="tabs-container">
+      <view class="tabs">
+        <view class="tab {{currentTab === 'detail' ? 'active' : ''}}" 
+              bindtap="switchTab" data-tab="detail">
+          活动详情
+        </view>
+        <view class="tab {{currentTab === 'requirements' ? 'active' : ''}}" 
+              bindtap="switchTab" data-tab="requirements">
+          报名要求
+        </view>
+        <view class="tab {{currentTab === 'schedule' ? 'active' : ''}}" 
+              bindtap="switchTab" data-tab="schedule">
+          活动流程
+        </view>
+      </view>
+      
+      <!-- 详情内容 -->
+      <view class="tab-content">
+        <!-- 活动详情 -->
+        <view class="content-section" wx:if="{{currentTab === 'detail'}}">
+          <view class="section-title">活动介绍</view>
+          <view class="section-content">
+            <text>{{activity.description}}</text>
+          </view>
+          
+          <view class="section-title">温馨提示</view>
+          <view class="section-content">
+            <text>{{activity.notes}}</text>
+          </view>
+          
+          <view class="section-title">退款政策</view>
+          <view class="section-content">
+            <text>{{activity.refundPolicy}}</text>
+          </view>
+        </view>
+        
+        <!-- 报名要求 -->
+        <view class="content-section" wx:if="{{currentTab === 'requirements'}}">
+          <view class="requirements-list">
+            <view class="requirement-item">
+              <text class="req-label">年龄要求:</text>
+              <text class="req-value">{{activity.requirements.ageRange}}</text>
+            </view>
+            <view class="requirement-item">
+              <text class="req-label">学历要求:</text>
+              <text class="req-value">{{activity.requirements.education}}</text>
+            </view>
+            <view class="requirement-item">
+              <text class="req-label">收入要求:</text>
+              <text class="req-value">{{activity.requirements.income}}</text>
+            </view>
+            <view class="requirement-item">
+              <text class="req-label">认证要求:</text>
+              <text class="req-value">{{activity.requirements.verification}}</text>
+            </view>
+          </view>
+        </view>
+        
+        <!-- 活动流程 -->
+        <view class="content-section" wx:if="{{currentTab === 'schedule'}}">
+          <view class="schedule-list">
+            <view class="schedule-item" wx:for="{{activity.schedule}}" wx:key="index">
+              <view class="time">{{item.time}}</view>
+              <view class="activity">{{item.activity}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 主办方信息 -->
+    <view class="organizer-section">
+      <view class="section-header">
+        <view class="section-title">主办方</view>
+        <view class="contact-btn" bindtap="contactOrganizer">联系主办方</view>
+      </view>
+      
+      <view class="organizer-info">
+        <image class="organizer-avatar" src="{{activity.organizer.avatar}}"></image>
+        <view class="organizer-details">
+          <view class="organizer-name">{{activity.organizer.name}}</view>
+          <view class="organizer-type">{{activity.organizer.type}}</view>
+          <view class="organizer-rating">
+            <text class="rating-text">评分: {{activity.organizer.rating}}</text>
+            <text class="certified" wx:if="{{activity.organizer.certified}}">✓ 已认证</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 安全提示 -->
+    <view class="safety-tips">
+      <view class="tips-title">安全提示</view>
+      <view class="tips-content">
+        1. 请勿在活动中泄露个人隐私信息<br/>
+        2. 建议公共场所见面<br/>
+        3. 如遇骚扰或不适，请立即联系工作人员<br/>
+        4. 平台不承担线下见面后的责任
+      </view>
+    </view>
+  </scroll-view>
+  
+  <!-- 报名表单弹窗 -->
+  <view class="modal-overlay" wx:if="{{showJoinModal}}" bindtap="closeModal">
+    <view class="modal-content" catchtap="">
+      <view class="modal-header">
+        <view class="modal-title">填写报名信息</view>
+        <view class="modal-close" bindtap="closeModal">×</view>
+      </view>
+      
+      <scroll-view class="modal-body" scroll-y="true">
+        <form bindsubmit="submitJoin">
+          <view class="form-item">
+            <view class="form-label">性别</view>
+            <picker 
+              class="form-input" 
+              mode="selector" 
+              range="{{['男', '女']}}"
+              value="{{joinFormData.gender === '男' ? 0 : joinFormData.gender === '女' ? 1 : 0}}"
+              bindchange="onGenderChange">
+              <view class="picker-text">{{joinFormData.gender || '请选择性别'}}</view>
+            </picker>
+          </view>
+          
+          <view class="form-item">
+            <view class="form-label">年龄</view>
+            <input 
+              class="form-input" 
+              type="number" 
+              placeholder="请输入年龄" 
+              value="{{joinFormData.age}}"
+              bindinput="onFormInput"
+              data-field="age"
+            />
+          </view>
+          
+          <view class="form-item">
+            <view class="form-label">职业</view>
+            <input 
+              class="form-input" 
+              placeholder="请输入职业" 
+              value="{{joinFormData.profession}}"
+              bindinput="onFormInput"
+              data-field="profession"
+            />
+          </view>
+          
+          <view class="form-item">
+            <view class="form-label">兴趣爱好</view>
+            <textarea 
+              class="form-textarea" 
+              placeholder="请描述您的兴趣爱好" 
+              value="{{joinFormData.interest}}"
+              bindinput="onFormInput"
+              data-field="interest"
+            />
+          </view>
+          
+          <view class="form-item">
+            <view class="form-label">自我介绍</view>
+            <textarea 
+              class="form-textarea" 
+              placeholder="请介绍一下自己" 
+              value="{{joinFormData.selfIntro}}"
+              bindinput="onFormInput"
+              data-field="selfIntro"
+            />
+          </view>
+          
+          <view class="form-submit">
+            <button class="btn-submit" form-type="submit">提交报名</button>
+          </view>
+        </form>
+      </scroll-view>
+    </view>
+  </view>
+  
+  <!-- 参与者列表弹窗 -->
+  <view class="modal-overlay" wx:if="{{showParticipants}}" bindtap="closeModal">
+    <view class="participants-modal" catchtap="">
+      <view class="modal-header">
+        <view class="modal-title">已报名用户 ({{participants.length}})</view>
+        <view class="modal-close" bindtap="closeModal">×</view>
+      </view>
+      
+      <scroll-view class="modal-body" scroll-y="true">
+        <view class="participants-list">
+          <view class="participant-item" wx:for="{{participants}}" wx:key="id">
+            <image class="participant-avatar" src="{{item.avatar}}"></image>
+            <view class="participant-info">
+              <view class="participant-name">{{item.name}}</view>
+              <view class="participant-details">
+                <text>{{item.age}}岁 · {{item.profession}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</view>

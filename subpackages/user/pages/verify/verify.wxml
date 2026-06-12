@@ -1,0 +1,154 @@
+<!-- pages/verify/verify.wxml - 实名认证 -->
+<view class="page">
+  <!-- 认证通过 -->
+  <view wx:if="{{status === 'approved'}}" class="verify-result">
+    <view class="vr-icon-wrap vr-success">
+      <text class="vr-icon">✓</text>
+    </view>
+    <view class="vr-title">实名认证已通过</view>
+    <view class="vr-info">
+      <view class="vri-item">
+        <text class="vri-label">姓名</text>
+        <text class="vri-value">{{maskedName}}</text>
+      </view>
+      <view class="vri-item">
+        <text class="vri-label">身份证号</text>
+        <text class="vri-value">{{maskedIdNumber}}</text>
+      </view>
+      <view class="vri-item">
+        <text class="vri-label">认证等级</text>
+        <text class="vri-value">基础认证</text>
+      </view>
+    </view>
+    <view class="px-32 mt-32">
+      <button class="btn btn-outline btn-block" bindtap="onBack">返回</button>
+    </view>
+  </view>
+
+  <!-- 审核中 -->
+  <view wx:elif="{{status === 'pending'}}" class="verify-result">
+    <view class="vr-icon-wrap vr-pending">
+      <text class="vr-icon">⏳</text>
+    </view>
+    <view class="vr-title">认证审核中</view>
+    <view class="vr-desc">您的实名认证信息正在审核中，通常1-2个工作日内完成</view>
+    <view class="px-32 mt-32">
+      <button class="btn btn-primary btn-block" bindtap="onBack">返回</button>
+    </view>
+  </view>
+
+  <!-- 认证被拒绝 -->
+  <view wx:elif="{{status === 'rejected'}}" class="verify-result">
+    <view class="vr-icon-wrap vr-rejected">
+      <text class="vr-icon">!</text>
+    </view>
+    <view class="vr-title">认证未通过</view>
+    <view class="vr-desc" wx:if="{{rejectReason}}">原因：{{rejectReason}}</view>
+    <view class="vr-desc" wx:else>请检查信息后重新提交</view>
+    <view class="px-32 mt-32">
+      <button class="btn btn-primary btn-block" bindtap="onReApply">重新认证</button>
+    </view>
+  </view>
+
+    <!-- 未认证：填写表单 -->
+  <view wx:else class="verify-form">
+    <view class="form-header">
+      <view class="fh-icon">🔒</view>
+      <view class="fh-title">实名认证</view>
+      <view class="fh-desc">根据相关法律法规，使用平台社区服务需完成实名认证</view>
+    </view>
+
+    <!-- 敏感个人信息单独同意声明 -->
+    <view class="sensitive-notice">
+      <view class="sn-title">⚠️ 关于敏感个人信息的处理</view>
+      <view class="sn-intro">您即将提供的身份证号码、面部特征信息属于《个人信息保护法》定义的敏感个人信息。</view>
+
+      <view class="sn-card">
+        <view class="sn-item">
+          <text class="sn-label">处理目的</text>
+          <text class="sn-text">用于身份核验，确保账号安全及合规要求。</text>
+        </view>
+        <view class="sn-item">
+          <text class="sn-label">处理方式</text>
+          <text class="sn-text">经公安部认可的身份认证接口核验后加密存储，不会用于其他用途。</text>
+        </view>
+        <view class="sn-item">
+          <text class="sn-label">保存期限</text>
+          <text class="sn-text">账号存续期间及注销后 1 年。</text>
+        </view>
+      </view>
+
+      <view class="sn-warning">
+        <text class="sn-warn-icon">!</text>
+        <text class="sn-warn-text">如您不同意提供，将无法使用实名认证相关功能（如提现、推荐官入驻等）。</text>
+      </view>
+    </view>
+
+    <view class="form-body px-32 mt-32">
+      <view class="form-group">
+        <view class="form-label">真实姓名</view>
+        <input
+          class="form-input"
+          type="text"
+          placeholder="请输入真实姓名"
+          value="{{realName}}"
+          bindinput="onNameInput"
+          maxlength="20"
+        />
+      </view>
+
+      <view class="form-group mt-24">
+        <view class="form-label">身份证号</view>
+        <input
+          class="form-input"
+          type="idcard"
+          placeholder="请输入18位身份证号"
+          value="{{idNumber}}"
+          bindinput="onIdNumberInput"
+          maxlength="18"
+        />
+      </view>
+
+      <view class="form-tips mt-24">
+        <text class="ft-item">- 认证信息仅用于身份核验，不会公开展示</text>
+        <text class="ft-item">- 支付、退款等功能需完成实名认证</text>
+        <text class="ft-item">- 认证通过后不可修改</text>
+      </view>
+
+      <!-- 敏感个人信息单独同意复选框（PIPL第28条要求） -->
+      <view class="agreement mt-32">
+        <checkbox-group bindchange="onSensitiveAgreeChange">
+          <label class="agreement-label">
+            <checkbox value="agree" checked="{{sensitiveAgreed}}" color="#C8102E" />
+            <text class="agreement-text">我已阅读并单独同意处理我的敏感个人信息（</text>
+            <text class="agreement-link" bindtap="onViewSensitiveNotice">身份证号码、面部特征信息</text>
+            <text class="agreement-text">），知悉处理目的、方式和范围。</text>
+          </label>
+        </checkbox-group>
+      </view>
+
+      <view class="agreement mt-16">
+        <checkbox-group bindchange="onAgreeChange">
+          <label class="agreement-label">
+            <checkbox value="agree" checked="{{agreed}}" color="#C8102E" />
+            <text class="agreement-text">我已阅读并同意</text>
+            <text class="agreement-link" bindtap="onViewAgreement" data-type="privacy">《隐私政策》</text>
+            <text class="agreement-text">和</text>
+            <text class="agreement-link" bindtap="onViewAgreement" data-type="platform">《平台入驻协议》</text>
+          </label>
+        </checkbox-group>
+      </view>
+
+      <button
+        class="btn btn-primary btn-block btn-lg mt-40"
+        bindtap="onSubmit"
+        disabled="{{!agreed || submitting || !realName || !idNumber}}"
+        loading="{{submitting}}"
+      >
+        提交认证
+      </button>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>

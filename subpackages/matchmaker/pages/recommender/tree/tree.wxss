@@ -1,0 +1,202 @@
+/* pages/recommender/tree/tree.wxss */
+.page-container {
+  background: #F5F5F5;
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+}
+
+/* 统计卡片 */
+.stats-card {
+  display: flex;
+  justify-content: space-around;
+  background: linear-gradient(135deg, #B8860B, #8B6914);
+  margin: 24rpx;
+  padding: 32rpx 24rpx;
+  border-radius: 20rpx;
+  color: #FFFFFF;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.stat-value {
+  font-size: 36rpx;
+  font-weight: 800;
+}
+
+.stat-label {
+  font-size: 22rpx;
+  opacity: 0.85;
+}
+
+/* 树状图容器 */
+.tree-container {
+  margin: 0 24rpx 24rpx;
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.tree-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #333333;
+  margin-bottom: 24rpx;
+  display: block;
+}
+
+/* 树节点 */
+.tree-root {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.tree-node {
+  background: #F8F8F8;
+  border-radius: 14rpx;
+  padding: 20rpx 24rpx;
+  border-left: 6rpx solid #B8860B;
+}
+
+.root-node {
+  background: #FFFBF0;
+  border-left-color: #8B6914;
+}
+
+.child-node {
+  margin-left: 32rpx;
+  border-left-color: #DAA520;
+}
+
+.grandchild-node {
+  margin-left: 64rpx;
+  border-left-color: #EEE8AA;
+}
+
+.node-content {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.node-icon {
+  font-size: 36rpx;
+  flex-shrink: 0;
+}
+
+.node-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.node-name {
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: 600;
+}
+
+.node-role {
+  font-size: 20rpx;
+  color: #999999;
+  background: #F0F0F0;
+  padding: 2rpx 12rpx;
+  border-radius: 8rpx;
+  display: inline-block;
+  width: fit-content;
+}
+
+.node-code {
+  font-size: 22rpx;
+  color: #B8860B;
+  font-weight: 600;
+  background: #FFFBF0;
+  padding: 6rpx 16rpx;
+  border-radius: 8rpx;
+  flex-shrink: 0;
+}
+
+/* 子节点容器 */
+.tree-children {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.level-2 {
+  margin-left: 32rpx;
+}
+
+/* 加载状态 */
+.loading-box {
+  display: flex;
+  justify-content: center;
+  padding: 80rpx 0;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #999999;
+}
+
+/* 空状态 */
+.empty-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120rpx 0;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #555555;
+  font-weight: 500;
+}
+
+.empty-sub {
+  font-size: 24rpx;
+  color: #999999;
+  margin-top: 12rpx;
+}
+
+/* 导出按钮 */
+.export-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 32rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(12rpx);
+  box-shadow: 0 -2rpx 20rpx rgba(139,0,21,0.10);
+}
+
+.btn-export {
+  background: linear-gradient(135deg, #B8860B, #8B6914);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 48rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  padding: 0;
+  height: 88rpx;
+  line-height: 88rpx;
+}
+
+.btn-export::after {
+  border: none;
+}

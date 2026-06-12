@@ -1,0 +1,420 @@
+<!-- pages/salon/salon.wxml -->
+<!-- 返回按钮（分享/扫码直接进入时显示） -->
+<view class="home-back-btn" wx:if="{{showHomeBack}}" bindtap="goBack">
+  <text class="home-back-icon">‹</text>
+</view>
+
+<view class="page">
+
+  <!-- ========== 列表模式 ========== -->
+  <block wx:if="{{mode === 'list'}}">
+    <!-- 城市合伙人创建入口 -->
+    <view class="create-btn-wrap" wx:if="{{isCityFranchisee}}">
+      <button class="btn-primary" bindtap="switchToCreate">+ 创建沙龙活动</button>
+    </view>
+
+    <!-- 沙龙列表 -->
+    <view class="salon-list" wx:if="{{!loading}}">
+      <view 
+        class="salon-card" 
+        wx:for="{{salons}}" 
+        wx:key="id"
+        bindtap="goToSalonDetail"
+        data-id="{{item.id}}"
+      >
+        <view class="salon-cover">
+          <image wx:if="{{item.cover}}" src="{{item.cover}}" mode="aspectFill" />
+          <view wx:else class="cover-placeholder">活动封面</view>
+        </view>
+        <view class="salon-info">
+          <view class="salon-name">{{item.name}}</view>
+          <view class="salon-meta">
+            <text class="tag tag-primary">{{item.city}}</text>
+            <text class="tag tag-secondary">{{item.status === 'upcoming' ? '即将开始' : item.status}}</text>
+          </view>
+          <view class="salon-detail">
+            <text>📅 {{item.date}} {{item.time}}</text>
+            <text>📍 {{item.location}}</text>
+            <text>👥 {{item.current_count || 0}}/{{item.max_participants}}人</text>
+            <text>💰 ¥{{item.fee}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view class="empty-state" wx:if="{{salons.length === 0}}">
+        <text class="empty-icon">🎉</text>
+        <text class="empty-text">暂无活动</text>
+        <text class="empty-hint" wx:if="{{isCityFranchisee}}">点击上方按钮创建第一个沙龙活动</text>
+      </view>
+    </view>
+
+    <view class="loading-state" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+  </block>
+
+  <!-- ========== 创建模式 ========== -->
+  <block wx:if="{{mode === 'create'}}">
+    <view class="create-form">
+      <!-- 返回按钮 -->
+      <view class="back-bar">
+        <button class="btn-text" bindtap="switchToList">← 返回列表</button>
+      </view>
+
+      <view class="section-title">选择模板（可选）</view>
+      <scroll-view scroll-x class="template-scroll">
+        <view class="template-list">
+          <view 
+            class="template-card {{selectedTemplateId === item.id ? 'active' : ''}}"
+            wx:for="{{templates}}"
+            wx:key="id"
+            bindtap="onSelectTemplate"
+            data-id="{{item.id}}"
+          >
+            <view class="template-name">{{item.name}}</view>
+            <view class="template-desc">{{item.description}}</view>
+            <view class="template-meta">
+              <text>¥{{item.default_fee}}</text>
+              <text>{{item.default_max_count}}人</text>
+            </view>
+            <view class="template-badge" wx:if="{{item.is_system}}">系统</view>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="section-title">基本信息</view>
+      <view class="form-group">
+        <view class="form-label">活动名称 *</view>
+        <input 
+          class="form-input" 
+          placeholder="如：深圳·南山 5月社交沙龙"
+          value="{{formData.name}}"
+          data-field="name"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <view class="form-group">
+        <view class="form-label">活动描述</view>
+        <textarea 
+          class="form-textarea"
+          placeholder="简要描述活动内容"
+          value="{{formData.description}}"
+          data-field="description"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <view class="form-row">
+        <view class="form-group">
+          <view class="form-label">活动日期 *</view>
+          <picker mode="date" value="{{formData.date}}" bindchange="onInputChange" data-field="date">
+            <view class="form-picker">
+              {{formData.date || '选择日期'}}
+            </view>
+          </picker>
+        </view>
+        <view class="form-group">
+          <view class="form-label">开始时间</view>
+          <picker mode="time" value="{{formData.time}}" bindchange="onInputChange" data-field="time">
+            <view class="form-picker">
+              {{formData.time || '14:00'}}
+            </view>
+          </picker>
+        </view>
+      </view>
+
+      <view class="form-row">
+        <view class="form-group">
+          <view class="form-label">城市 *</view>
+          <picker 
+            mode="selector" 
+            range="{{cities}}" 
+            value="{{formData.city}}"
+            bindchange="onCitySelect"
+          >
+            <view class="form-picker">
+              {{formData.city || '选择城市'}}
+            </view>
+          </picker>
+        </view>
+        <view class="form-group">
+          <view class="form-label">活动地点 *</view>
+          <input 
+            class="form-input" 
+            placeholder="场馆/酒店名称"
+            value="{{formData.location}}"
+            data-field="location"
+            bindinput="onInputChange"
+          />
+        </view>
+      </view>
+
+      <view class="form-row">
+        <view class="form-group">
+          <view class="form-label">名额上限</view>
+          <input 
+            class="form-input" 
+            type="number"
+            placeholder="30"
+            value="{{formData.max_participants}}"
+            data-field="max_participants"
+            bindinput="onNumberInput"
+          />
+        </view>
+        <view class="form-group">
+          <view class="form-label">报名费用(元)</view>
+          <input 
+            class="form-input" 
+            type="digit"
+            placeholder="299"
+            value="{{formData.fee}}"
+            data-field="fee"
+            bindinput="onNumberInput"
+          />
+        </view>
+      </view>
+
+      <!-- 活动流程 -->
+      <view class="section-title">
+        活动流程
+        <button class="btn-small btn-primary" bindtap="showProcessModal">+ 添加环节</button>
+      </view>
+      <view class="process-list" wx:if="{{formData.process.length > 0}}">
+        <view class="process-item" wx:for="{{formData.process}}" wx:key="index">
+          <view class="process-time">{{item.time}}</view>
+          <view class="process-content">
+            <view class="process-title">{{item.title}}</view>
+            <view class="process-desc">{{item.description}}</view>
+          </view>
+          <view class="process-actions">
+            <text class="action-edit" bindtap="editProcess" data-index="{{index}}">编辑</text>
+            <text class="action-delete" bindtap="deleteProcess" data-index="{{index}}">删除</text>
+          </view>
+        </view>
+      </view>
+      <view class="empty-hint" wx:else>暂无活动流程，点击上方按钮添加</view>
+
+      <!-- 注意事项 -->
+      <view class="section-title">
+        注意事项
+        <button class="btn-small btn-secondary" bindtap="showNoticeModal">+ 添加</button>
+      </view>
+      <view class="notice-list" wx:if="{{formData.notices.length > 0}}">
+        <view class="notice-item" wx:for="{{formData.notices}}" wx:key="index">
+          <text class="notice-bullet">•</text>
+          <text class="notice-text">{{item}}</text>
+          <text class="action-delete" bindtap="deleteNotice" data-index="{{index}}">×</text>
+        </view>
+      </view>
+      <view class="empty-hint" wx:else>暂无注意事项，点击上方按钮添加</view>
+
+      <!-- 安全须知 -->
+      <view class="section-title">安全须知 *</view>
+      <view class="safety-notice">
+        <view class="safety-header" bindtap="showSafetyModal">
+          <text class="safety-icon">⚠️</text>
+          <text class="safety-title">请阅读线下活动安全须知</text>
+          <text class="safety-arrow">查看 ›</text>
+        </view>
+        <view class="safety-ack" wx:if="{{formData.safetyAcknowledged}}">
+          <text class="ack-icon">✓</text>
+          <text class="ack-text">已阅读并同意安全须知</text>
+        </view>
+      </view>
+
+      <!-- 提交按钮 -->
+      <view class="form-actions">
+        <button class="btn-primary btn-large" bindtap="onSubmitSalon">创建沙龙活动</button>
+      </view>
+    </view>
+  </block>
+
+  <!-- ========== 详情模式 ========== -->
+  <block wx:if="{{mode === 'detail'}}">
+    <view class="detail-page">
+      <!-- 返回按钮 -->
+      <view class="back-bar">
+        <button class="btn-text" bindtap="goBack">← 返回</button>
+      </view>
+
+      <!-- 沙龙封面 -->
+      <view class="detail-cover">
+        <image wx:if="{{salonDetail.cover || salonDetail.coverImage}}" 
+               src="{{salonDetail.cover || salonDetail.coverImage}}" 
+               mode="aspectFill" />
+        <view wx:else class="cover-placeholder">活动封面</view>
+      </view>
+
+      <!-- 沙龙名称 -->
+      <view class="detail-name">{{salonDetail.name || salonDetail.title}}</view>
+
+      <!-- 沙龙信息卡片 -->
+      <view class="detail-info-card">
+        <view class="detail-meta-row">
+          <text class="detail-meta-icon">📅</text>
+          <text class="detail-meta-text">{{salonDetail.date || (salonDetail.startTime ? salonDetail.startTime.substring(0,10) : '')}}</text>
+        </view>
+        <view class="detail-meta-row" wx:if="{{salonDetail.location}}">
+          <text class="detail-meta-icon">📍</text>
+          <text class="detail-meta-text">{{salonDetail.location}}</text>
+        </view>
+        <view class="detail-meta-row">
+          <text class="detail-meta-icon">👥</text>
+          <text class="detail-meta-text">{{salonDetail.current_count || salonDetail.currentCount || 0}}/{{salonDetail.max_participants || salonDetail.maxParticipants}}人</text>
+        </view>
+        <view class="detail-meta-row" wx:if="{{salonDetail.fee || salonDetail.registrationFee}}">
+          <text class="detail-meta-icon">💰</text>
+          <text class="detail-meta-text">¥{{salonDetail.fee || salonDetail.registrationFee}}</text>
+        </view>
+        <view class="detail-meta-row" wx:if="{{salonDetail.city}}">
+          <text class="detail-meta-icon">🏙️</text>
+          <text class="detail-meta-text">{{salonDetail.city}}</text>
+        </view>
+      </view>
+
+      <!-- 活动描述 -->
+      <view class="detail-section" wx:if="{{salonDetail.description}}">
+        <view class="detail-section-title">活动详情</view>
+        <view class="detail-desc">{{salonDetail.description}}</view>
+      </view>
+
+      <!-- 活动流程 -->
+      <view class="detail-section" wx:if="{{(salonDetail.process && salonDetail.process.length > 0) || (salonDetail.process && salonDetail.process.length > 0)}}">
+        <view class="detail-section-title">活动流程</view>
+        <view class="detail-process-list">
+          <view class="detail-process-item" wx:for="{{salonDetail.process}}" wx:key="index">
+            <view class="detail-process-time">{{item.time}}</view>
+            <view class="detail-process-content">
+              <view class="detail-process-title">{{item.title}}</view>
+              <view class="detail-process-desc">{{item.description}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 注意事项 -->
+      <view class="detail-section" wx:if="{{salonDetail.notices && salonDetail.notices.length > 0}}">
+        <view class="detail-section-title">注意事项</view>
+        <view class="detail-notice-list">
+          <view class="detail-notice-item" wx:for="{{salonDetail.notices}}" wx:key="index">
+            <text class="detail-notice-bullet">•</text>
+            <text class="detail-notice-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 安全须知提示 -->
+      <view class="detail-safety-notice">
+        <view class="detail-safety-header">
+          <text class="detail-safety-icon">⚠️</text>
+          <text class="detail-safety-title">活动安全须知</text>
+        </view>
+        <view class="detail-safety-content">
+          <text class="detail-safety-text">1. 线下活动请注意人身和财产安全</text>
+          <text class="detail-safety-text">2. 请勿向其他参与者借出大额钱款</text>
+          <text class="detail-safety-text">3. 如遇紧急情况，请及时报警并联系平台客服</text>
+          <text class="detail-safety-text">4. 平台不对参与者在活动中的人身财产损失承担责任</text>
+          <text class="detail-safety-text">5. 参与即视为同意以上条款</text>
+        </view>
+      </view>
+
+      <!-- 底部占位 -->
+      <view class="bottom-placeholder"></view>
+
+      <!-- 底部报名栏 -->
+      <view class="bottom-bar" wx:if="{{salonDetail}}">
+        <button 
+          class="btn-join {{isJoined ? 'btn-joined' : ''}}" 
+          bindtap="onJoinSalon"
+          disabled="{{isJoined || joinLoading}}"
+        >
+          {{isJoined ? '已报名' : (joinLoading ? '报名中...' : '立即报名')}}
+        </button>
+      </view>
+    </view>
+  </block>
+
+</view>
+
+<!-- 流程编辑弹窗 -->
+<view class="modal-mask" wx:if="{{processModalVisible}}" bindtap="hideProcessModal">
+  <view class="modal-content" catchtap="">
+    <view class="modal-title">{{currentProcessIndex >= 0 ? '编辑环节' : '添加环节'}}</view>
+    <view class="form-group">
+      <view class="form-label">时间</view>
+      <input 
+        class="form-input" 
+        placeholder="如：14:00-14:30"
+        value="{{processForm.time}}"
+        data-field="time"
+        bindinput="onProcessInputChange"
+      />
+    </view>
+    <view class="form-group">
+      <view class="form-label">环节名称</view>
+      <input 
+        class="form-input" 
+        placeholder="如：签到入场"
+        value="{{processForm.title}}"
+        data-field="title"
+        bindinput="onProcessInputChange"
+      />
+    </view>
+    <view class="form-group">
+      <view class="form-label">环节描述</view>
+      <textarea 
+        class="form-textarea"
+        placeholder="环节具体内容"
+        value="{{processForm.description}}"
+        data-field="description"
+        bindinput="onProcessInputChange"
+      />
+    </view>
+    <view class="modal-actions">
+      <button class="btn-secondary" bindtap="processModalVisible = false">取消</button>
+      <button class="btn-primary" bindtap="saveProcess">保存</button>
+    </view>
+  </view>
+</view>
+
+<!-- 注意事项弹窗 -->
+<view class="modal-mask" wx:if="{{noticeModalVisible}}" bindtap="hideNoticeModal">
+  <view class="modal-content" catchtap="">
+    <view class="modal-title">添加注意事项</view>
+    <view class="form-group">
+      <textarea 
+        class="form-textarea"
+        placeholder="请输入注意事项内容"
+        value="{{noticeInput}}"
+        bindinput="onNoticeInput"
+      />
+    </view>
+    <view class="modal-actions">
+      <button class="btn-secondary" bindtap="noticeModalVisible = false">取消</button>
+      <button class="btn-primary" bindtap="addNotice">添加</button>
+    </view>
+  </view>
+</view>
+
+<!-- 安全须知弹窗 -->
+<view class="modal-mask" wx:if="{{safetyModalVisible}}" bindtap="hideSafetyModal">
+  <view class="modal-content safety-modal" catchtap="">
+    <view class="modal-title">线下活动安全须知</view>
+    <scroll-view scroll-y class="safety-content">
+      <view class="safety-text">
+        <text class="safety-paragraph">为保障您的人身和财产安全，请仔细阅读以下条款：</text>
+        <text class="safety-paragraph">1. 线下活动请注意人身和财产安全</text>
+        <text class="safety-paragraph">2. 请勿向其他参与者借出大额钱款</text>
+        <text class="safety-paragraph">3. 如遇紧急情况，请及时报警并联系平台客服</text>
+        <text class="safety-paragraph">4. 平台不对参与者在活动中的人身财产损失承担责任</text>
+        <text class="safety-paragraph">5. 参与即视为同意以上条款</text>
+      </view>
+    </scroll-view>
+    <view class="modal-actions">
+      <button class="btn-secondary" bindtap="hideSafetyModal">取消</button>
+      <button class="btn-primary" bindtap="onSafetyAcknowledge">我已阅读并同意</button>
+    </view>
+  </view>
+</view>

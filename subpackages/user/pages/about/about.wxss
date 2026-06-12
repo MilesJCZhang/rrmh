@@ -1,0 +1,235 @@
+/* pages/about/about.wxss - 关于人人媒好 */
+
+.page {
+  min-height: 100vh;
+  background: var(--bg-page, #f5f5f5);
+}
+
+/* 品牌头部 */
+.brand-header {
+  background: linear-gradient(135deg, #C8102E 0%, #E8454A 100%);
+  padding: 60rpx 32rpx 48rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.brand-logo-wrap {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  border: 6rpx solid rgba(255,255,255,0.4);
+  box-shadow: 0 8rpx 32rpx rgba(0,0,0,0.2);
+  overflow: hidden;
+  margin-bottom: 20rpx;
+}
+.brand-logo {
+  width: 100%;
+  height: 100%;
+}
+.brand-name {
+  font-size: 44rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: 6rpx;
+  font-family: STKaiti, KaiTi, serif;
+  margin-bottom: 8rpx;
+}
+.brand-slogan {
+  font-size: 24rpx;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 2rpx;
+  margin-bottom: 16rpx;
+}
+.brand-version {
+  font-size: 22rpx;
+  color: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.15);
+  padding: 4rpx 20rpx;
+  border-radius: 100rpx;
+}
+
+/* 信息卡片 */
+.info-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+.info-card-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--text-primary, #333);
+  margin-bottom: 20rpx;
+}
+.info-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+.info-text {
+  font-size: 24rpx;
+  color: var(--text-muted, #666);
+  line-height: 1.8;
+}
+
+/* 核心特色 */
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+}
+.feature-icon-wrap {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.fi-ai { background: rgba(59, 130, 246, 0.1); }
+.fi-mm { background: rgba(200, 16, 46, 0.1); }
+.fi-age { background: rgba(245, 158, 11, 0.1); }
+.fi-salon { background: rgba(16, 185, 129, 0.1); }
+.feature-emoji {
+  font-size: 32rpx;
+}
+.feature-info { flex: 1; }
+.feature-name {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: var(--text-primary, #333);
+  margin-bottom: 4rpx;
+}
+.feature-desc {
+  font-size: 22rpx;
+  color: var(--text-muted, #999);
+  line-height: 1.5;
+}
+
+/* 联系方式 */
+.contact-list {
+  display: flex;
+  flex-direction: column;
+}
+.contact-row {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+.contact-row:last-child { border-bottom: none; }
+.contact-row:active { opacity: 0.7; }
+.contact-label {
+  font-size: 24rpx;
+  color: var(--text-muted, #999);
+  width: 160rpx;
+  flex-shrink: 0;
+}
+.contact-value {
+  flex: 1;
+  font-size: 26rpx;
+  color: var(--text-primary, #333);
+  font-weight: 500;
+}
+.contact-copy {
+  font-size: 22rpx;
+  color: #C8102E;
+  font-weight: 600;
+  padding: 4rpx 16rpx;
+  border-radius: 100rpx;
+  background: rgba(200,16,46,0.08);
+}
+
+/* 链接列表 */
+.link-list {
+  display: flex;
+  flex-direction: column;
+}
+.link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+.link-row:last-child { border-bottom: none; }
+.link-row:active { opacity: 0.7; }
+.link-text {
+  font-size: 26rpx;
+  color: var(--text-primary, #333);
+}
+.link-arrow {
+  font-size: 28rpx;
+  color: #ccc;
+}
+
+/* 法律信息列表 */
+.legal-list {
+  display: flex;
+  flex-direction: column;
+}
+.legal-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+.legal-row:last-child { border-bottom: none; }
+.legal-label {
+  font-size: 24rpx;
+  color: var(--text-muted, #999);
+  width: 160rpx;
+  flex-shrink: 0;
+}
+.legal-value {
+  flex: 1;
+  font-size: 24rpx;
+  color: var(--text-primary, #333);
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+/* 政策说明 */
+.policy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+.policy-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  padding: 12rpx 16rpx;
+  background: #FFF9F5;
+  border-radius: 8rpx;
+  border-left: 4rpx solid #FF9800;
+}
+.policy-icon {
+  font-size: 24rpx;
+  flex-shrink: 0;
+}
+.policy-text {
+  flex: 1;
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* 底部版权 */
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40rpx 0 20rpx;
+  gap: 8rpx;
+}
+.footer-text {
+  font-size: 22rpx;
+  color: #ccc;
+}

@@ -1,0 +1,134 @@
+/* pages/recommender/usage-records/usage-records.wxss */
+.page-container {
+  background: #F5F5F5;
+  min-height: 100vh;
+  padding-bottom: 40rpx;
+}
+
+/* 记录列表 */
+.records-list {
+  padding: 0 24rpx;
+}
+
+.record-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: #FFFFFF;
+  padding: 24rpx;
+  margin-top: 20rpx;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
+}
+
+.record-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  flex: 1;
+}
+
+.record-icon {
+  font-size: 40rpx;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+}
+
+.record-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.record-name {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.record-meta {
+  display: flex;
+  gap: 12rpx;
+  align-items: center;
+}
+
+.record-scene {
+  font-size: 22rpx;
+  color: #666;
+  background: #F0F0F0;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.record-role {
+  font-size: 20rpx;
+  color: #999;
+}
+
+.record-ip {
+  font-size: 20rpx;
+  color: #BBB;
+}
+
+.record-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8rpx;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+.record-code {
+  font-size: 24rpx;
+  color: #B8860B;
+  font-weight: 600;
+  background: #FFFBF0;
+  padding: 6rpx 16rpx;
+  border-radius: 8rpx;
+}
+
+.record-time {
+  font-size: 22rpx;
+  color: #999;
+}
+
+/* 加载状态 */
+.loading-more {
+  text-align: center;
+  padding: 24rpx;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.no-more {
+  text-align: center;
+  padding: 24rpx;
+  font-size: 24rpx;
+  color: #CCC;
+}
+
+/* 空状态 */
+.empty-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120rpx 0;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #555;
+  font-weight: 500;
+}
+
+.empty-sub {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 12rpx;
+}

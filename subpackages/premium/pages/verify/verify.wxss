@@ -1,0 +1,120 @@
+/* subpackages/premium/pages/verify/verify.wxss */
+.page { min-height: 100vh; background: var(--bg-page); padding-bottom: 40rpx; }
+
+.verify-header {
+  background: linear-gradient(135deg, #D4A017, #A07820);
+  padding: 40rpx 32rpx;
+  color: #FFFFFF;
+  text-align: center;
+}
+.vh-icon { font-size: 64rpx; margin-bottom: 12rpx; }
+.vh-title { font-size: 40rpx; font-weight: 800; font-family: STKaiti, KaiTi, serif; letter-spacing: 3rpx; margin-bottom: 8rpx; }
+.vh-desc { font-size: 24rpx; opacity: 0.85; line-height: 1.6; }
+
+/* 流程步骤 */
+.flow-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28rpx 32rpx;
+  background: #FFFFFF;
+  gap: 8rpx;
+}
+.flow-step { display: flex; flex-direction: column; align-items: center; gap: 6rpx; }
+.fs-num {
+  width: 48rpx; height: 48rpx; border-radius: 50%;
+  background: linear-gradient(135deg, #D4A017, #A07820);
+  color: #FFFFFF; font-size: 24rpx; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.fs-label { font-size: 22rpx; color: var(--text-muted); }
+.fs-line { width: 60rpx; height: 4rpx; background: #E0D0B0; border-radius: 2rpx; margin-bottom: 24rpx; }
+
+/* 已通过卡片 */
+.approved-card {
+  display: flex; align-items: center; gap: 16rpx;
+  margin: 20rpx 32rpx; padding: 20rpx 24rpx;
+  background: #F0FDF4; border-radius: 12rpx;
+  border: 1rpx solid #BBF7D0;
+}
+.approved-icon { font-size: 36rpx; flex-shrink: 0; }
+.approved-info { flex: 1; }
+.approved-title { font-size: 28rpx; font-weight: 700; color: #16a34a; display: block; }
+.approved-desc { font-size: 22rpx; color: #666; }
+
+/* 验资记录 */
+.records-section, .form-section, .custody-rules { padding: 0 32rpx; margin-top: 24rpx; }
+.section-title { font-size: 30rpx; font-weight: 700; color: var(--text-primary); margin-bottom: 16rpx; font-family: STKaiti, KaiTi, serif; letter-spacing: 2rpx; }
+
+.record-item {
+  background: #FFFFFF; border-radius: 12rpx; padding: 20rpx 24rpx; margin-bottom: 12rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+.ri-status { font-size: 24rpx; font-weight: 600; margin-bottom: 8rpx; }
+.ri-status.pending { color: #f59e0b; }
+.ri-status.approved { color: #16a34a; }
+.ri-status.rejected { color: #ef4444; }
+.ri-info { display: flex; justify-content: space-between; font-size: 24rpx; color: #999; }
+.ri-reason { font-size: 22rpx; color: #ef4444; margin-top: 8rpx; display: block; }
+
+/* 表单 */
+.form-item { margin-bottom: 24rpx; }
+.form-label { font-size: 28rpx; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 12rpx; }
+.form-hint { font-size: 22rpx; color: var(--text-muted); font-weight: 400; }
+.form-input {
+  width: 100%; height: 84rpx; background: #FAFAFA; border-radius: 12rpx;
+  padding: 0 24rpx; font-size: 28rpx; color: var(--text-primary);
+  border: 1rpx solid #E8E8E8; box-sizing: border-box;
+}
+.form-textarea {
+  width: 100%; min-height: 140rpx; background: #FAFAFA; border-radius: 12rpx;
+  padding: 20rpx 24rpx; font-size: 28rpx; color: var(--text-primary);
+  border: 1rpx solid #E8E8E8; box-sizing: border-box; line-height: 1.6;
+}
+
+/* 验资方式Tab */
+.type-tabs { display: flex; gap: 16rpx; }
+.type-tab {
+  flex: 1; text-align: center; padding: 20rpx; border-radius: 12rpx;
+  font-size: 28rpx; color: #999; background: #FAFAFA;
+  border: 2rpx solid #E8E8E8; font-weight: 500;
+}
+.type-tab.active {
+  background: #FFF8E8; color: #A07820; border-color: #D4A017; font-weight: 700;
+}
+
+/* 资产类型选项 */
+.asset-options { display: flex; flex-wrap: wrap; gap: 12rpx; }
+.asset-opt {
+  padding: 14rpx 28rpx; border-radius: 100rpx; font-size: 26rpx;
+  color: #999; background: #FAFAFA; border: 1rpx solid #E8E8E8;
+}
+.asset-opt.active { background: #FFF8E8; color: #A07820; border-color: #D4A017; font-weight: 600; }
+
+/* 上传区域 */
+.upload-area { display: flex; flex-wrap: wrap; gap: 12rpx; }
+.upload-box {
+  width: 160rpx; height: 160rpx; border-radius: 12rpx;
+  overflow: hidden; position: relative; border: 2rpx dashed #E0E0E0;
+}
+.upload-preview { width: 100%; height: 100%; }
+.upload-remove {
+  position: absolute; top: 6rpx; right: 6rpx;
+  width: 36rpx; height: 36rpx; border-radius: 50%;
+  background: rgba(0,0,0,0.5); color: #FFF; font-size: 20rpx;
+  display: flex; align-items: center; justify-content: center;
+}
+.upload-add {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: #FAFAFA; gap: 6rpx;
+}
+.upload-add-icon { font-size: 48rpx; color: #CCC; font-weight: 300; }
+.upload-add-text { font-size: 22rpx; color: #999; }
+
+/* 托管规则 */
+.custody-rules { margin-top: 32rpx; padding-bottom: 20rpx; }
+.rule-item { display: flex; align-items: flex-start; gap: 12rpx; margin-bottom: 12rpx; }
+.rule-dot { width: 10rpx; height: 10rpx; border-radius: 50%; background: #D4A017; margin-top: 14rpx; flex-shrink: 0; }
+.rule-text { font-size: 26rpx; color: #666; line-height: 1.6; }
+
+.btn-sm { padding: 12rpx 24rpx; font-size: 26rpx; border-radius: 100rpx; }
