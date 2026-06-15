@@ -37,7 +37,7 @@ export interface FundCustodyListResult {
   stats: FundCustodyStats;
 }
 
-const API_BASE = '/v1/admin';
+const API_BASE = '/api/admin';
 
 export const getFundCustodyList = async (params: FundCustodyListParams): Promise<FundCustodyListResult> => {
   const res = await axios.get(`${API_BASE}/fund-custody`, { params });

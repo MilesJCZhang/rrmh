@@ -53,7 +53,7 @@ export interface ActivityListResult {
 
 /** 获取活动列表（管理后台） */
 export const getActivities = async (params: ActivityListParams): Promise<ActivityListResult> => {
-  const res = await axios.get('/v1/admin/activities', { params });
+  const res = await axios.get('/admin-api/activities', { params });
   const data = (res as any).data || { list: [], total: 0, page: 1, limit: 10 };
   return data;
 };

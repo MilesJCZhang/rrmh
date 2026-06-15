@@ -35,6 +35,8 @@ export interface OrderListResult {
 }
 
 export const getOrders = async (params: OrderListParams): Promise<OrderListResult> => {
-  const res = await axios.get('/api/admin/orders', { params });
-  return res.data || { list: [], total: 0, page: 1, pageSize: 20, typeStats: [] };
+  const res = await axios.get('/admin-api/commissions', { params });
+  // axios interceptor 返回 response.data，即 { code, data }
+  const d = res.data || res;
+  return { list: d.list || [], total: d.total || 0, page: d.page || 1, pageSize: d.pageSize || 20, typeStats: d.typeStats || [] };
 };

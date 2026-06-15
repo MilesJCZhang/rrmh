@@ -24,14 +24,20 @@ export interface ReferralCode {
 
 export interface GenerateCodeParams {
   stationId: number;
+  codeType: string;
   count: number;
   maxUsage: number;
 }
 
 export const getReferralCodes = async (params?: any): Promise<{ list: ReferralCode[]; total: number }> => {
   const res = await axios.get('/api/admin/referral-codes/list', { params });
-  const rawData: any[] = res.data || [];
-  const data: ReferralCode[] = rawData.map((item: any) => ({
+  // axios interceptor 返回 response.data，即 { code, data } 或直接数组
+  // 后端返回格式：{ code: 0, data: { codes: [...], pagination: { total } } }
+  // 或兼容格式：{ code: 0, data: [...] }
+  const responseData = res.data || res;
+  const codesArray = responseData.codes || responseData.data || responseData.list || [];
+  const total = responseData.pagination?.total || (Array.isArray(codesArray) ? codesArray.length : 0);
+  const data: ReferralCode[] = (Array.isArray(codesArray) ? codesArray : []).map((item: any) => ({
     id: item.id,
     code: item.code,
     status: item.status,
@@ -46,12 +52,12 @@ export const getReferralCodes = async (params?: any): Promise<{ list: ReferralCo
     referrer_wechat_account: item.referrer_wechat_account,
     referrer_phone: item.referrer_phone,
   }));
-  return { list: data, total: data.length };
+  return { list: data, total };
 };
 
 export const generateCodes = async (params: GenerateCodeParams): Promise<ReferralCode[]> => {
   const res = await axios.post('/api/admin/referral-codes/generate', params);
-  return res.data || [];
+  return res.data || res || [];
 };
 
 export const exportCodes = async (): Promise<Blob> => {
@@ -61,23 +67,28 @@ export const exportCodes = async (): Promise<Blob> => {
 
 export const assignCode = async (params: any): Promise<any> => {
   const res = await axios.post('/api/admin/referral-codes/assign', params);
-  return res.data;
+  return res.data || res;
 };
 
 export const unbindCode = async (code: string): Promise<any> => {
   const res = await axios.post('/api/admin/referral-codes/unbind', { code });
-  return res.data;
+  return res.data || res;
 };
 
 export const deleteCode = async (code: string): Promise<any> => {
   const res = await axios.post('/api/admin/referral-codes/delete', { code });
-  return res.data;
+  return res.data || res;
+};
+
+export const updateCode = async (oldCode: string, newCode: string, codeType: string): Promise<any> => {
+  const res = await axios.post('/api/admin/referral-codes/update-code', { oldCode, newCode, codeType });
+  return res.data || res;
 };
 
 export const getInsight = async (code: string): Promise<any> => {
-  const res = await axios.get(`/api/admin/referral-codes/insight/${code}`, {
+  const res = await axios.get(`/api/admin/referral-codes/${code}/insight`, {
     headers: { 'Cache-Control': 'no-cache' },
-    params: { _t: Date.now() } // 添加时间戳防止缓存
+    params: { _t: Date.now() }
   });
-  return res.data;
+  return res.data || res;
 };

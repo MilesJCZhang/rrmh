@@ -32,9 +32,8 @@ const SystemSettingsPage: React.FC = () => {
   const fetchConfig = async () => {
     setLoading(true);
     try {
-      const res = await configService.getConfig();
-      if (res.data) {
-        const data = res.data;
+      const data: any = await configService.getConfig();
+      if (data && typeof data === "object") {
         setAllConfig(data);
 
         // 基础配置

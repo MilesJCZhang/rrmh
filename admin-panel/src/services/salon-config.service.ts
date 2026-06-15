@@ -9,7 +9,7 @@ export interface SalonConfig {
   name: string;
   description: string;
   emoji: string;
-  
+
   // 主题配置
   theme: {
     color: string;
@@ -18,14 +18,14 @@ export interface SalonConfig {
     bannerBg: string;
     icon: string;
   };
-  
+
   // 页面配置
   page: {
     list: string;
     detail: string;
     create: string;
   };
-  
+
   // 功能配置
   features: {
     totalCap: number;
@@ -38,7 +38,7 @@ export interface SalonConfig {
     allowWalkIn: boolean;
     maxPerWeek: number;
   };
-  
+
   // 报名配置
   registration: {
     needPayment: boolean;
@@ -47,7 +47,7 @@ export interface SalonConfig {
     allowCompanion: boolean;
     companionFields: string[];
   };
-  
+
   // 权限配置
   permissions: {
     creatorRoles: string[];
@@ -57,14 +57,14 @@ export interface SalonConfig {
     maxAge: number;
     minScore: number;
   };
-  
+
   // 收益配置
   commission: {
     referrer: number;
     platform: number;
     matchmaker: number;
   };
-  
+
   // API配置
   api: {
     list: string;
@@ -75,27 +75,32 @@ export interface SalonConfig {
     cancel: string;
     approve: string;
   };
-  
+
   // 状态
   status: 'active' | 'inactive';
   created_at?: string;
   updated_at?: string;
 }
 
+// 生产 API 前缀
+const API_BASE = '/api/admin';
+
 /**
  * 获取所有沙龙配置
  */
 export const getSalonConfigs = async (): Promise<SalonConfig[]> => {
-  const response = await axios.get('/api/admin/salon-configs');
-  return response.data || [];
+  const response = await axios.get(`${API_BASE}/salon-configs`);
+  // 兼容两种响应格式：{ code: 0, data: [...] } 或直接数组
+  const data = response.data?.data || response.data || [];
+  return Array.isArray(data) ? data : [];
 };
 
 /**
  * 获取单个沙龙配置
  */
 export const getSalonConfig = async (type: string): Promise<SalonConfig> => {
-  const response = await axios.get(`/api/admin/salon-configs/${type}`);
-  return response.data;
+  const response = await axios.get(`${API_BASE}/salon-configs/${type}`);
+  return response.data?.data || response.data;
 };
 
 /**
@@ -104,12 +109,12 @@ export const getSalonConfig = async (type: string): Promise<SalonConfig> => {
 export const saveSalonConfig = async (config: SalonConfig): Promise<SalonConfig> => {
   if (config.id) {
     // 更新
-    const response = await axios.put(`/api/admin/salon-configs/${config.type}`, config);
-    return response.data;
+    const response = await axios.put(`${API_BASE}/salon-configs/${config.type}`, config);
+    return response.data?.data || response.data;
   } else {
     // 创建
-    const response = await axios.post('/api/admin/salon-configs', config);
-    return response.data;
+    const response = await axios.post(`${API_BASE}/salon-configs`, config);
+    return response.data?.data || response.data;
   }
 };
 
@@ -117,13 +122,13 @@ export const saveSalonConfig = async (config: SalonConfig): Promise<SalonConfig>
  * 删除沙龙配置
  */
 export const deleteSalonConfig = async (type: string): Promise<void> => {
-  await axios.delete(`/api/admin/salon-configs/${type}`);
+  await axios.delete(`${API_BASE}/salon-configs/${type}`);
 };
 
 /**
  * 启用/禁用沙龙配置
  */
 export const toggleSalonConfigStatus = async (type: string, status: 'active' | 'inactive'): Promise<SalonConfig> => {
-  const response = await axios.patch(`/api/admin/salon-configs/${type}/status`, { status });
-  return response.data;
+  const response = await axios.patch(`${API_BASE}/salon-configs/${type}/status`, { status });
+  return response.data?.data || response.data;
 };

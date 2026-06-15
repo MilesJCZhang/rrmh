@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Input, Space, Tag, Modal, Form, message, Card, Row, Col, Tabs, Popconfirm, Select, Statistic } from 'antd';
-import { PlusOutlined, ExportOutlined, LinkOutlined, DisconnectOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { PlusOutlined, ExportOutlined, LinkOutlined, DisconnectOutlined, DeleteOutlined, EyeOutlined, EditOutlined } from '@ant-design/icons';
 import PageHeader from '../../components/PageHeader';
-import { getReferralCodes, generateCodes, exportCodes, assignCode, unbindCode, deleteCode, getInsight, ReferralCode } from '../../services/referral-code.service';
+import { getReferralCodes, generateCodes, exportCodes, assignCode, unbindCode, deleteCode, updateCode, getInsight, ReferralCode } from '../../services/referral-code.service';
 
 const { TabPane } = Tabs;
 
@@ -12,7 +12,15 @@ const typeLabels: Record<string, string> = {
   professional: '专业推荐官',
   community_station: '社区服务站',
   city_partner: '城市合伙人',
-  partner: '合伙人',
+  station: '社区服务站',
+  public: '公益推荐官',
+  city: '城市合伙人',
+};
+
+// 格式化时间：2026-06-15T07:58:28.044Z → 2026-06-15 07:58:28
+const formatDate = (v: string) => {
+  if (!v) return '-';
+  try { return v.replace('T', ' ').substring(0, 19); } catch { return v; }
 };
 
 const statusLabels: Record<string, string> = {
@@ -48,6 +56,8 @@ const ReferralCodesPage: React.FC = () => {
   const [insightVisible, setInsightVisible] = useState(false);
   const [insightLoading, setInsightLoading] = useState(false);
   const [insightData, setInsightData] = useState<any>(null);
+  const [fixVisible, setFixVisible] = useState(false);
+  const [fixForm] = Form.useForm();
 
   const fetchCodes = async () => {
     setLoading(true);
@@ -182,6 +192,25 @@ const ReferralCodesPage: React.FC = () => {
     }
   };
 
+  const handleFix = (code: string, codeType: string) => {
+    setCurrentCode(code);
+    fixForm.setFieldsValue({ oldCode: code, codeType: codeType || 'creator' });
+    setFixVisible(true);
+  };
+
+  const handleFixSubmit = async () => {
+    try {
+      const values = await fixForm.validateFields();
+      await updateCode(values.oldCode, values.newCode, values.codeType);
+      message.success('推荐码修正成功');
+      setFixVisible(false);
+      fixForm.resetFields();
+      fetchCodes();
+    } catch (err: any) {
+      message.error(err.response?.data?.message || err.message || '修正失败');
+    }
+  };
+
   const handleInsight = async (code: string) => {
     setCurrentCode(code);
     setInsightVisible(true);
@@ -210,6 +239,13 @@ const ReferralCodesPage: React.FC = () => {
       render: (code: string) => <strong style={{ fontSize: '16px' }}>{code}</strong>,
     },
     {
+      title: '类型',
+      dataIndex: 'code_type',
+      key: 'code_type',
+      width: 120,
+      render: (type: string) => typeLabels[type] || type || <span style={{ color: '#999' }}>-</span>,
+    },
+    {
       title: '推荐人',
       dataIndex: 'referrerName',
       key: 'referrerName',
@@ -236,6 +272,7 @@ const ReferralCodesPage: React.FC = () => {
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 180,
+      render: (v: string) => formatDate(v),
     },
     {
       title: '操作',
@@ -259,6 +296,13 @@ const ReferralCodesPage: React.FC = () => {
               分配
             </Button>
           ) : null}
+          <Button
+            type="link"
+            icon={<EditOutlined />}
+            onClick={() => handleFix(record.code, record.code_type)}
+          >
+            修正
+          </Button>
           {record.status === 'active' && record.referrerName ? (
             <Popconfirm
               title="解绑推荐码"
@@ -401,6 +445,20 @@ const ReferralCodesPage: React.FC = () => {
             <Input type="number" placeholder="请输入服务站ID" />
           </Form.Item>
           <Form.Item
+            name="codeType"
+            label="推荐码类型"
+            rules={[{ required: true, message: '请选择推荐码类型' }]}
+            initialValue="creator"
+          >
+            <Select placeholder="请选择类型">
+              <Select.Option value="creator">联创推荐官 (LCRG)</Select.Option>
+              <Select.Option value="public_welfare">公益推荐官 (GYRG)</Select.Option>
+              <Select.Option value="professional">专业推荐官 (ZYRG)</Select.Option>
+              <Select.Option value="community_station">社区服务站 (SQZD)</Select.Option>
+              <Select.Option value="city_partner">城市合伙人 (CSHH)</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
             name="count"
             label="生成数量"
             rules={[{ required: true, message: '请输入生成数量' }]}
@@ -527,6 +585,39 @@ const ReferralCodesPage: React.FC = () => {
         ) : (
           <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>暂无数据</div>
         )}
+      </Modal>
+
+      {/* 修正推荐码弹窗 */}
+      <Modal
+        title={`修正推荐码：${currentCode}`}
+        open={fixVisible}
+        onOk={handleFixSubmit}
+        onCancel={() => { setFixVisible(false); fixForm.resetFields(); }}
+        okText="确认修正"
+        cancelText="取消"
+      >
+        <Form form={fixForm} layout="vertical">
+          <Form.Item name="oldCode" label="原推荐码" rules={[{ required: true }]}>
+            <Input disabled />
+          </Form.Item>
+          <Form.Item
+            name="newCode"
+            label="新推荐码"
+            rules={[{ required: true, message: '请输入新推荐码（8位，如 GYRG7K2M）' }]}
+            extra="前缀+4位随机，如 GYRG7K2M / LCRG001 / ZYRG1234"
+          >
+            <Input placeholder="如 GYRG7K2M" maxLength={8} />
+          </Form.Item>
+          <Form.Item name="codeType" label="类型" rules={[{ required: true }]}>
+            <Select>
+              <Select.Option value="public_welfare">公益推荐官 (GYRG)</Select.Option>
+              <Select.Option value="creator">联创推荐官 (LCRG)</Select.Option>
+              <Select.Option value="professional">专业推荐官 (ZYRG)</Select.Option>
+              <Select.Option value="community_station">社区服务站 (SQZD)</Select.Option>
+              <Select.Option value="city_partner">城市合伙人 (CSHH)</Select.Option>
+            </Select>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

@@ -80,15 +80,16 @@ const DashboardPage: React.FC = () => {
   const fetchStats = useCallback(async () => {
     try {
       setStatsError(false);
-      const response = await axios.get('/v1/stats/overview');
-      const data = (response as any).data || response;
+      // TypeScript 后端统计端点：/v1/admin/statistics
+      const res: any = await axios.get('/v1/admin/statistics');
+      const d = res?.data?.data || res?.data || res || {};
       setStats({
-        totalUsers: data.totalUsers ?? 0,
-        todayNewUsers: data.todayNewUsers ?? 0,
-        totalOrders: data.totalMembers ?? 0,
-        totalRevenue: data.totalRevenue ?? 0,
-        pendingPartners: data.pendingActivities ?? 0,
-        pendingWithdrawals: data.pendingWithdrawals ?? 0,
+        totalUsers: d.userStats?.total ?? 0,
+        todayNewUsers: 0,
+        totalOrders: d.activityStats?.registrations ?? 0,
+        totalRevenue: Number(d.financialStats?.totalEarnings ?? 0),
+        pendingPartners: d.userStats?.recommend_officers ?? 0,
+        pendingWithdrawals: 0,
       });
     } catch (error) {
       console.error('获取统计数据失败', error);
@@ -389,7 +390,7 @@ const DashboardPage: React.FC = () => {
                         <XAxis dataKey="range" tick={{ fontSize: 12 }} />
                         <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
                         <RechartsTooltip
-                          formatter={(value: number) => [`${value} 人`, '人数']}
+                          formatter={(value: any) => [`${value} 人`, '人数']}
                           contentStyle={{ borderRadius: 8 }}
                         />
                         <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={50}>
@@ -431,7 +432,7 @@ const DashboardPage: React.FC = () => {
                           outerRadius={100}
                           paddingAngle={3}
                           dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                           labelLine={{ stroke: '#ccc' }}
                         >
                           {pieData.map((entry, index) => (
@@ -439,10 +440,10 @@ const DashboardPage: React.FC = () => {
                           ))}
                         </Pie>
                         <Legend
-                          formatter={(value: string) => <span style={{ color: '#595959' }}>{value}</span>}
+                          formatter={(value: any) => <span style={{ color: '#595959' }}>{value}</span>}
                         />
                         <RechartsTooltip
-                          formatter={(value: number, name: string) => [`${value} 人`, name]}
+                          formatter={(value: any, name: any) => [`${value} 人`, name]}
                           contentStyle={{ borderRadius: 8 }}
                         />
                       </PieChart>
