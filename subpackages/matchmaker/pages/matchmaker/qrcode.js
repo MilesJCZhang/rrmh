@@ -253,15 +253,49 @@ Page({
   onShareTimeline() {
     const invitationCode = this.data.invitationCode;
     const matchmakerId = this.data.matchmakerId;
+    const qrcodeBase64 = this.data.qrcodeBase64;
+    let qrcodeLocalPath = this.data.qrcodeLocalPath;
+    const posterUrl = this.data.posterUrl;
+
+    console.log('[qrcode] onShareTimeline triggered:', JSON.stringify({
+      invitationCode, matchmakerId,
+      qrcodeBase64Len: qrcodeBase64 ? qrcodeBase64.length : 0,
+      qrcodeLocalPath: qrcodeLocalPath,
+      posterUrl: posterUrl,
+    }));
+
+    if (!invitationCode && !matchmakerId) {
+      wx.showToast({ title: '请先获取推广码', icon: 'none' });
+      return false;
+    }
 
     const query = invitationCode
       ? `invitationCode=${invitationCode}`
       : `referrer_id=${matchmakerId}`;
 
+    let imageUrl = qrcodeLocalPath || posterUrl || '';
+    if (!imageUrl && qrcodeBase64 && qrcodeBase64.startsWith('data:image')) {
+      try {
+        const fs = wx.getFileSystemManager();
+        const base64Data = qrcodeBase64.replace(/^data:image\/\w+;base64,/, '');
+        const tempPath = `${wx.env.USER_DATA_PATH}/qrcode_share_${Date.now()}.png`;
+        fs.writeFileSync(tempPath, base64Data, 'base64');
+        imageUrl = tempPath;
+        console.log('[qrcode] onShareTimeline generated temp image:', imageUrl);
+      } catch (e) {
+        console.error('[qrcode] onShareTimeline writeFile failed:', e);
+      }
+    }
+
+    if (!imageUrl) {
+      wx.showToast({ title: '请等待二维码生成完成', icon: 'none' });
+      return false;
+    }
+
     return {
       title: '来人人媒好认识新朋友，AI画像帮你开启交流～',
       query: query,
-      imageUrl: this.data.qrcodeLocalPath || this.data.posterUrl || '',
+      imageUrl: imageUrl,
     };
   },
 });

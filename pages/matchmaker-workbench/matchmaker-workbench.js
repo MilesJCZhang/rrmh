@@ -41,7 +41,6 @@ Page({
     insightStats: {},
     insightReferredUsers: [],
     insightReferralChain: [],
-    myReferrals: [],         // 我推荐的人（过滤后）
 
     // 加载状态
     upgradeTargets: [],
@@ -121,16 +120,6 @@ Page({
       const { summary, stats, records } = wbResult || {};
       const insight = insResult || {};
 
-      // 过滤出"我推荐的人"，并格式化日期
-      const rawChain = insight.referral_chain || [];
-      const myReferrals = rawChain
-        .filter(r => r.direction === 'referrer')
-        .map(r => ({
-          ...r,
-          dateStr: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '--'
-        }))
-        .slice(0, 10);
-
       this.setData({
         todayIncome: summary?.todayIncome || '0.00',
         monthIncome: summary?.monthIncome || '0.00',
@@ -144,7 +133,6 @@ Page({
         insightStats: insight.stats || {},
         insightReferredUsers: (insight.referred_users || []).slice(0, 10),
         insightReferralChain: insight.referral_chain || [],
-        myReferrals,
         loading: false,
       });
     } catch (err) {
@@ -268,7 +256,6 @@ Page({
   onGoEarnings()   { wx.navigateTo({ url: '/subpackages/matchmaker/pages/matchmaker/earnings?tab=earnings' }); },
   onGoSalon()      { wx.navigateTo({ url: '/subpackages/social/pages/salon/salon' }); },
   onGoAllRecords() { wx.navigateTo({ url: '/subpackages/matchmaker/pages/matchmaker/earnings' }); },
-  onGoReferralDetail() { wx.showToast({ title: '推荐关系详情开发中', icon: 'none' }); },
 
   onShareAppMessage() {
     return {

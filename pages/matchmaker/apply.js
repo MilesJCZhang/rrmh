@@ -167,7 +167,7 @@ Page({
   async _submitPublicApply() {
     this.setData({ submitting: true });
     try {
-      const res = await request({
+      const data = await request({
         url: API.APPLY.PUBLIC_MATCHMAKER,
         method: 'POST',
         data: {
@@ -178,14 +178,14 @@ Page({
           phone: this.data.phone.trim(),
         },
       });
-      wx.hideLoading();
       // 更新本地用户状态（推荐码 + 角色）
-      if (res && res.data) {
+      // request() 返回 body.data，即 { role, recommendCode }
+      if (data && data.role) {
         authService.setUserInfo({
-          role: res.data.role,
-          recommendCode: res.data.recommendCode,
+          role: data.role,
+          recommendCode: data.recommendCode,
         });
-        authService.setUserRole(res.data.role);
+        authService.setUserRole(data.role);
       }
 
       wx.showToast({ title: '申请成功，已自动通过审核', icon: 'success' });
@@ -195,9 +195,9 @@ Page({
         wx.navigateBack();
       }, 1500);
     } catch (e) {
-      wx.hideLoading();
       this.setData({ submitting: false });
-      wx.showToast({ title: e.message || '申请失败，请重试', icon: 'none' });
+      const msg = e && e.message ? e.message : (e && e.code === 401 ? '请先登录' : '申请失败，请重试');
+      wx.showToast({ title: msg, icon: 'none' });
     }
   },
 
@@ -211,10 +211,8 @@ Page({
       await request({
         url: API.APPLY.PARTNER_MATCHMAKER,
         method: 'POST',
-        // 注意：后端不需要请求体参数，所有参数都从 token 中解析 userId
       });
 
-      wx.hideLoading();
       this.setData({ submitting: false });
 
       // 第二步：引导支付399元运营基金
@@ -223,8 +221,8 @@ Page({
         content: '您的联创推荐官资料已提交审核，审核通过后需缴纳399元运营基金。是否立即支付？',
         confirmText: '立即支付',
         confirmColor: '#C8102E',
-        success: async (res) => {
-          if (!res.confirm) {
+        success: async (modalRes) => {
+          if (!modalRes.confirm) {
             wx.showToast({ title: '可稍后在社交中心支付', icon: 'none' });
             setTimeout(() => { wx.navigateBack(); }, 1500);
             return;
@@ -242,25 +240,23 @@ Page({
 
             if (result.success) {
               wx.showToast({ title: '支付成功，等待审核', icon: 'success' });
-              
+
               // 支付成功：更新本地状态（角色升级为联创推荐官）
               try {
                 // 先尝试从后端获取最新用户信息
-                const profileRes = await request({ url: API.USER.PROFILE });
-                if (profileRes && profileRes.data) {
-                  const updatedUser = profileRes.data;
-                  authService.setUserInfo(updatedUser);
-                  authService.setUserRole(updatedUser.role || 'partner_matchmaker');
+                // request() 返回 body.data，即用户信息对象
+                const userData = await request({ url: API.USER.PROFILE });
+                if (userData) {
+                  authService.setUserInfo(userData);
+                  authService.setUserRole(userData.role || 'partner_matchmaker');
                 } else {
-                  // 降级处理：直接设置角色
                   authService.setUserRole('partner_matchmaker');
                 }
               } catch (e) {
                 console.error('[apply] 获取用户信息失败，使用本地更新:', e);
-                // 降级处理：直接设置角色
                 authService.setUserRole('partner_matchmaker');
               }
-              
+
               // 跳转实名认证（深度认证：身份证核验）
               setTimeout(() => {
                 wx.redirectTo({ url: '/subpackages/user/pages/verify/verify?from=partner_apply' });
@@ -271,14 +267,14 @@ Page({
             }
           } catch (e) {
             wx.hideLoading();
-            wx.showToast({ title: e.message || '支付失败', icon: 'none' });
+            wx.showToast({ title: e && e.message ? e.message : '支付失败', icon: 'none' });
           }
         },
       });
     } catch (e) {
-      wx.hideLoading();
       this.setData({ submitting: false });
-      wx.showToast({ title: e.message || '申请失败，请重试', icon: 'none' });
+      const msg = e && e.message ? e.message : (e && e.code === 401 ? '请先登录' : '申请失败，请重试');
+      wx.showToast({ title: msg, icon: 'none' });
     }
   },
 

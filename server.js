@@ -80,6 +80,18 @@ app.use('/v1/referral-codes', requireAuth, require('./routes_referral-codes'));
 // 5. 推荐关系路由（用户端，需登录，无需管理员权限）
 app.use('/v1/referral', requireAuth, require('./routes_referral'));
 
+// 5.1 会员建档路由
+app.use('/v1/member', requireAuth, require('./routes_member'));
+
+// 5.2 实名认证路由
+app.use('/v1/verify', requireAuth, require('./routes_verify'));
+
+// 5.3 推荐官工作台路由
+app.use('/v1/matchmaker', requireAuth, require('./routes_matchmaker'));
+
+// 5.4 统计概览路由
+app.use('/v1/stats', require('./routes_stats'));
+
 // 6. 支付路由
 try {
   app.use('/v1/payment', require('./routes_payment'));
@@ -143,7 +155,23 @@ try {
   console.log('[server] routes_admin_orders 加载失败，跳过');
 }
 
-// 11.3 管理后台-沙龙活动管理路由
+// 11.3 管理后台-系统配置路由
+try {
+  app.use('/v1/admin/config', require('./routes_admin_config'));
+  console.log('[server] routes_admin_config 加载成功');
+} catch (e) {
+  console.log('[server] routes_admin_config 加载失败，跳过');
+}
+
+// 11.4 管理后台-财务路由
+try {
+  app.use('/v1/admin/finance', require('./routes_admin_finance'));
+  console.log('[server] routes_admin_finance 加载成功');
+} catch (e) {
+  console.log('[server] routes_admin_finance 加载失败，跳过');
+}
+
+// 11.6 管理后台-沙龙活动管理路由
 try {
   app.use('/v1/admin/activities', require('./routes_admin_activities'));
   console.log('[server] routes_admin_activities 加载成功');
@@ -151,7 +179,7 @@ try {
   console.log('[server] routes_admin_activities 加载失败，跳过');
 }
 
-// 11.4 管理后台-沙龙配置管理路由
+// 11.7 管理后台-沙龙配置管理路由
 try {
   app.use('/v1/admin', require('./routes_admin_salon_config'));
   console.log('[server] routes_admin_salon_config 加载成功');
@@ -159,7 +187,7 @@ try {
   console.log('[server] routes_admin_salon_config 加载失败，跳过');
 }
 
-// 11.5 管理后台-用户管理路由
+// 11.8 管理后台-用户管理路由
 try {
   app.use('/v1/admin', require('./routes_admin_users'));
   console.log('[server] routes_admin_users 加载成功');
@@ -195,7 +223,7 @@ try {
 app.use('/auth', require('./routes_auth'));
 app.use('/api/auth', require('./routes_auth'));
 app.use('/api/user', require('./routes_user') || createUserRoutes());
-app.use('/api/admin/referral-codes', requireAuth, requireAdmin, require('./routes_referral-codes'));
+app.use('/api/admin/referral-codes', requireAuth, requireAdmin, require('./routes_admin-referral'));
 app.use('/api/referral-codes', requireAuth, require('./routes_referral-codes'));
 try {
   app.use('/api/payment', require('./routes_payment'));

@@ -41,10 +41,15 @@ App({
       console.error('[App.onError]', err);
     });
     
-    wx.showShareMenu({
-      withShareTicket: true,
-      menus: ['shareAppMessage', 'shareTimeline'],
-    });
+    // 分享到朋友圈需要微信7.0.7+，用canIUse兜底
+    if (wx.canIUse('showShareMenu#menus.shareTimeline')) {
+      wx.showShareMenu({
+        withShareTicket: true,
+        menus: ['shareAppMessage', 'shareTimeline'],
+      });
+    } else {
+      wx.showShareMenu({ withShareTicket: true });
+    }
 
     wx.onNeedPrivacyAuthorization((resolve) => {
       this.globalData.privacyResolveCallback = resolve;
@@ -219,7 +224,7 @@ App({
           request({
             url: '/v1/auth/wechat-login',
             method: 'POST',
-            data: { code, referrer_id: refId, invitationCode },
+            data: { code, referrer_id: refId, referral_code: invitationCode },
             withToken: false
           }).then(resp => {
             const data = resp.data || resp;

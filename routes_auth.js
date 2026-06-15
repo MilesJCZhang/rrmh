@@ -25,6 +25,26 @@ if (!WX_APPID || !WX_SECRET || !JWT_SECRET) {
 let ACCESS_TOKEN = null;
 let AT_EXPIRE = 0;
 
+// 确保 user_referrals 表存在
+function ensureUserReferralsTable(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS user_referrals (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      referrer_id INTEGER NOT NULL,
+      referral_code TEXT,
+      bind_time TEXT,
+      is_locked INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(user_id)
+    )
+  `);
+  try {
+    db.exec('CREATE INDEX IF NOT EXISTS idx_user_referrals_referrer ON user_referrals(referrer_id)');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_user_referrals_user ON user_referrals(user_id)');
+  } catch (e) { /* ignore */ }
+}
+
 /**
  * 获取微信 access_token
  */
@@ -60,7 +80,7 @@ router.post('/wechat-login', async (req, res) => {
   const db = req.app.get('db');
 
   try {
-    const { code, referrer_id } = req.body;
+    const { code, referrer_id, referral_code } = req.body;
 
     if (!code) {
       return res.json({
@@ -101,6 +121,20 @@ router.post('/wechat-login', async (req, res) => {
       `).run(openid, referrerIdNum);
 
       user = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
+
+      // 新用户也写入 user_referrals 表（修复统计丢失问题）
+      if (referrerIdNum) {
+        ensureUserReferralsTable(db);
+        try {
+          db.prepare(`
+            INSERT INTO user_referrals (user_id, referrer_id, referral_code, bind_time, is_locked)
+            VALUES (?, ?, ?, datetime('now'), 1)
+          `).run(user.id, referrerIdNum, referral_code || null);
+          console.log(`[wechat-login] 新用户写入 user_referrals: user ${user.id} → referrer ${referrerIdNum}`);
+        } catch (e) {
+          console.error('[wechat-login] 写入 user_referrals 失败:', e.message);
+        }
+      }
     } else {
       // 已有用户：若 parent_id 为 null 且本次带来了 referrer_id，补填（永久锁定，只允许从 null → 有值）
       if (user.parent_id === null && referrer_id) {
@@ -109,6 +143,21 @@ router.post('/wechat-login', async (req, res) => {
           .run(referrerIdNum, user.id);
         console.log(`[wechat-login] 补填 parent_id: user ${user.id} → ${referrerIdNum}`);
         user.parent_id = referrerIdNum;
+
+        // 同时写入 user_referrals 表（修复统计丢失问题）
+        ensureUserReferralsTable(db);
+        try {
+          const existing = db.prepare('SELECT id FROM user_referrals WHERE user_id = ?').get(user.id);
+          if (!existing) {
+            db.prepare(`
+              INSERT INTO user_referrals (user_id, referrer_id, referral_code, bind_time, is_locked)
+              VALUES (?, ?, ?, datetime('now'), 1)
+            `).run(user.id, referrerIdNum, referral_code || null);
+            console.log(`[wechat-login] 写入 user_referrals: user ${user.id} → referrer ${referrerIdNum}`);
+          }
+        } catch (e) {
+          console.error('[wechat-login] 写入 user_referrals 失败:', e.message);
+        }
       }
     }
 
@@ -301,6 +350,29 @@ router.get('/userinfo', (req, res) => {
       code: -1,
       message: '获取失败'
     });
+  }
+});
+
+/**
+ * POST /v1/auth/refresh
+ * 刷新 Access Token
+ */
+router.post('/refresh', (req, res) => {
+  const { refresh_token } = req.body;
+  if (!refresh_token) {
+    return res.status(400).json({ code: -1, message: '缺少 refresh_token' });
+  }
+  try {
+    const payload = jwt.verify(refresh_token, JWT_SECRET);
+    // 生成新 access token（不刷新 refresh token，避免无限刷新）
+    const newToken = jwt.sign(
+      { uid: payload.uid, openid: payload.openid },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    res.json({ code: 0, data: { token: newToken } });
+  } catch (e) {
+    res.status(401).json({ code: -1, message: 'refresh_token 无效或已过期' });
   }
 });
 

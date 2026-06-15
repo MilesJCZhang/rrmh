@@ -8,7 +8,7 @@
  * GET  /v1/salon/my-list         - 我参与/举办的沙龙
  * POST /v1/salon/create          - 创建沙龙（推荐官/城市合伙人）
  * POST /v1/salon/create-gender   - 创建性别主体沙龙（推荐官专用）
- * POST /v1/salon/:id/signup      - 报名（含每周限制+性别限制+27人封顶）
+ * POST /v1/salon/:id/join       - 报名（含每周限制+性别限制+27人封顶）
  * POST /v1/salon/:id/cancel      - 取消报名（释放每周名额）
  * POST /v1/salon/:id/publish     - 发布沙龙（published → open）
  * PUT  /v1/salon/:id/approve     - 审核沙龙（管理员，通过后生成海报，拒绝保存原因）
@@ -555,7 +555,7 @@ function getMonday(dateStr) {
 }
 
 /**
- * POST /v1/salon/:id/signup
+ * POST /v1/salon/:id/join
  * 报名沙龙
  * 校验逻辑：
  *   1. 每周报名次数限制（每人每周仅限1次）
@@ -564,7 +564,7 @@ function getMonday(dateStr) {
  *
  * Body: { name, mobile, gender, age, industry, identity, position, business, advantage, companions: [{name, mobile, ...}] }
  */
-router.post('/:id/signup', requireAuth, (req, res) => {
+router.post('/:id/join', requireAuth, (req, res) => {
   try {
     const db = req.app.get('db');
     ensureSalonTables(db);
@@ -808,6 +808,44 @@ router.post('/:id/cancel', requireAuth, (req, res) => {
   } catch (err) {
     console.error('[salon] cancel error:', err);
     res.status(500).json({ code: -1, message: '取消报名失败' });
+  }
+});
+
+/**
+ * POST /v1/salon/:id/checkin
+ * 签到
+ */
+router.post('/:id/checkin', requireAuth, (req, res) => {
+  try {
+    const db = req.app.get('db');
+    const userId = req.user.userId;
+    const { id } = req.params;
+
+    // 查询报名记录
+    const member = db.prepare(`
+      SELECT m.*, s.event_date, s.start_time, s.status as salon_status
+      FROM salon_group_members m
+      JOIN salons s ON s.id = m.salon_id
+      WHERE m.salon_id = ? AND m.user_id = ?
+    `).get(id, userId);
+
+    if (!member) {
+      return res.status(404).json({ code: -1, message: '未找到报名记录' });
+    }
+
+    if (member.salon_status !== 'open' && member.salon_status !== 'ongoing') {
+      return res.status(400).json({ code: -1, message: '沙龙尚未开始或已结束，无法签到' });
+    }
+
+    // 更新签到状态
+    db.prepare(`
+      UPDATE salon_group_members SET status = 'checked_in' WHERE salon_id = ? AND user_id = ?
+    `).run(id, userId);
+
+    res.json({ code: 0, message: '签到成功' });
+  } catch (err) {
+    console.error('[salon] checkin error:', err);
+    res.status(500).json({ code: -1, message: '签到失败' });
   }
 });
 

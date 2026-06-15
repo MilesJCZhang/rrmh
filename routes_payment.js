@@ -12,6 +12,80 @@ const crypto = require('crypto');
 const { getPool } = require('./config');
 const { processCommission } = require('./commission_engine');
 const logger = require('./utils/logger');
+
+// 付费身份类型 → role + codeType 映射
+const PAID_TIER_CONFIG = {
+  'partner_matchmaker':       { role: 'partner_matchmaker',        codeType: 'creator' },
+  'professional_recommender': { role: 'professional_recommender', codeType: 'professional' },
+  'city_franchisee':          { role: 'city_franchisee',           codeType: 'city_partner' },
+  'community_station':        { role: 'community_station',         codeType: 'community_station' },
+};
+
+/**
+ * 支付成功后，为付费用户升级身份并生成推荐码
+ * @param {Object} pool - db pool
+ * @param {string} orderType - orders.type (如 'partner_matchmaker')
+ * @param {number} userId - 付款用户ID
+ */
+async function upgradeUserToPaidTier(pool, orderType, userId) {
+  const config = PAID_TIER_CONFIG[orderType];
+  if (!config) return; // 非付费身份类型，跳过
+
+  const { role, codeType } = config;
+
+  // 1. 检查用户是否已是该角色（幂等）
+  const [users] = await pool.execute('SELECT id, role FROM users WHERE id = ?', [userId]);
+  if (!users[0]) {
+    logger.warn(`[Payment] upgradeUserToPaidTier: user ${userId} not found`);
+    return;
+  }
+  if (users[0].role === role) {
+    logger.debug(`[Payment] user ${userId} already role ${role}, skipping upgrade`);
+    return;
+  }
+
+  // 2. 生成唯一推荐码
+  const CODE_PREFIX_MAP = {
+    'creator': 'LCRG', 'professional': 'ZYRG',
+    'city_partner': 'CSHH', 'community_station': 'SQZD',
+  };
+  const prefix = CODE_PREFIX_MAP[codeType] || 'LCRG';
+  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let code, attempts = 0;
+  do {
+    let suffix = '';
+    for (let i = 0; i < 4; i++) {
+      suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    code = prefix + suffix;
+    const [existing] = await pool.execute('SELECT id FROM referral_codes WHERE code = ?', [code]);
+    if (!existing[0]) break;
+    attempts++;
+  } while (attempts < 10);
+  if (attempts >= 10) code = prefix + Date.now().toString(36).slice(-4).toUpperCase();
+
+  // 3. 写入 referral_codes 表
+  await pool.execute(
+    `INSERT INTO referral_codes (code, code_type, referrer_id, status, use_count, max_uses, created_by, created_at)
+     VALUES (?, ?, ?, 'active', 0, 0, ?, datetime('now'))`,
+    [code, codeType, userId, userId]
+  );
+
+  // 4. 升级用户身份 + 记录推荐码
+  await pool.execute(
+    `UPDATE users SET role = ?, referral_code = ?, referral_level = 1, updated_at = datetime('now') WHERE id = ?`,
+    [role, code, userId]
+  );
+
+  // 5. 更新 apply_records 为 approved（如有）
+  await pool.execute(
+    `UPDATE apply_records SET status = 'approved', updated_at = datetime('now') WHERE user_id = ? AND target_role = ? AND status = 'pending'`,
+    [userId, role]
+  );
+
+  logger.info(`[Payment] user ${userId} upgraded to ${role}, referral code: ${code}`);
+}
+
 const router = express.Router();
 
 function authMiddleware(req, res, next) {
@@ -182,6 +256,9 @@ router.post('/create', authMiddleware, async (req, res) => {
           referrerId: referrerId
         }, pool);
         logger.debug('[支付] 佣金计算成功');
+
+        // 付费身份升级 + 推荐码生成（联创/专业/城市合伙人等）
+        await upgradeUserToPaidTier(pool, type, req.userId);
       } catch (commErr) {
         logger.error('[支付] 佣金计算失败:', commErr.message);
         // 记录失败到 commission_failures 表便于重试
@@ -364,6 +441,9 @@ router.post('/notify', async (req, res) => {
               }, pool);
 
               logger.debug(`[Commission] Order ${out_trade_no} commission processed`);
+
+              // 付费身份升级 + 推荐码生成（联创/专业/城市合伙人等）
+              await upgradeUserToPaidTier(pool, order.type, order.user_id);
             } catch (commErr) {
               logger.error(`[Commission] Error processing commission for order ${out_trade_no}:`, commErr);
               // 佣金计算失败不影响支付回调，但记录到 commission_failures 表便于重试

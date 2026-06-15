@@ -34,7 +34,6 @@ Page({
     upgradeTargets: [],
 
     // 洞察数据
-    myReferrals: [],           // 我推荐的人（过滤后）
     insightStats: {},
     insightReferralChain: [],
   },
@@ -134,9 +133,6 @@ Page({
       const summary = summaryRes || {};
       const recordsData = recordsRes || {};
       const insight = insightRes || {};
-      // 过滤出我推荐的人
-      const rawChain=insight.referral_chain||[];
-      const myReferrals=rawChain.filter(r=>r.direction==="referrer").map(r=>({...r,dateStr:r.createdAt?new Date(r.createdAt).toLocaleDateString():"--"})).slice(0,10);
       const recentRecords = Array.isArray(recordsData) ? recordsData : (recordsData.records || recordsData.list || []);
       const stats = insight.stats || {};
       const referredUsers = insight.referred_users || [];
@@ -203,7 +199,6 @@ Page({
           settled: r.status === 'settled' || r.settled === true,
         })),
         // 洞察数据
-        myReferrals,
         insightStats: insight.stats || {},
         insightReferralChain: insight.referral_chain || [],
       });
@@ -292,8 +287,6 @@ Page({
   onGoWithdrawRecord() {
     wx.navigateTo({ url: '/subpackages/matchmaker/pages/matchmaker/earnings' });
   },
-
-  onGoReferralDetail() { wx.showToast({ title: '推荐关系详情开发中', icon: 'none' }); },
 
   onShareAppMessage() {
     return {

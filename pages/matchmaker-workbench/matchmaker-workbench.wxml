@@ -106,25 +106,6 @@
     </view>
   </view>
 
-  <!-- 我的推荐 -->
-  <view class="referral-section" wx:if="{{myReferrals.length > 0}}">
-    <view class="referral-head">
-      <text class="referral-title">📊 我的推荐</text>
-      <text class="referral-more" bindtap="onGoReferralDetail">查看全部 ›</text>
-    </view>
-    <view class="referral-list">
-      <view class="referral-item" wx:for="{{myReferrals}}" wx:key="id">
-        <view class="referral-left">
-          <text class="referral-name">{{item.nickname || '未设置'}}</text>
-          <text class="referral-wechat">@{{item.wechat_account || '未绑定'}}</text>
-        </view>
-        <view class="referral-right">
-          <text class="referral-date">{{item.dateStr}}</text>
-        </view>
-      </view>
-    </view>
-  </view>
-
   <!-- 升级入口 -->
   <view class="quick-section" wx:if="{{upgradeTargets.length > 0}}">
     <text class="stats-title">🚀 身份升级</text>

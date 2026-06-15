@@ -1,6 +1,6 @@
 {
   "name": "renren-haomei",
-  "version": "1.0.10",
+  "version": "1.0.13",
   "description": "人人好媒 - 情感社交服务小程序",
   "main": "app.js",
   "scripts": {

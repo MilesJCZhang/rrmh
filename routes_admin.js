@@ -57,18 +57,21 @@ router.get('/dashboard/stats', requireAuth, requireAdmin, (req, res) => {
     }
     
     res.json({
-      totalUsers,
-      todayNewUsers,
-      totalOrders,
-      totalRevenue,
-      pendingPartners,
-      pendingWithdrawals
+      code: 0,
+      data: {
+        totalUsers,
+        todayNewUsers,
+        totalOrders,
+        totalRevenue,
+        pendingPartners,
+        pendingWithdrawals,
+      },
     });
   } catch (error) {
     console.error('[admin] 获取统计数据失败:', error);
     res.status(500).json({
-      success: false,
-      message: '获取统计数据失败'
+      code: -1,
+      message: '获取统计数据失败',
     });
   }
 });

@@ -210,9 +210,9 @@ const bindReferrer = (referrerId, code, options = {}) => {
 
     // 3. 调用后端绑定API，成功后才写本地状态
     const bindTime = new Date().toISOString();
-    // 后端 /v1/referral/bind 期望的字段名是 recommendCode 和 code（camelCase）
+    // 后端 /v1/referral/bind 期望的字段名是 referrer_id（推荐人ID）和 referral_code 或 code（推荐码）
     const requestData = {
-      recommendCode: referrerId || undefined,
+      referrer_id: referrerId || undefined,
       code: code || undefined,
     };
     // 清除 undefined 值
@@ -430,7 +430,11 @@ const bindByCode = (code, options = {}) => {
               request({
                 url: '/v1/auth/wechat-login',
                 method: 'POST',
-                data: { code: res.code },
+                data: {
+                  code: res.code,
+                  referrer_id: verifyResult.referrer_id || undefined,
+                  referral_code: code || undefined,
+                },
                 withToken: false,
               }).then((loginResp) => {
                 const loginData = loginResp.data || loginResp;

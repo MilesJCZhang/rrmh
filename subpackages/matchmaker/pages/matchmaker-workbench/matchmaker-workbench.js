@@ -44,7 +44,6 @@ Page({
     insightStats: {},
     insightReferredUsers: [],
     insightReferralChain: [],
-    myReferrals: [],         // 我推荐的人（过滤后）
 
     // 工作台数据看板（新增）
     workbenchStats: {
@@ -140,16 +139,6 @@ Page({
       const insight = insResult || {};
       const workbenchStats = statsResult?.data || statsResult || {};
 
-      // 过滤出"我推荐的人"，并格式化日期
-      const rawChain = insight.referral_chain || [];
-      const myReferrals = rawChain
-        .filter(r => r.direction === 'referrer')
-        .map(r => ({
-          ...r,
-          dateStr: r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '--'
-        }))
-        .slice(0, 10);
-
       this.setData({
         todayIncome: summary?.todayIncome || '0.00',
         monthIncome: summary?.monthIncome || '0.00',
@@ -163,7 +152,6 @@ Page({
         insightStats: insight.stats || {},
         insightReferredUsers: (insight.referred_users || []).slice(0, 10),
         insightReferralChain: insight.referral_chain || [],
-        myReferrals,
         workbenchStats: {
           partner_matchmaker_count: workbenchStats.partner_matchmaker_count || 0,
           public_matchmaker_count: workbenchStats.public_matchmaker_count || 0,
@@ -377,7 +365,6 @@ Page({
   onGoEarnings()   { wx.navigateTo({ url: '/subpackages/matchmaker/pages/matchmaker/earnings?tab=earnings' }); },
   onGoSalon()      { wx.navigateTo({ url: '/subpackages/social/pages/salon/salon' }); },
   onGoAllRecords() { wx.navigateTo({ url: '/subpackages/matchmaker/pages/matchmaker/earnings' }); },
-  onGoReferralDetail() { wx.showToast({ title: '推荐关系详情开发中', icon: 'none' }); },
 
   onShareAppMessage() {
     return {
