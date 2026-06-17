@@ -16,7 +16,7 @@ const IS_PROD = ENV === 'prod';
 // 2. API 基础地址
 // ======================================================
 const API_BASE_URL_MAP = {
-  dev: 'http://192.168.31.125:3000',
+  dev: 'http://192.168.3.7:3000',
   prod: 'https://rrmhdate.cn',
 };
 const API_BASE_URL = API_BASE_URL_MAP[ENV];
