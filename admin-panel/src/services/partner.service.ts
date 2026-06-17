@@ -32,14 +32,13 @@ export interface PartnerListParams {
 
 export const getPartners = async (params: PartnerListParams): Promise<{ list: Partner[]; total: number }> => {
   const res = await axios.get('/api/admin/partners', { params });
-  const d = res.data || res;
-  const items = d.items || d.list || [];
-  return { list: items, total: d.total || items.length };
+  const data = res.data || [];
+  return { list: data, total: data.length };
 };
 
 export const getPartnerDetail = async (id: number): Promise<Partner> => {
   const res = await axios.get(`/api/admin/partners/${id}`);
-  return (res.data || res) as Partner;
+  return res.data;
 };
 
 export const approvePartner = async (id: number, approved: boolean): Promise<void> => {
@@ -48,7 +47,6 @@ export const approvePartner = async (id: number, approved: boolean): Promise<voi
 
 export const getPartnerEarnings = async (id: number, params?: any): Promise<{ list: PartnerEarning[]; total: number }> => {
   const res = await axios.get(`/api/admin/partners/${id}/earnings`, { params });
-  const d = res.data || res;
-  const items = d.items || d.list || [];
-  return { list: items, total: d.total || items.length };
+  const data = res.data || [];
+  return { list: data, total: data.length };
 };

@@ -9,7 +9,6 @@ import AppLayout from './components/Layout';
 import LoginPage from './pages/Login';
 import DashboardPage from './pages/Dashboard';
 import UsersPage from './pages/Users';
-import VerificationsPage from './pages/Verifications';
 import ActivitiesPage from './pages/Activities';
 import SalonConfigPage from './pages/SalonConfig';
 import ReferralCodesPage from './pages/ReferralCodes';
@@ -23,11 +22,6 @@ import ArchivesPage from './pages/Archives';
 import OrdersPage from './pages/Orders';
 import FundCustodyPage from './pages/FundCustody';
 import SystemSettingsPage from './pages/SystemSettings';
-import FinanceEarningsPage from './pages/Finance/Earnings';
-import FinancePassivePage from './pages/Finance/PassiveEarnings';
-import FinancePaymentsPage from './pages/Finance/Payments';
-import FinanceWithdrawalsPage from './pages/Finance/Withdrawals';
-import ReportsPage from './pages/Reports';
 
 const App: React.FC = () => {
   return (
@@ -55,17 +49,6 @@ const App: React.FC = () => {
               <PrivateRoute>
                 <AppLayout>
                   <UsersPage />
-                </AppLayout>
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/verifications"
-            element={
-              <PrivateRoute>
-                <AppLayout>
-                  <VerificationsPage />
                 </AppLayout>
               </PrivateRoute>
             }
@@ -209,60 +192,6 @@ const App: React.FC = () => {
               <PrivateRoute>
                 <AppLayout>
                   <SystemSettingsPage />
-                </AppLayout>
-              </PrivateRoute>
-            }
-          />
-
-          {/* 财务报表 */}
-          <Route
-            path="/finance/earnings"
-            element={
-              <PrivateRoute>
-                <AppLayout>
-                  <FinanceEarningsPage />
-                </AppLayout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/finance/passive"
-            element={
-              <PrivateRoute>
-                <AppLayout>
-                  <FinancePassivePage />
-                </AppLayout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/finance/payments"
-            element={
-              <PrivateRoute>
-                <AppLayout>
-                  <FinancePaymentsPage />
-                </AppLayout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/finance/withdrawals"
-            element={
-              <PrivateRoute>
-                <AppLayout>
-                  <FinanceWithdrawalsPage />
-                </AppLayout>
-              </PrivateRoute>
-            }
-          />
-
-          {/* 报表中心 */}
-          <Route
-            path="/reports"
-            element={
-              <PrivateRoute>
-                <AppLayout>
-                  <ReportsPage />
                 </AppLayout>
               </PrivateRoute>
             }

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ssh \"ubuntu@175.24.227.251\" \"sed -i 's/referralCode\\\\.usageLogs/referralCode.referralUsageLogs/g' /home/ubuntu/renrenmeihao-api/dist/routes/admin-referral.js && echo 'Fixed dist'\")"
+    ]
+  }
+}

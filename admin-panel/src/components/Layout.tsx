@@ -20,8 +20,6 @@ import {
   AppstoreOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  BarChartOutlined,
-  FundOutlined,
 } from '@ant-design/icons';
 import { logout } from '../utils/auth.util';
 
@@ -42,11 +40,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       key: '/users',
       icon: <UserOutlined />,
       label: '用户管理',
-    },
-    {
-      key: '/verifications',
-      icon: <SafetyCertificateOutlined />,
-      label: '实名认证',
     },
     {
       key: '/activities',
@@ -107,16 +100,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       key: '/fund-custody',
       icon: <BankOutlined />,
       label: '基金托管',
-    },
-    {
-      key: '/finance/earnings',
-      icon: <DollarOutlined />,
-      label: '财务报表',
-    },
-    {
-      key: '/reports',
-      icon: <BarChartOutlined />,
-      label: '报表中心',
     },
     {
       key: '/system-settings',

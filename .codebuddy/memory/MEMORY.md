@@ -8,7 +8,23 @@
 ## 用户偏好
 - 用户希望功能升级基于现有页面扩展，而非新建独立页面（除非必要）
 - 用户关注数据隐私，要求所有数据仅本人可见
-- 用户需要详细的技术实施计划和总结文档
+
+## 生产服务器关键信息（2026-06-17 更新）
+- 服务器：ubuntu@175.24.227.251
+- 后端服务：renrenmeihao-api，PM2 管理，端口 3001
+- 数据库：MySQL `renrenmeihao`，用户 root，密码 Rrmh@2026
+- 关键路径：后端 `/home/ubuntu/renrenmeihao-api/`，管理后台 `/var/www/admin/`
+- Nginx：rrmhdate.cn → 443 端口，管理后台 SPA `/admin/`，API `/api/*`→3001，`/v1/*`→3001
+- 管理后台 API 路径：`/v1/admin/*` 和 `/admin-api/*`（Nginx rewrite → `/api/admin/*`）均可
+- PM2 重启 1344 次（含全部 rebuild 重启），当前稳定运行 26 分钟无异常
+
+## Prisma 模型名注意事项（关键！）
+- 数据库表 `activities` / `activity_registrations`（**不是** `salon` / `salonGroupMember`）
+- 数据库表 `referral_codes`（字段 referrerId，**不是** owner_id）
+- 推荐关系表 `user_referrals` **不在 Prisma schema 中**，使用 `$executeRawUnsafe` 操作
+- **node_modules 已修复**（2026-06-17 08:30）：`rm -rf node_modules && npm install`，`npx tsc` 可正常编译
+- dist 和 src 已双向同步（所有补丁已编译到 dist）
+- `exceljs` 已安装（沙龙导出依赖）
 
 ## 项目约定
 - 前端服务层统一在 `/services/` 目录下扩展，不直接在页面中调用 `request()`
@@ -21,6 +37,35 @@
 - **Prisma 字段命名**：Schema 使用 `created_at` / `updated_at`（snake_case）作为 Prisma Client 字段名，非 `createdAt` / `updatedAt`（camelCase）。所有 Prisma 查询必须用 snake_case 字段名。已有 18 个 dist 文件因此被批量修复过。
 - **Raw SQL 列名**：数据库列名统一用 `updated_at`（snake_case），所有 raw SQL 中的 `updatedAt = NOW()` 需写成 `updated_at = NOW()`
 - `recommendCode` / `recommendedBy` / `createdBy` 等是合法的 camelCase Prisma 字段
+
+## 架构关键事实（2026-06-17 更新）
+
+### 后端服务现状
+- **S1（线上生产）**：renrenmeihao-api，端口 3001，MySQL `renrenmeihao`，Prisma ORM，TypeScript，PM2 管理。路径 `/home/ubuntu/renrenmeihao-api/dist/`。运行状态：在线（pid 1279477，重启 1131 次不稳定）。
+- **S2（本地开发）**：`miniprogram/server.js`，端口 3000，SQLite `renrenmei.db`，better-sqlite3 裸 SQL，JavaScript。未部署到服务器。功能比 S1 更完整（含微信支付、推荐绑定、身份升级、手机号绑定）。
+- **S3（已废弃）**：`/var/www/renrenmei/server/routes/`，18 个路由文件，5月后不再维护。
+
+### S2 独有但 S1 缺失的核心功能
+1. 微信支付完整集成（下单/回调/签名验证/佣金触发）
+2. 微信登录 + 推荐关系绑定（wechat-login / bind-phone）
+3. 付费后身份自动升级 + 推荐码生成
+4. 匹配推荐（matchmaker）、会员建档（member）
+5. user_referrals 表（推荐关系链，MySQL 完全缺失）
+
+### 管理后台现状
+- **A1（唯一生产）**：React 18 + CRA + Ant Design 5，`/var/www/admin/`，`main.dc719cf7.js`（1.9MB），16 个页面 26 条路由。访问 URL：`https://rrmhdate.cn/admin/`
+- **A3/A4/A5/A6**：已于 2026-06-17 全部归档隔离至 `_archived/` ✅
+
+### MySQL 关键表（33张）
+用户/推荐/沙龙/支付/佣金/验资/评分等均已建表。缺失：`user_referrals`（推荐关系）、`commission_failures`（佣金失败记录）、`apply_records`（角色申请）。
+
+### Nginx 路由
+- `/admin/*` → `/var/www/admin/`（管理后台 SPA）
+- `/admin-api/*` → rewrite `/api/admin/*` → proxy 3001
+- `/v1/*` + `/api/*` → proxy 3001
+
+### 输出文档
+- 完整整合方案：`多套后端管理后台全面整合方案.md`（含盘点表、风险分析、两套方案、分步操作流程、统一开发规范）
 
 ## 已完成工作
 - 2026-06-11：推荐码系统统一修复

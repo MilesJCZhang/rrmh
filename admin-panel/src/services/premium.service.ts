@@ -1,6 +1,6 @@
 import axios from '../utils/axios.config';
 
-const API_BASE = '/api/admin';
+const API_BASE = '/v1/admin';
 
 export const premiumService = {
   getVerifications: async (params: { status?: string; page?: number; pageSize?: number }): Promise<any> => {
