@@ -82,6 +82,58 @@
   pointer-events: none; /* 穿透触摸到 swiper-item 的 bindtap 处理跳转 */
 }
 
+/* --- 主题：男推荐官沙龙深海蓝 --- */
+.hero-slide--blue {
+  background: linear-gradient(135deg, #0D47A1 0%, #1976D2 40%, #42A5F5 100%);
+}
+.hero-slide--blue .hs-deco-1 {
+  width: 260rpx; height: 260rpx; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  top: -60rpx; right: -40rpx;
+}
+.hero-slide--blue .hs-deco-2 {
+  width: 160rpx; height: 160rpx; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  bottom: -20rpx; left: -30rpx;
+}
+.hero-slide--blue .hs-deco-3 {
+  width: 80rpx; height: 80rpx; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  top: 40%; left: 60rpx;
+}
+.hero-slide--blue .hs-cta {
+  background: rgba(255, 255, 255, 0.18);
+}
+.hero-slide--blue .hs-hl-dot {
+  background: #90CAF9;
+}
+
+/* --- 主题：女推荐官沙龙玫瑰金 --- */
+.hero-slide--pink {
+  background: linear-gradient(135deg, #880E4F 0%, #C2185B 40%, #F06292 100%);
+}
+.hero-slide--pink .hs-deco-1 {
+  width: 260rpx; height: 260rpx; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  top: -60rpx; left: -40rpx;
+}
+.hero-slide--pink .hs-deco-2 {
+  width: 160rpx; height: 160rpx; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  bottom: -20rpx; right: -30rpx;
+}
+.hero-slide--pink .hs-deco-3 {
+  width: 80rpx; height: 80rpx; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  top: 40%; right: 60rpx;
+}
+.hero-slide--pink .hs-cta {
+  background: rgba(255, 255, 255, 0.18);
+}
+.hero-slide--pink .hs-hl-dot {
+  background: #F48FB1;
+}
+
 /* --- 主题：AI科技蓝 --- */
 .hero-slide--tech {
   background: linear-gradient(135deg, #0F2B5B 0%, #1A4FA0 40%, #2B6CB0 100%);
@@ -314,7 +366,7 @@
   font-weight: 500;
 }
 
-/* ---- 无推荐人引导提示条 ---- */
+/* ---- 推荐码状态提示条 ---- */
 .guide-tip {
   margin: 12rpx 32rpx 8rpx;
   position: relative;
@@ -329,6 +381,14 @@
   border: 1rpx solid rgba(200,16,46,0.06);
 }
 .guide-tip:active { opacity: 0.85; }
+
+/* 已获取推荐码状态（绿色风格） */
+.guide-tip--has-code {
+  background: #F0FFF4;
+  border-color: rgba(72, 187, 120, 0.25);
+  box-shadow: 0 4rpx 16rpx rgba(72, 187, 120, 0.10);
+}
+
 .guide-tip-icon {
   width: 44rpx;
   height: 44rpx;
@@ -338,6 +398,9 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+.guide-tip-icon--success {
+  background: linear-gradient(135deg, #48BB78, #68D391);
 }
 .gti-text {
   color: #FFFFFF;
@@ -350,6 +413,14 @@
   font-weight: 700;
   color: var(--text-primary);
   display: block;
+}
+.guide-tip-code {
+  font-size: 28rpx;
+  font-weight: 800;
+  color: #48BB78;
+  display: block;
+  margin-top: 4rpx;
+  letter-spacing: 2rpx;
 }
 .guide-tip-desc {
   font-size: 20rpx;
@@ -365,6 +436,9 @@
   border-radius: 100rpx;
   flex-shrink: 0;
   font-weight: 500;
+}
+.guide-tip--has-code .guide-tip-arrow {
+  background: linear-gradient(135deg, #48BB78, #68D391);
 }
 
 /* ============================================================
@@ -694,8 +768,8 @@
   background: linear-gradient(155deg, #B8860B 0%, #D4A017 50%, #F0C75E 100%);
   color: #fff;
 }
-/* 男推荐官主体沙龙 - 深蓝渐变 */
-/* 女推荐官主体沙龙 - 玫红渐变 */
+/* 男推荐官主题沙龙 - 深蓝渐变 */
+/* 女推荐官主题沙龙 - 玫红渐变 */
 
 /* 装饰圆圈 */
 .grid2-deco {
@@ -809,12 +883,12 @@
   background: linear-gradient(155deg, #6A1B9A 0%, #AB47BC 100%);
 }
 
-/* 男推荐官主体沙龙 - 深蓝渐变 */
+/* 男推荐官主题沙龙 - 深蓝渐变 */
 .grid4-card--male-salon {
   background: linear-gradient(155deg, #1565C0 0%, #1E88E5 50%, #42A5F5 100%);
   color: #fff;
 }
-/* 女推荐官主体沙龙 - 玫红渐变 */
+/* 女推荐官主题沙龙 - 玫红渐变 */
 .grid4-card--female-salon {
   background: linear-gradient(155deg, #C2185B 0%, #E91E63 50%, #F06292 100%);
   color: #fff;

@@ -108,8 +108,8 @@ function extractCodeFromScanResult(raw) {
   // 1. URL/路径格式：?invitationCode=XXX 或 ?code=XXX
   let match = raw.match(/(?:invitationCode|code)=([A-Z0-9]+)/i);
   if (match) return match[1].toUpperCase();
-  // 2. 纯推荐码格式：如 LCRG001、GYRG001
-  if (raw.match(/^[A-Z]{2,5}\d+$/i)) return raw.toUpperCase();
+  // 2. 纯推荐码格式：如 LCRGI87I、LCRG001、GYRG001（字母+数字混合）
+  if (raw.match(/^[A-Z0-9]{4,12}$/i)) return raw.toUpperCase();
   // 3. scene 格式：invitationCode_XXX 或 referral_XXX
   match = raw.match(/invitationCode[_=]([A-Z0-9]+)/i);
   if (match) return match[1].toUpperCase();
@@ -231,6 +231,8 @@ const bindReferrer = (referrerId, code, options = {}) => {
       wx.setStorageSync(KEYS.REFERRER_ID, referrerId);
       wx.setStorageSync(KEYS.REFERRER_BIND_TIME, bindTime);
       wx.setStorageSync(KEYS.REFERRER_LOCKED, true);
+      // 清除待绑定推荐码（扫码获得的推荐码已消耗）
+      wx.removeStorageSync('invitation_code');
       _safeSetGlobalData({ referrerId });
 
       if (result && result.referrer_info) {
@@ -254,14 +256,15 @@ const bindReferrer = (referrerId, code, options = {}) => {
       resolve({ bound: true, locked: true, isNew: true });
     }).catch((err) => {
       // 后端返回失败，不写本地状态
+      const errMsg = (err && err.message) || '绑定失败，请重试';
+      console.error('[bindReferrer] 绑定失败:', errMsg, err);
       if (options.silent) {
-        // 静默模式：记录失败 ID 到 Storage，避免重复发请求
+        // 静默模式：记录失败 ID 到 Storage，避免重复发请求；同时传递 reason 供调用方展示
         _addSilentFailedId(referrerId);
       } else {
-        console.error('[bindReferrer] 绑定失败:', err);
-        wx.showToast({ title: '绑定失败，请重试', icon: 'none', duration: 2000 });
+        wx.showToast({ title: errMsg, icon: 'none', duration: 2000 });
       }
-      resolve({ bound: false, locked: false, isNew: false });
+      resolve({ bound: false, locked: false, isNew: false, reason: errMsg });
     });
   });
 };
@@ -350,16 +353,15 @@ const verifyCode = (code) => {
       data: { code: code.toUpperCase() },
       withToken: false,
     }).then((resp) => {
-      // request.js 返回完整响应体 {code, message, data}
-      // 实际数据在 resp.data 中
-      const data = resp.data || resp;
+      // request.js 在 body.code === 0 时已返回 body.data（内层对象），所以 resp 直接就是 { valid, code, ... }
+      const data = resp;
       if (data && data.valid) {
         resolve({
           valid: true,
           code: data.code,
-          code_type: data.code_type,
-          referrer_id: data.referrer_id,
-          referrer_name: data.referrer_name,
+          code_type: data.code_type || data.codeType,
+          referrer_id: data.referrer_id || data.referrerId,
+          referrer_name: data.referrer_name || data.referrerName,
           message: data.message || '推荐码有效'
         });
       } else {
@@ -370,7 +372,7 @@ const verifyCode = (code) => {
       }
     }).catch((err) => {
       console.error('[verifyCode] 验证失败:', err);
-      reject(new Error('推荐码验证失败，请稍后重试'));
+      reject(new Error(err?.message || '推荐码验证失败，请稍后重试'));
     });
   });
 };
@@ -411,6 +413,7 @@ const bindByCode = (code, options = {}) => {
       if (!options.silent) {
         wx.showToast({ title: verifyResult.message || '推荐码无效', icon: 'none', duration: 2000 });
       }
+      console.warn('[bindByCode] 验证推荐码失败:', code, verifyResult.message);
       return { bound: false, locked: false, isNew: false, reason: verifyResult.message };
     }
 

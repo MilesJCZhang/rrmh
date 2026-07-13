@@ -31,7 +31,7 @@ Page({
     // Step 3: 从业资料（标签多选 + 补充文本）
     experienceTags: [
       { id: 'e1', label: '社区活动策划', checked: false },
-      { id: 'e2', label: '组织过交友活动', checked: false },
+      { id: 'e2', label: '组织过社交活动', checked: false },
       { id: 'e3', label: '志愿者服务经历', checked: false },
       { id: 'e4', label: '从事过教育/培训', checked: false },
       { id: 'e5', label: '销售/服务行业经验', checked: false },

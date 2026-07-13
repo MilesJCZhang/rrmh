@@ -61,7 +61,11 @@ Page({
   },
 
   onShow() {
+    this._startAutoRefresh();
     this._loadData();
+  },
+  onHide() {
+    this._stopAutoRefresh();
   },
 
   // ===== 构建可升级身份列表 =====
@@ -382,5 +386,16 @@ Page({
       path: '/pages/index/index?from=franchisee&id=' + this.data.userId,
       imageUrl: '/images/share.jpg',
     };
+  },
+
+  _stopAutoRefresh() {
+    if (this._autoRefreshTimer) {
+      clearInterval(this._autoRefreshTimer);
+      this._autoRefreshTimer = null;
+    }
+  },
+  _startAutoRefresh() {
+    this._stopAutoRefresh();
+    this._autoRefreshTimer = setInterval(() => { this._loadData(); }, 30000);
   },
 });

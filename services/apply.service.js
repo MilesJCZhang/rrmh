@@ -13,7 +13,8 @@ const { DEV_MOCK_DATA } = require('../utils/config');
  */
 function applyPublicMatchmaker(params) {
   if (DEV_MOCK_DATA) {
-    return Promise.resolve({ success: true, role: 'public_matchmaker' });
+    const rand4 = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+    return Promise.resolve({ success: true, role: 'public_matchmaker', recommendCode: 'GYRG' + rand4 });
   }
   return request({ url: API.APPLY.PUBLIC_MATCHMAKER, method: 'POST', data: params });
 }
@@ -24,7 +25,8 @@ function applyPublicMatchmaker(params) {
  */
 function applyPartnerMatchmaker(params) {
   if (DEV_MOCK_DATA) {
-    return Promise.resolve({ success: true, role: 'partner_matchmaker', payment_required: true });
+    const rand4 = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+    return Promise.resolve({ success: true, role: 'partner_matchmaker', payment_required: true, recommendCode: 'LCRG' + rand4 });
   }
   return request({ url: API.APPLY.PARTNER_MATCHMAKER, method: 'POST', data: params });
 }
@@ -35,7 +37,8 @@ function applyPartnerMatchmaker(params) {
  */
 function applyProfessionalRecommender(params) {
   if (DEV_MOCK_DATA) {
-    return Promise.resolve({ success: true, role: 'professional_recommender', payment_required: true });
+    const rand4 = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+    return Promise.resolve({ success: true, role: 'professional_recommender', payment_required: true, recommendCode: 'ZYRG' + rand4 });
   }
   return request({ url: API.APPLY.PROFESSIONAL, method: 'POST', data: params });
 }
@@ -46,7 +49,8 @@ function applyProfessionalRecommender(params) {
  */
 function applyCityFranchisee(params) {
   if (DEV_MOCK_DATA) {
-    return Promise.resolve({ success: true, role: 'city_franchisee', payment_required: true });
+    const rand4 = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+    return Promise.resolve({ success: true, role: 'city_franchisee', payment_required: true, recommendCode: 'CSRG' + rand4 });
   }
   return request({ url: API.APPLY.CITY_FRANCHISEE, method: 'POST', data: params });
 }
@@ -57,7 +61,8 @@ function applyCityFranchisee(params) {
  */
 function applyCommunityStation(params) {
   if (DEV_MOCK_DATA) {
-    return Promise.resolve({ success: true, role: 'community_station', status: 'pending' });
+    const rand4 = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+    return Promise.resolve({ success: true, role: 'community_station', status: 'pending', recommendCode: 'FWZG' + rand4 });
   }
   return request({ url: API.APPLY.COMMUNITY_STATION, method: 'POST', data: params });
 }
@@ -67,7 +72,8 @@ function applyCommunityStation(params) {
  */
 function getApplyStatus() {
   if (DEV_MOCK_DATA) {
-    return Promise.resolve({ status: 'pending', role: 'community_station', submitted_at: Date.now() });
+    const rand4 = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+    return Promise.resolve({ status: 'approved', role: 'public_matchmaker', recommendCode: 'GYRG' + rand4, submitted_at: Date.now() });
   }
   return request({ url: API.APPLY.STATUS });
 }

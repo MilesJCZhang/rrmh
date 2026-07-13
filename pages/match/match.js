@@ -184,6 +184,23 @@ Page({
           scoreTier: viewerTier,
         });
 
+        // --- 审核兜底：空列表 + 未建档时填充模拟数据 ---
+        const isReviewFallback = (!list || list.length === 0) && !hasProfile;
+
+        if (isReviewFallback) {
+          const reviewMockList = [
+            { id: 'r1', nickname: '悠然', avatar: '/assets/images/default-avatar.png', age: 28, city: '北京', intro: '热爱生活，喜欢旅行和摄影', tags: ['旅行', '摄影', '美食'], profileScore: 85, scoreTier: 'gold', isUnlocked: false, canOnlineUnlock: true, onlinePrice: 199, role: 'single' },
+            { id: 'r2', nickname: '清风', avatar: '/assets/images/default-avatar.png', age: 26, city: '上海', intro: '金融行业，喜欢阅读和瑜伽', tags: ['阅读', '瑜伽', '咖啡'], profileScore: 78, scoreTier: 'silver', isUnlocked: false, canOnlineUnlock: true, onlinePrice: 299, role: 'single' },
+            { id: 'r3', nickname: '星辰', avatar: '/assets/images/default-avatar.png', age: 30, city: '广州', intro: '互联网从业者，热爱运动和音乐', tags: ['运动', '音乐', '科技'], profileScore: 82, scoreTier: 'gold', isUnlocked: false, canOnlineUnlock: true, onlinePrice: 199, role: 'single' },
+            { id: 'r4', nickname: '花开', avatar: '/assets/images/default-avatar.png', age: 25, city: '深圳', intro: '设计师，喜欢画画和看展', tags: ['设计', '艺术', '宠物'], profileScore: 70, scoreTier: 'silver', isUnlocked: false, canOnlineUnlock: true, onlinePrice: 299, role: 'single' },
+            { id: 'r5', nickname: '阳光', avatar: '/assets/images/default-avatar.png', age: 27, city: '杭州', intro: '教师，喜欢手工和烘焙', tags: ['手工', '烘焙', '园艺'], profileScore: 88, scoreTier: 'gold', isUnlocked: false, canOnlineUnlock: true, onlinePrice: 199, role: 'single' },
+          ];
+          this.setData({ matchList: reviewMockList, hasMore: false });
+          wx.hideLoading();
+          return;
+        }
+        // --- 审核兜底结束 ---
+
         if (!list || list.length === 0) {
           wx.showToast({ title: '暂无推荐，试试调整筛选条件', icon: 'none' });
         }

@@ -131,6 +131,12 @@
   background: #FFF0F0;
 }
 
+/* ========== 昵称输入区域 ========== */
+.form-row .form-input {
+  text-align: right;
+  padding-right: 0;
+}
+
 /* ========== 自我介绍卡片 ========== */
 .intro-card {
   background: var(--bg-white);

@@ -35,8 +35,9 @@
       </view>
       <view class="form-item" wx:else>
         <text class="form-label">推荐码</text>
-        <view class="form-input" style="color:#999;display:flex;align-items:center;">
-          <text>✅ 已通过 {{form.referrerName}} 的推荐码进入</text>
+        <view class="form-input" style="color:#999;display:flex;align-items:center;flex-wrap:wrap;">
+          <text>✅ 已通过 {{form.referrerName || form.referralCode || '推荐官'}} 的推荐码进入</text>
+          <text wx:if="{{form.referrerName && form.referralCode}}" style="margin-left:8rpx;color:#C8102E;font-weight:600;">（{{form.referralCode}}）</text>
         </view>
       </view>
 

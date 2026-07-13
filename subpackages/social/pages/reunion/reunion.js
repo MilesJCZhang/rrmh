@@ -21,6 +21,6 @@ Page({
   },
 
   onEnterPremium() {
-    wx.navigateTo({ url: '/subpackages/social/subpackages/social/pages/reunion/reunion-profile' });
+    wx.navigateTo({ url: '/subpackages/social/pages/reunion/reunion-profile' });
   },
 });

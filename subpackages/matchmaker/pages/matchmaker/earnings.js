@@ -63,16 +63,17 @@ Page({
   },
 
   /**
-   * 加载会员列表 - 调用 /v1/referral/my-insight 获取真实推荐关系
+   * 加载会员列表 - 调用 /v1/member/list 获取推荐官名下的会员
    */
   loadMembers() {
     this.setData({ loading: true });
     request({
-      url: '/v1/referral/my-insight',
+      url: '/v1/member/list',
       method: 'GET',
+      data: { page: this.data.page, page_size: 20 },
     }).then((res) => {
-      const chain = res.referral_chain || [];
-      const list = chain.map((r) => {
+      const data = res.data || res;
+      const list = (data.list || []).map((r) => {
         const role = r.role;
         const isActive = role && role !== 'user' && role !== null;
         const ageStr = r.age ? r.age + '岁' : '';
@@ -86,15 +87,15 @@ Page({
           city: cityStr,
           meta: meta,
           active: isActive,
-          joinDate: r.createdAt ? r.createdAt.split('T')[0] : '--',
+          joinDate: r.bind_time ? r.bind_time.split('T')[0] : (r.created_at ? r.created_at.split('T')[0] : '--'),
           matchCount: 0,
           status: isActive ? '活跃' : '待激活',
         };
       });
       this.setData({
-        members: list,
-        totalMembers: list.length,
-        hasMore: false,
+        members: this.data.page === 1 ? list : this.data.members.concat(list),
+        totalMembers: data.total || list.length,
+        hasMore: list.length >= 20,
         loading: false,
       });
     }).catch((err) => {

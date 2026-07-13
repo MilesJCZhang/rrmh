@@ -97,6 +97,20 @@ const VerificationsPage: React.FC = () => {
       ),
     },
     {
+      title: '真实姓名',
+      dataIndex: 'real_name',
+      key: 'real_name',
+      width: 80,
+      render: (v: string) => v || '-',
+    },
+    {
+      title: '身份证号',
+      dataIndex: 'id_card',
+      key: 'id_card',
+      width: 180,
+      render: (v: string) => v || '-',
+    },
+    {
       title: '认证类型',
       dataIndex: 'verify_type',
       key: 'verify_type',
@@ -225,6 +239,8 @@ const VerificationsPage: React.FC = () => {
                 <p><strong>用户ID：</strong>{currentItem.user_id}</p>
                 <p><strong>昵称：</strong>{currentItem.user_nickname || '-'}</p>
                 <p><strong>手机：</strong>{currentItem.user_phone || '-'}</p>
+                <p><strong>真实姓名：</strong>{currentItem.real_name || '-'}</p>
+                <p><strong>身份证号：</strong>{currentItem.id_card || '-'}</p>
                 <p><strong>认证类型：</strong>{currentItem.verify_type === 'online' ? '在线认证' : '线下认证'}</p>
                 <p><strong>状态：</strong>
                   {currentItem.status === 'pending' ? '待审核' :

@@ -69,7 +69,7 @@
 
   <!-- 状态提示：推荐官只显示实名认证提示；普通用户显示所有 -->
   <view class="status-tips px-32" wx:if="{{!hasProfile || !isVerified || (!hasAvatar && !isMatchmaker) || (needsWechatAccount && isMatchmaker)}}">
-    <view class="status-tip" wx:if="{{!isGuest && !isMatchmaker && !hasProfile}}" bindtap="onGoRegister">
+    <view class="status-tip" wx:if="{{!isGuest && !isMatchmaker && !hasProfile && !profileCompleted}}" bindtap="onGoRegister">
       <text class="st-icon">📋</text>
       <text class="st-text">完善建档资料，开始智能推荐</text>
       <text class="st-arrow">›</text>
@@ -91,8 +91,8 @@
     </view>
   </view>
 
-  <!-- 菜单列表：会员/访客（登录且非推荐官即显示，兜底） -->
-  <view class="menu-list px-32 mt-24" wx:if="{{!isGuest && !isMatchmaker}}">
+  <!-- 菜单列表：会员/访客（登录且非推荐官即显示，兜底；或切换到了普通角色身份时也显示） -->
+  <view class="menu-list px-32 mt-24" wx:if="{{!isGuest && (!isMatchmaker || userRole === 'single' || userRole === 'user' || userRole === 'member')}}">
     <view class="menu-group">
       <view class="menu-item" bindtap="onGoRegister">
         <text class="menu-icon">{{hasProfile ? '✏️' : '📋'}}</text>

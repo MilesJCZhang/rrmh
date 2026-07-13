@@ -272,7 +272,7 @@ Page({
         } else if (res.tapIndex === 1) {
           // 预约咨询
           wx.navigateTo({
-            url: `/pages/matchmaker/appointment/appointment?id=${matchmakerId}`
+            url: `/subpackages/matchmaker/pages/matchmaker/detail/detail?id=${matchmakerId}`
           });
         } else {
           // 拨打电话

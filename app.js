@@ -3,6 +3,7 @@ const { request, refreshToken } = require('./utils/request');
 const { bindReferrer, initReferral, bindByCode, parseReferralScene } = require('./utils/referral');
 const authService = require('./services/auth.service');
 const { preloadConfig } = require('./utils/commissionRules');
+const { isMatchmakerRole } = require('./constants/roles');
 
 App({
   globalData: {
@@ -95,7 +96,8 @@ App({
           this._profileFetching = false;
           if (userData) {
             this._syncUserData(userData);
-            this.globalData.isLogin = true; // 修复：同步后标记已登录，防止 onShow 重复触发
+            this.globalData.isLogin = true;
+            this._lastProfileRefresh = Date.now();
           }
         })
         .catch((err) => {
@@ -107,6 +109,22 @@ App({
             console.warn('[checkLogin] 获取用户信息失败（非401，不触发重新登录）:', err && err.message);
           }
         });
+    } else if (token && this.globalData.isLogin) {
+      // 已登录状态：每60秒最少刷新一次profile（检测角色变更等）
+      const now = Date.now();
+      const lastRefresh = this._lastProfileRefresh || 0;
+      if (now - lastRefresh > 60000 && !this._profileFetching) {
+        this._profileFetching = true;
+        request({ url: '/v1/user/profile', method: 'GET' })
+          .then(userData => {
+            this._profileFetching = false;
+            if (userData) {
+              this._syncUserData(userData);
+              this._lastProfileRefresh = Date.now();
+            }
+          })
+          .catch(() => { this._profileFetching = false; });
+      }
     } else if (!token && !this.globalData.isLogin) {
       // 无 token，自动登录
       this.login();
@@ -153,7 +171,14 @@ App({
     }
 
     // 如果已登录，立即绑定
-    if (this.globalData.isLogin && referrerId) {
+    // 优先使用 invitationCode（bindByCode 会验证推荐码并正确更新 use_count）
+    // bindReferrer 仅在只有 referrerId（无推荐码）时单独使用
+    if (this.globalData.isLogin && invitationCode) {
+      bindByCode(invitationCode, { silent: true }).catch(() => {
+        wx.removeStorageSync('invitation_code');
+        delete this.globalData.invitationCode;
+      });
+    } else if (this.globalData.isLogin && referrerId) {
       bindReferrer(referrerId, null, { silent: true }).catch(() => {
         wx.removeStorageSync('pending_referrer_id');
         delete this.globalData.pendingReferrerId;
@@ -256,27 +281,31 @@ App({
 
             if (data.user) {
               this._syncUserData(data.user);
-              // 检查信息是否完整，不完整则提示
+              // 检查用户是否为推荐官角色（访客/会员不提示）
               const u = data.user;
-              const needWechatAccount = !u.wechatAccount;
-              const needProfile = !u.nickname || u.nickname === '未设置昵称';
-              const needAvatar = !u.avatar;
-              if (needWechatAccount || needProfile || needAvatar) {
-                // 只提示一次，避免每次登录都弹窗（完善后数据持久化在服务端）
-                if (!wx.getStorageSync('profile_prompted')) {
-                  setTimeout(() => {
-                    wx.showModal({
-                      title: '完善个人信息',
-                      content: '请补充微信号、头像和昵称，以便获得更好的体验。',
-                      confirmText: '去完善',
-                      success: (res) => {
-                        if (res.confirm) {
-                          wx.switchTab({ url: '/pages/mine/mine' });
+              const roleList = u.roleList || (u.role ? [u.role] : []);
+              const isMatchmaker = roleList.some(r => isMatchmakerRole(r));
+              if (isMatchmaker) {
+                const needWechatAccount = !u.wechatAccount;
+                const needProfile = !u.nickname || u.nickname === '未设置昵称';
+                const needAvatar = !u.avatar;
+                if (needWechatAccount || needProfile || needAvatar) {
+                  // 只提示一次，避免每次登录都弹窗（完善后数据持久化在服务端）
+                  if (!wx.getStorageSync('profile_prompted')) {
+                    setTimeout(() => {
+                      wx.showModal({
+                        title: '完善个人信息',
+                        content: '请补充微信号、头像和昵称，以便获得更好的体验。',
+                        confirmText: '去完善',
+                        success: (res) => {
+                          if (res.confirm) {
+                            wx.switchTab({ url: '/pages/mine/mine' });
+                          }
                         }
-                      }
-                    });
-                    wx.setStorageSync('profile_prompted', true);
-                  }, 1500);
+                      });
+                      wx.setStorageSync('profile_prompted', true);
+                    }, 1500);
+                  }
                 }
               }
             } else {

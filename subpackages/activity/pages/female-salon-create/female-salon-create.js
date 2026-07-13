@@ -248,14 +248,12 @@ Page({
         title: title.trim(),
         description: description.trim(),
         location: location.trim(),
-        start_time: startTime,
-        end_time: endTime || undefined,
-        max_participants: maxParticipants,
-        max_recommenders: maxRecommenders,
-        registration_fee: registrationFee,
-        cover_image: coverImage || undefined,
+        startTime: startTime,
+        endTime: endTime || undefined,
+        maxParticipants: maxParticipants,
+        registrationFee: registrationFee,
+        coverImage: coverImage || undefined,
         type: salonType,
-        total_cap: maxParticipants,
       };
 
       if (isEditMode && salonId) {

@@ -138,9 +138,23 @@ function getVerificationLevel() {
 
 /**
  * 检查是否推荐官（任一推荐官角色）
+ * 优先检查 userInfo.roleList（动态计算所得），兜底检查 userRole
  * @returns {boolean}
  */
 function isMatchmaker() {
+  // 1. 优先从 userInfo.roleList 检查（roleList 由 calculateUserRoles 动态计算）
+  const userInfo = getUserInfo();
+  if (userInfo && Array.isArray(userInfo.roleList) && userInfo.roleList.length > 0) {
+    return userInfo.roleList.some(r => [
+      'public_matchmaker',
+      'partner_matchmaker',
+      'city_franchisee',
+      'professional_recommender',
+      'community_station'
+    ].includes(r));
+  }
+
+  // 2. 兜底：从 userRole（单角色）检查
   const role = getUserRole();
   return [
     'public_matchmaker',
@@ -346,6 +360,14 @@ function syncUserData(user, options = {}) {
   
   if (syncRole && user.role !== undefined) {
     setUserRole(user.role);
+  }
+
+  // 同步 roleList（由后端 calculateUserRoles 动态计算）
+  if (user.roleList !== undefined && Array.isArray(user.roleList)) {
+    const userInfo = getUserInfo() || {};
+    userInfo.roleList = user.roleList;
+    wx.setStorageSync('user_info', userInfo);
+    _getGlobalData().userInfo = userInfo;
   }
   
   if (syncProfile) {

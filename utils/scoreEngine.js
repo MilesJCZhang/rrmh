@@ -93,23 +93,49 @@ function getTierLabel(tier) {
  */
 function isFieldFilled(fieldKey, userData) {
   if (!userData) return false;
-  const val = userData[fieldKey];
+
+  // camelCase → snake_case 映射（DB stored columns are snake_case）
+  const SNAKE_CASE_MAP = {
+    hasProperty: 'has_property',
+    hasCar: 'has_car',
+    healthTags: 'health_tags',
+    sleepHabit: 'sleep_habit',
+    sportHabit: 'sport_habit',
+    dietTags: 'diet_tags',
+    expectAgeMin: 'expect_age_min',
+    expectAgeMax: 'expect_age_max',
+    expectEducation: 'expect_education',
+    expectIncome: 'expect_income',
+    marriageExpect: 'marriage_expect',
+    maritalStatus: 'marital_status',
+    wechatAccount: 'wechat_account',
+  };
+
+  let val = userData[fieldKey];
+  // camelCase 找不到时尝试 snake_case 变体
+  if (val === undefined) {
+    const altKey = SNAKE_CASE_MAP[fieldKey];
+    if (altKey && userData[altKey] !== undefined) {
+      val = userData[altKey];
+    }
+  }
   if (val === undefined || val === null || val === '') return false;
   if (Array.isArray(val) && val.length === 0) return false;
-  // 特殊字段映射
+
+  // 特殊字段映射（这些字段的值来源与 key 不完全对应）
   switch (fieldKey) {
     case 'idVerification':
-      return userData.id_card_front_image && userData.id_card_back_image;
+      return !!(userData.id_card_front_image || userData.id_card_front_image) && !!(userData.id_card_back_image || userData.id_card_back_image);
     case 'faceAuth':
-      return userData.face_auth_status === 'approved';
+      return (userData.face_auth_status || userData.faceAuth) === 'approved';
     case 'propertyProof':
-      return userData.property_images && userData.property_images !== '[]';
+      return !!(userData.property_images && userData.property_images !== '[]');
     case 'vehicleProof':
-      return userData.vehicle_images && userData.vehicle_images !== '[]';
+      return !!(userData.vehicle_images && userData.vehicle_images !== '[]');
     case 'bankDepositProof':
-      return !!userData.bank_deposit_proof;
+      return !!(userData.bank_deposit_proof || userData.bankDepositProof);
     case 'insuranceProof':
-      return !!userData.insurance_proof;
+      return !!(userData.insurance_proof || userData.insuranceProof);
     default:
       return true; // 普通字段有值即可
   }

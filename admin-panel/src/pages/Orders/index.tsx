@@ -55,13 +55,23 @@ const OrdersPage: React.FC = () => {
     online_unlock_silver: '线上解锁(良好)',
     salon_signup: '沙龙报名',
     single_registration: '会员建档',
+    partner_upgrade: '合伙人升级',
+    partner_fee: '加盟费',
+    station_fee: '驿站费',
+    activity_fee: '活动费',
+    registration: '报名费',
+    recharge: '充值',
   };
 
   const statusMap: Record<string, { color: string; text: string }> = {
     pending: { color: 'orange', text: '待支付' },
     paid: { color: 'green', text: '已支付' },
+    success: { color: 'green', text: '支付成功' },
     refunded: { color: 'red', text: '已退款' },
     cancelled: { color: 'default', text: '已取消' },
+    failed: { color: 'red', text: '支付失败' },
+    expired: { color: 'default', text: '已过期' },
+    closed: { color: 'default', text: '已关闭' },
   };
 
   const columns = [
@@ -94,7 +104,7 @@ const OrdersPage: React.FC = () => {
       dataIndex: 'total_fee',
       key: 'total_fee',
       width: 100,
-      render: (fee: number) => <strong style={{ color: '#f5222d' }}>¥{fee / 100}</strong>,
+      render: (fee: number) => <strong style={{ color: '#f5222d' }}>¥{Number(fee).toFixed(2)}</strong>,
     },
     { title: '创建时间', dataIndex: 'created_at', key: 'created_at', width: 180 },
     {
@@ -120,7 +130,7 @@ const OrdersPage: React.FC = () => {
                 <Statistic
                   title={typeMap[stat.type] || stat.type}
                   value={stat.count}
-                  suffix={`笔 / ¥${stat.total_amount / 100}`}
+                  suffix={`笔 / ¥${Number(stat.total_amount).toFixed(2)}`}
                 />
               </Col>
             ))}
@@ -209,7 +219,7 @@ const OrdersPage: React.FC = () => {
               </Tag>
             </Descriptions.Item>
             <Descriptions.Item label="金额">
-              <strong style={{ color: '#f5222d' }}>¥{currentOrder.total_fee / 100}</strong>
+              <strong style={{ color: '#f5222d' }}>¥{Number(currentOrder.total_fee).toFixed(2)}</strong>
             </Descriptions.Item>
             <Descriptions.Item label="创建时间" span={2}>
               {currentOrder.created_at}

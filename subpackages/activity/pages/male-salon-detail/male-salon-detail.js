@@ -180,15 +180,16 @@ Page({
 
     const userInfo = authService.getUserInfo() || {};
     const cachedGender = userInfo.gender || '';
-    const genderVal = cachedGender === '男' ? 'male' : (cachedGender === '女' ? 'female' : '');
+    const genderVal = cachedGender === '男' || cachedGender === 'male' ? 'male' : (cachedGender === '女' || cachedGender === 'female' ? 'female' : '');
     const genderIdx = genderVal === 'male' ? 0 : (genderVal === 'female' ? 1 : 2);
+    const displayGender = genderVal === 'male' ? '男' : (genderVal === 'female' ? '女' : '');
 
     this.setData({
       showSignupForm: true,
       signupForm: {
         name: userInfo.nickname || userInfo.name || '',
         mobile: userInfo.mobile || '',
-        gender: genderVal,
+        gender: displayGender,
         genderIndex: genderIdx,
         age: userInfo.age || '',
         industry: '',
@@ -218,6 +219,7 @@ Page({
   onSignupAgeInput(e) { this.setData({ 'signupForm.age': e.detail.value }); },
   onSignupIndustryInput(e) { this.setData({ 'signupForm.industry': e.detail.value }); },
   onSignupIdentityChange(e) { this.setData({ 'signupForm.identity': e.detail.value }); },
+  onSelectIdentity(e) { this.setData({ 'signupForm.identity': e.currentTarget.dataset.value }); },
   onSignupPositionInput(e) { this.setData({ 'signupForm.position': e.detail.value }); },
   onSignupBusinessInput(e) { this.setData({ 'signupForm.business': e.detail.value }); },
   onSignupAdvantageInput(e) { this.setData({ 'signupForm.advantage': e.detail.value }); },
@@ -290,10 +292,10 @@ Page({
     this.setData({ submitting: true });
     try {
       let submitGender = signupForm.gender;
-      const toEn = { '男': 'male', '女': 'female' };
+      const toEn = { '男': 'male', '女': 'female', 'male': 'male', 'female': 'female' };
       submitGender = toEn[submitGender] || submitGender;
       const authGender = authService.getUserInfo()?.gender || '';
-      if (authGender) submitGender = authGender === '男' ? 'male' : 'female';
+      if (authGender) submitGender = authGender === '男' || authGender === 'male' ? 'male' : 'female';
 
       await request({
         url: API.SALON.JOIN.replace(':id', this.salonId),

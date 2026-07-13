@@ -31,7 +31,7 @@ const ScoreRulesPage: React.FC = () => {
     setLoading(true);
     try {
       const res = await scoreService.getRules();
-      if (res.code === 0) {
+      if (res.code === 200 || res.code === 0) {
         setRules(res.data);
       }
     } catch (error) {
@@ -54,7 +54,7 @@ const ScoreRulesPage: React.FC = () => {
     try {
       const values = await form.validateFields();
       const res = await scoreService.updateRule(editingRule.id, values);
-      if (res.code === 0) {
+      if (res.code === 200 || res.code === 0) {
         message.success('更新成功');
         setEditModalVisible(false);
         fetchRules();
@@ -67,7 +67,7 @@ const ScoreRulesPage: React.FC = () => {
   const handleToggle = async (id: number) => {
     try {
       const res = await scoreService.toggleRule(id);
-      if (res.code === 0) {
+      if (res.code === 200 || res.code === 0) {
         message.success(res.message);
         fetchRules();
       }

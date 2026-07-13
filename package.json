@@ -1,6 +1,6 @@
 {
   "name": "renren-haomei",
-  "version": "1.0.13",
+  "version": "1.0.24",
   "description": "人人好媒 - 情感社交服务小程序",
   "main": "app.js",
   "scripts": {
@@ -10,8 +10,8 @@
     "lint": "eslint miniprogram/",
     "build": "echo '小程序不需要传统构建步骤'",
     "dev": "echo '请使用微信开发者工具运行'",
-    "server": "node server.js",
-    "server:dev": "nodemon server.js"
+    "server": "node backend/s2/server.js",
+    "server:dev": "nodemon backend/s2/server.js"
   },
   "keywords": [
     "wechat",
@@ -32,8 +32,10 @@
     "express-validator": "^7.3.2",
     "js2xmlparser": "^5.0.0",
     "jsonwebtoken": "^9.0.3",
+    "multer": "^2.2.0",
     "node-fetch": "^2.7.0",
     "pdfkit": "^0.18.0",
+    "qrcode": "^1.5.4",
     "weui-miniprogram": "^1.2.3",
     "xml2js": "^0.6.2"
   },

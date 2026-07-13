@@ -149,7 +149,7 @@
 
       <!-- 随行人员 -->
       <view class="section-title mt-16">随行人员（最多2人）</view>
-      <view wx:for="{{signupForm.companions}}" wx:key="index">
+      <view wx:for="{{signupForm.companions}}" wx:key="index" class="companion-card">
         <view class="form-group">
           <view class="form-label">随行{{index+1}}姓名 *</view>
           <input class="form-input" placeholder="请输入姓名" value="{{item.name}}" data-index="{{index}}" bindinput="onSignupCompanionNameInput" />

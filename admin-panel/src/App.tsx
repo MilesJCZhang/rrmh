@@ -22,6 +22,12 @@ import ArchivesPage from './pages/Archives';
 import OrdersPage from './pages/Orders';
 import FundCustodyPage from './pages/FundCustody';
 import SystemSettingsPage from './pages/SystemSettings';
+import VerificationsPage from './pages/Verifications';
+import ReportsPage from './pages/Reports';
+import FinanceEarnings from './pages/Finance/Earnings';
+import FinancePayments from './pages/Finance/Payments';
+import FinancePassiveEarnings from './pages/Finance/PassiveEarnings';
+import FinanceWithdrawals from './pages/Finance/Withdrawals';
 
 const App: React.FC = () => {
   return (
@@ -192,6 +198,68 @@ const App: React.FC = () => {
               <PrivateRoute>
                 <AppLayout>
                   <SystemSettingsPage />
+                </AppLayout>
+              </PrivateRoute>
+            }
+          />
+
+          {/* P3 新注册页面 */}
+          <Route
+            path="/verifications"
+            element={
+              <PrivateRoute>
+                <AppLayout>
+                  <VerificationsPage />
+                </AppLayout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <PrivateRoute>
+                <AppLayout>
+                  <ReportsPage />
+                </AppLayout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/finance/earnings"
+            element={
+              <PrivateRoute>
+                <AppLayout>
+                  <FinanceEarnings />
+                </AppLayout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/finance/payments"
+            element={
+              <PrivateRoute>
+                <AppLayout>
+                  <FinancePayments />
+                </AppLayout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/finance/passive-earnings"
+            element={
+              <PrivateRoute>
+                <AppLayout>
+                  <FinancePassiveEarnings />
+                </AppLayout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/finance/withdrawals"
+            element={
+              <PrivateRoute>
+                <AppLayout>
+                  <FinanceWithdrawals />
                 </AppLayout>
               </PrivateRoute>
             }

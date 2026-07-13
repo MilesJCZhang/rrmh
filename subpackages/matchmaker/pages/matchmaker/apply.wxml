@@ -10,6 +10,17 @@
       <view class="atb-desc">免费注册 · 提交自动通过</view>
     </view>
 
+    <!-- 推荐码展示（访客通过分享进入） -->
+    <view class="invite-code-card" wx:if="{{existingReferralCode}}">
+      <view class="icc-icon">🔗</view>
+      <view class="icc-body">
+        <view class="icc-label">您通过推荐链接进入</view>
+        <view class="icc-code-row">
+          <text class="icc-code">推荐码：{{existingReferralCode}}</text>
+        </view>
+      </view>
+    </view>
+
     <!-- Step 1: 基础身份 -->
     <view class="form-section">
       <view class="fs-header">
@@ -88,6 +99,17 @@
       <view class="atb-emoji">👑</view>
       <view class="atb-title">联创推荐官</view>
       <view class="atb-desc">运营基金 ¥399 · 享沙龙补贴 + 全部权益</view>
+    </view>
+
+    <!-- 推荐码展示（访客通过分享进入） -->
+    <view class="invite-code-card" wx:if="{{existingReferralCode}}">
+      <view class="icc-icon">🔗</view>
+      <view class="icc-body">
+        <view class="icc-label">您通过推荐链接进入</view>
+        <view class="icc-code-row">
+          <text class="icc-code">推荐码：{{existingReferralCode}}</text>
+        </view>
+      </view>
     </view>
 
     <!-- Step 1: 基础身份信息 -->

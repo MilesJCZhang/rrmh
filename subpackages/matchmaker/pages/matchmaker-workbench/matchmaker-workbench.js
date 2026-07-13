@@ -71,10 +71,14 @@ Page({
   },
 
   onShow() {
+    this._startAutoRefresh();
     ensureLogin().then(() => {
       this._loadData();
       this._buildUpgradeTargets();
     }).catch(() => {});
+  },
+  onHide() {
+    this._stopAutoRefresh();
   },
 
   // ===== 权限检查 =====
@@ -88,7 +92,10 @@ Page({
     const userInfo = authService.getUserInfo() || {};
     const role = userInfo.role || authService.getUserRole();
     const rawRole = (role || '').trim().toLowerCase().replace(/_/g, '');
-    const isPartner = rawRole.includes('partner') || role === commissionRules.USER_ROLES.PARTNER_MATCHMAKER;
+
+    // 兼容角色别名：creator → partner_matchmaker（联创推荐官）
+    const isPartner = rawRole.includes('partner') || rawRole === 'creator'
+      || role === commissionRules.USER_ROLES.PARTNER_MATCHMAKER;
     const isPublic = rawRole.includes('public') || role === commissionRules.USER_ROLES.PUBLIC_MATCHMAKER;
 
     if (!isPublic && !isPartner) {
@@ -371,5 +378,16 @@ Page({
       title: '人人媒好·推荐官',
       path: '/pages/index/index?from=matchmaker&id=' + this.data.userId,
     };
+  },
+
+  _stopAutoRefresh() {
+    if (this._autoRefreshTimer) {
+      clearInterval(this._autoRefreshTimer);
+      this._autoRefreshTimer = null;
+    }
+  },
+  _startAutoRefresh() {
+    this._stopAutoRefresh();
+    this._autoRefreshTimer = setInterval(() => { this._loadData(); }, 30000);
   },
 });

@@ -214,13 +214,10 @@ Page({
         location: location.trim(),
         startTime,
         endTime: endTime || undefined,
-        max_per_gender: maxPerGender || 3,
-        max_participants: (maxPerGender || 3) * 2,
-        registration_fee: registrationFee,
-        cover_image: coverImage || undefined,
-        is_grouped: isGrouped,
-        allowed_tiers: allowedTiers.join(','),
-        week_salon_type: salonType === 'male_salon' ? 'male' : (salonType === 'female_salon' ? 'female' : undefined),
+        maxParticipants: (maxPerGender || 3) * 2,
+        registrationFee: registrationFee,
+        coverImage: coverImage || undefined,
+        type: salonType, // 后端期望 male_salon / female_salon
       });
 
       wx.showToast({ title: '提交成功，等待审核', icon: 'none', duration: 2500 });

@@ -237,6 +237,9 @@ Page({
       isMatchmakerRole,
       canJoinMember,
       canBecomeMatchmaker,
+      // 资料完善状态（评分≥100分视为已完善，隐藏编辑按钮）
+      profileScore: app.globalData.profileScore || wx.getStorageSync('profile_score') || 0,
+      profileCompleted: (app.globalData.profileScore || wx.getStorageSync('profile_score') || 0) >= 100,
       currentRoleLabel,
     });
 
@@ -380,13 +383,8 @@ Page({
   },
 
   onGoRegister() {
-    // 已建档会员 → 跳转到资料完善页面（不调起支付）
-    const hasProfile = authService && authService.hasProfile();
-    if (hasProfile) {
-      wx.navigateTo({ url: '/pages/profile/profile' });
-      return;
-    }
-    // 未建档 → 跳转到建档页面
+    if (this.data.profileCompleted) return; // 满分，不展示按钮，防御性返回
+    // 所有用户跳转会员建档页完善资料
     wx.navigateTo({ url: '/pages/register/register' });
   },
 
@@ -444,6 +442,8 @@ Page({
   // 工作台：按角色跳转到各自收益平台
   onGoWorkbench() {
     const role = this.data.userRole;
+    // 标准化角色名：兼容后端返回的别名（如 creator → partner_matchmaker）
+    const normalizedRole = this._normalizeWorkbenchRole(role);
     const routeMap = {
       public_matchmaker:       '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench',
       partner_matchmaker:      '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench',
@@ -451,8 +451,31 @@ Page({
       professional_recommender: '/subpackages/matchmaker/pages/recommender/recommender',
       community_station:        '/subpackages/partner/pages/community-station/workbench/workbench',
     };
-    const url = routeMap[role] || '/subpackages/matchmaker/pages/matchmaker/matchmaker';
+    const url = routeMap[normalizedRole] || routeMap[role] || '/subpackages/matchmaker/pages/matchmaker/matchmaker';
     wx.navigateTo({ url });
+  },
+
+  // 标准化工作台角色名（兼容后端别名）
+  _normalizeWorkbenchRole(role) {
+    if (!role) return role;
+    const raw = role.toLowerCase().replace(/_/g, '').trim();
+    // creator → partner_matchmaker（联创推荐官的数据库别名）
+    if (raw === 'creator' || raw.includes('partner') || raw.includes('lianchuang')) {
+      return 'partner_matchmaker';
+    }
+    if (raw.includes('public') || raw.includes('gongyi')) {
+      return 'public_matchmaker';
+    }
+    if (raw.includes('franchisee') || raw.includes('chengshi') || raw.includes('hehuoren')) {
+      return 'city_franchisee';
+    }
+    if (raw.includes('professional') || raw.includes('zhuanye')) {
+      return 'professional_recommender';
+    }
+    if (raw.includes('community') || raw.includes('fuwuzhan')) {
+      return 'community_station';
+    }
+    return role;
   },
 
   // 社交中心（非工作台入口，普通用户也会用）
@@ -627,6 +650,12 @@ Page({
     wx.scanCode({
       onlyFromCamera: false,
       success: (res) => {
+        // 微信小程序码（太阳码）的 scene 参数无法通过 wx.scanCode 获取
+        // 请使用推广码页面中的普通二维码，或手动输入推荐码
+        if (res.scanType === 'WX_CODE') {
+          this.setData({ showCodeModal: true, inputCode: '', codeError: '请扫描普通二维码或手动输入推荐码', codeInputFocus: true });
+          return;
+        }
         const raw = (res.result || '').trim();
         if (!raw) {
           wx.showToast({ title: '二维码内容为空', icon: 'none' });
@@ -634,7 +663,7 @@ Page({
         }
         const code = extractCodeFromScanResult(raw);
         if (!code) {
-          wx.showToast({ title: '无法识别推荐码', icon: 'none' });
+          this.setData({ showCodeModal: true, inputCode: '', codeError: '请手动输入推荐码', codeInputFocus: true });
           return;
         }
         this._doBindAndGoRegister(code);
@@ -658,7 +687,9 @@ Page({
     bindByCode(code, { silent: true }).then((bindResult) => {
       wx.hideLoading();
       if (!bindResult.bound && !bindResult.locked) {
-        wx.showToast({ title: '绑定失败，请重试', icon: 'none' });
+        const msg = bindResult.reason || '绑定失败，请重试';
+        wx.showToast({ title: msg, icon: 'none', duration: 2500 });
+        console.error('[_doBindAndGoRegister] 绑定失败, 原因:', bindResult.reason, 'code:', code);
         return;
       }
       // 绑定成功（或已有推荐关系），跳转到建档页面填写资料

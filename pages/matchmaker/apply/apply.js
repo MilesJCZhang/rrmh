@@ -6,6 +6,7 @@ Page({
     form: {
       real_name: '',
       gender: 'male', // 默认值
+      age: '',
       phone: '',
       wechat: '',
       referrer_id: ''
@@ -42,6 +43,10 @@ Page({
       wx.showToast({ title: '请输入姓名', icon: 'none' });
       return;
     }
+    if (!form.age || form.age < 18 || form.age > 100) {
+      wx.showToast({ title: '请输入有效年龄（18-100岁）', icon: 'none' });
+      return;
+    }
     if (!form.phone.trim()) {
       wx.showToast({ title: '请输入手机号', icon: 'none' });
       return;
@@ -53,10 +58,32 @@ Page({
     try {
       const result = await applyService.applyPublicMatchmaker(form);
       wx.hideLoading();
-      wx.showToast({ title: '申请提交成功', icon: 'success' });
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 1500);
+
+      // 从返回数据中获取推荐码
+      const data = result.data || result;
+      const recommendCode = data.recommendCode || '';
+
+      if (recommendCode) {
+        // 展示推荐码弹窗
+        wx.showModal({
+          title: '🎉 申请成功',
+          content: `您已成为「公益推荐官」\n您的推荐码：${recommendCode}\n分享推荐码给朋友，推荐建档每单赚 99 元！`,
+          confirmText: '查看推广码',
+          confirmColor: '#C8102E',
+          success: (modalRes) => {
+            if (modalRes.confirm) {
+              wx.redirectTo({ url: '/pages/matchmaker/qrcode' });
+            } else {
+              wx.navigateBack();
+            }
+          },
+        });
+      } else {
+        wx.showToast({ title: '申请提交成功', icon: 'success' });
+        setTimeout(() => {
+          wx.navigateBack();
+        }, 1500);
+      }
     } catch (err) {
       wx.hideLoading();
       wx.showToast({ title: err.message || '提交失败', icon: 'none' });

@@ -224,7 +224,7 @@ Page({
     const { orderInfo } = this.data;
     if (orderInfo && orderInfo.matchmakerId) {
       wx.navigateTo({
-        url: `/pages/matchmaker/appointment/appointment?id=${orderInfo.matchmakerId}`
+        url: `/subpackages/matchmaker/pages/matchmaker/detail/detail?id=${orderInfo.matchmakerId}`
       });
     }
   },
@@ -305,9 +305,7 @@ Page({
       confirmText: '查看发票',
       success: (res) => {
         if (res.confirm) {
-          wx.navigateTo({
-            url: `/pages/user/invoice/invoice?orderId=${orderId}`
-          });
+          wx.showToast({ title: '请联系客服开具发票', icon: 'none' });
         }
       }
     });

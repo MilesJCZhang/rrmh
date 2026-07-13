@@ -21,8 +21,13 @@ export interface WithdrawalListParams {
 
 export const getWithdrawals = async (params: WithdrawalListParams): Promise<{ list: Withdrawal[]; total: number }> => {
   const res = await axios.get('/api/admin/withdrawals', { params });
-  const data = res.data || [];
-  return { list: data, total: data.length };
+  // 兼容两种后端响应格式：
+  // 1) admin-finance: { code, message, data: { list: [...], pagination: { total } } }
+  // 2) adminController: { code, message, data: { list: [...], total } }
+  const payload = res.data || res;
+  const list = Array.isArray(payload) ? payload : (payload.list || []);
+  const total = payload.pagination?.total ?? payload.total ?? (Array.isArray(payload) ? payload.length : 0);
+  return { list, total };
 };
 
 export const approveWithdrawal = async (id: number, approved: boolean): Promise<void> => {

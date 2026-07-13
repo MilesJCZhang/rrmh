@@ -47,12 +47,13 @@ const Earnings: React.FC = () => {
     endDate: '',
   });
   const [searchForm] = Form.useForm();
+  const [earningsStats, setEarningsStats] = useState({ today: 0, settled: 0, pending: 0 });
 
   const loadList = useCallback(
     async (page = 1, pageSize = 20) => {
       setLoading(true);
       try {
-        const result = await financeService.getEarnings({
+        const res = await financeService.getEarnings({
           page,
           pageSize,
           ...(searchParams.userId ? { userId: Number(searchParams.userId) } : {}),
@@ -60,12 +61,16 @@ const Earnings: React.FC = () => {
           ...(searchParams.startDate ? { startDate: searchParams.startDate } : {}),
           ...(searchParams.endDate ? { endDate: searchParams.endDate } : {}),
         });
+        // axios interceptor 返回 response.data，所以 res = { code:200, data:{...}, message:"..." }
+        const result = res.data || res;
         setDataSource(result.list || []);
+        const pag = result.pagination || {};
         setPagination({
-          current: result.page || page,
-          pageSize: result.pageSize || pageSize,
-          total: result.total || 0,
+          current: pag.page || page,
+          pageSize: pag.pageSize || pageSize,
+          total: pag.total || 0,
         });
+        if (result.stats) setEarningsStats(result.stats);
       } catch (error: any) {
         console.error('加载收益明细失败:', error);
         message.error('加载数据失败');
@@ -117,17 +122,34 @@ const Earnings: React.FC = () => {
       key: 'userInfo',
       render: (_: any, record: any) => (
         <div>
-          <div><UserOutlined /> {record.userNickname || '-'}</div>
+          <div><UserOutlined /> <span style={{ color: '#1890ff' }}>{record.userWechat || '-'}</span></div>
           <div style={{ fontSize: 12, color: '#999' }}>ID:{record.userId}</div>
         </div>
       ),
     },
     {
+      title: '实名认证',
+      key: 'verification',
+      width: 100,
+      render: (_: any, record: any) => {
+        const name = record.verifiedRealName || record.userRealName || '';
+        const verified = record.verificationStatus === 'verified' || record.verificationStatus === 'approved';
+        return name ? (
+          <div>
+            <div style={{ fontWeight: 500 }}>{name}</div>
+            <Tag color={verified ? 'success' : 'default'} style={{ fontSize: 10, lineHeight: '16px', padding: '0 4px' }}>
+              {verified ? '已认证' : '未认证'}
+            </Tag>
+          </div>
+        ) : <span style={{ color: '#999' }}>-</span>;
+      },
+    },
+    {
       title: '收益类型',
-      dataIndex: 'type',
       key: 'type',
-      render: (type: string) => {
-        const config = typeMap[type] || { color: 'default', text: type };
+      render: (_: any, record: any) => {
+        const displayName = record.type_name || record.type || '-';
+        const config = typeMap[record.type] || { color: 'default', text: displayName };
         return <Tag color={config.color}>{config.text}</Tag>;
       },
     },
@@ -163,9 +185,9 @@ const Earnings: React.FC = () => {
 
   const stats = {
     total: pagination.total || 0,
-    today: 0,
-    settled: 0,
-    pending: 0,
+    today: earningsStats.today,
+    settled: earningsStats.settled,
+    pending: earningsStats.pending,
   };
 
   return (

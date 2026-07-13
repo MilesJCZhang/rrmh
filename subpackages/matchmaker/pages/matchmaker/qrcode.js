@@ -17,6 +17,7 @@ Page({
     hasReferralCode: false,
     qrcodeLoading: false,
     qrcodeBase64: '',
+    qrCodeBase64: '',       // 普通二维码（可被 wx.scanCode 扫描识别）
     qrcodeLocalPath: '',   // 存成本地路径，用于分享图片
     invitationCode: '',
   },
@@ -101,6 +102,7 @@ Page({
     }).then((resp) => {
       const data = resp.data || resp;
       const base64 = data.qrcodeBase64 || '';
+      const qrCode64 = data.qrCodeBase64 || '';
       // base64 图片存成本地文件，用于分享
       let localPath = '';
       if (base64 && base64.startsWith('data:image')) {
@@ -115,6 +117,7 @@ Page({
       }
       this.setData({
         qrcodeBase64: base64,
+        qrCodeBase64: qrCode64,
         qrcodeLocalPath: localPath,
         qrcodeLoading: false,
       });

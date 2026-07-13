@@ -8,23 +8,19 @@
         <text class="qr-desc" wx:if="{{hasReferralCode}}">{{codeTypeName}}专属邀请码，扫码自动注册绑定</text>
       </view>
 
-      <!-- 小程序码显示区域 -->
+      <!-- 普通二维码（可被 wx.scanCode 扫描识别） -->
       <view class="poster-preview">
-        <!-- 加载中 -->
         <view wx:if="{{qrcodeLoading || generating}}" class="loading-box">
           <view class="loading-spinner"></view>
           <text class="loading-text">正在生成二维码…</text>
         </view>
 
-        <!-- 小程序码（优先显示） -->
+        <image wx:elif="{{qrCodeBase64}}" src="{{qrCodeBase64}}" class="poster-img qrcode-img" mode="aspectFit" bindtap="onPreviewPoster" />
         <image wx:elif="{{qrcodeBase64}}" src="{{qrcodeBase64}}" class="poster-img qrcode-img" mode="aspectFit" bindtap="onPreviewPoster" />
-
-        <!-- 原有海报（兜底） -->
         <image wx:elif="{{posterUrl}}" src="{{posterUrl}}" class="poster-img" mode="aspectFit" bindtap="onPreviewPoster" />
-
-        <!-- 占位图 -->
         <image wx:else src="/assets/images/qr-placeholder.png" class="poster-img" mode="aspectFit" />
       </view>
+      <view class="qr-type-label" wx:if="{{qrCodeBase64}}">⬆ 此二维码可在小程序内扫码识别</view>
 
       <!-- 邀请码显示（新增） -->
       <view class="invitation-code-box" wx:if="{{hasReferralCode}}">

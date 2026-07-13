@@ -30,7 +30,7 @@
 
   <!-- 差异化头部 -->
   <view class="page-header" wx:if="{{salonType}}">
-    <text class="page-header-title">{{salonType === 'male_salon' ? '男推荐官主体沙龙' : '女推荐官主体沙龙'}}</text>
+    <text class="page-header-title">{{salonType === 'male_salon' ? '男推荐官主题沙龙' : '女推荐官主题沙龙'}}</text>
     <text class="page-header-desc">推荐官专属精品小班，志趣相投的圈友精准相聚</text>
     <view class="header-badges">
       <view class="badge-item"><text class="badge-num">{{totalCap}}人</text><text class="badge-label">每场人数</text></view>
@@ -86,7 +86,7 @@
             <text class="sc-gender-remain">{{item.femaleRemain}}位</text>
           </view>
         </view>
-        <!-- 推荐官主体沙龙（有 type 字段）：显示单性别名额 -->
+        <!-- 推荐官主题沙龙（有 type 字段）：显示单性别名额 -->
         <view wx:elif="{{item.type}}">
           <view class="sc-gender-row">
             <text class="sc-gender-label">{{item.type === 'male_salon' ? '👨 男士' : '👩 女士'}}</text>

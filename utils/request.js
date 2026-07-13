@@ -4,6 +4,21 @@
 // 延迟获取App实例（避免模块加载时getApp()返回undefined）
 const _getApp = () => getApp() || {};
 
+// 静默处理微信内部 "An object could not be cloned" 错误
+// 微信开发者工具 v2.02.2606222 的已知 bug：createRequestTask 内部
+// 异步抛出此错误，不影响请求实际成功
+try {
+  if (typeof wx !== 'undefined' && wx.onUnhandledRejection) {
+    wx.onUnhandledRejection(function(res) {
+      var reason = res && (res.reason || res);
+      if (reason && typeof reason === 'object' && reason.message && reason.message.indexOf('could not be cloned') !== -1) {
+        console.debug('[request] 静默处理微信内部 clone 错误');
+        return true;
+      }
+    });
+  }
+} catch (e) {}
+
 // ========== 模式切换（统一从 config.js 读取）==========
 const { IS_DEV, API_BASE_URL } = require('./config');
 const IS_PROD = !IS_DEV;
@@ -94,27 +109,48 @@ const request = (options) => {
       // GET 请求：将参数拼接到 URL，不传 body
       if (requestData) {
         const qs = Object.entries(requestData)
-          .filter(([, v]) => v !== undefined && v !== '')
+          .filter(([, v]) => v !== undefined && v !== null && v !== '')
           .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
           .join('&');
         if (qs) fullUrl += (fullUrl.includes('?') ? '&' : '?') + qs;
       }
       requestData = undefined; // GET 不传 body
     } else {
-      requestData = requestData || {};
+      // 非 GET 请求：清洗 data 中的 undefined/null 值，避免微信 native 层 clone 失败
+      requestData = {};
+      if (options.data) {
+        Object.entries(options.data).forEach(([k, v]) => {
+          if (v !== undefined && v !== null) requestData[k] = v;
+        });
+      }
     }
 
-    wx.request({
-      url: fullUrl,
-      method: options.method || 'GET',
-      ...(requestData !== undefined && requestData !== null ? { data: requestData } : {}),
-      timeout: options.timeout || 8000,
-      header: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        ...options.header,
-      },
-      success: (res) => {
+    // 构建 wx.request 参数：逐属性赋值，避免对象字面量/spread 导致 clone 失败
+    var reqOpt = {};
+    reqOpt.url = fullUrl;
+    reqOpt.method = options.method || 'GET';
+    reqOpt.timeout = options.timeout || 8000;
+    reqOpt.header = {};
+    reqOpt.header['Content-Type'] = 'application/json';
+    if (token && typeof token === 'string') {
+      reqOpt.header['Authorization'] = 'Bearer ' + token;
+    }
+    if (options.header) {
+      for (var _k in options.header) {
+        if (Object.prototype.hasOwnProperty.call(options.header, _k)) {
+          var _v = options.header[_k];
+          if (_v !== undefined && _v !== null) reqOpt.header[_k] = String(_v);
+        }
+      }
+    }
+    // ⚠️ 关键：只有非 GET 且 data 非空时才传 data 字段
+    //     GET 请求或空的 data 对象不传 data，避免 data:undefined 导致 native clone 失败
+    if (options.method !== 'GET' && options.method !== undefined) {
+      if (requestData && Object.keys(requestData).length > 0) {
+        reqOpt.data = requestData;
+      }
+    }
+    reqOpt.success = function(res) {
         if (res.statusCode === 401) {
           console.warn('[request] 401 on', options.url, 'retry?', options._retry);
           const currentToken = _getApp().globalData?.token || wx.getStorageSync('token');
@@ -200,12 +236,14 @@ const request = (options) => {
           const errBody = typeof res.data === 'string' ? { message: res.data } : (res.data || {});
           reject({ code: res.statusCode, message: errBody.message || errBody.error || `服务器错误(${res.statusCode})`, detail: errBody });
         }
-      },
-      fail: (err) => {
-        console.error('[request] Network error on', options.url, ':', err);
-        reject({ code: -1, message: '网络异常', detail: err });
-      },
-    });
+    };
+    
+    reqOpt.fail = function(err) {
+      console.error('[request] Network error on', options.url, ':', err);
+      reject({ code: -1, message: '网络异常', detail: err });
+    };
+    
+    wx.request(reqOpt);
   });
 };
 
@@ -323,7 +361,7 @@ const uploadFile = (filePath, type = 'image') => {
       success: (res) => {
         try {
           const data = JSON.parse(res.data);
-          if (data.code === 0 || data.code === 200) resolve(data);
+          if (data.code === 0 || data.code === 200) resolve(data.data !== undefined ? data.data : data);
           else reject(data);
         } catch (e) { reject(e); }
       },

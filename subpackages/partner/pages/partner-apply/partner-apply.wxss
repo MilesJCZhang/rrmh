@@ -52,6 +52,55 @@
   line-height: 1.6;
 }
 
+/* ---- 推荐码展示卡片（访客通过分享进入） ---- */
+.invite-code-card {
+  margin: 20rpx 24rpx;
+  background: linear-gradient(135deg, #F0F7FF 0%, #E8F0FE 100%);
+  border: 2rpx solid #BBDEFB;
+  border-radius: 16rpx;
+  padding: 24rpx 28rpx;
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+.icc-icon {
+  font-size: 36rpx;
+  flex-shrink: 0;
+  margin-top: 2rpx;
+}
+.icc-body {
+  flex: 1;
+}
+.icc-label {
+  font-size: 22rpx;
+  color: #1565C0;
+  font-weight: 600;
+  margin-bottom: 10rpx;
+}
+.icc-code-row {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+.icc-code {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #0D47A1;
+  letter-spacing: 2rpx;
+}
+.icc-copy {
+  font-size: 22rpx;
+  color: #C8102E;
+  padding: 4rpx 16rpx;
+  border: 1rpx solid #C8102E;
+  border-radius: 20rpx;
+}
+.icc-referrer {
+  font-size: 24rpx;
+  color: #1976D2;
+  margin-top: 8rpx;
+}
+
 /* ---- 联创推荐官绑定卡片（社区服务站申请专用） ---- */
 .referrer-card {
   margin: 0 24rpx 24rpx;

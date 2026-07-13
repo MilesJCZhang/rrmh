@@ -20,6 +20,12 @@ import {
   AppstoreOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  AuditOutlined,
+  BarChartOutlined,
+  MoneyCollectOutlined,
+  ProfileOutlined,
+  FileProtectOutlined,
+  ToolOutlined,
 } from '@ant-design/icons';
 import { logout } from '../utils/auth.util';
 
@@ -29,82 +35,105 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [openKeys, setOpenKeys] = useState<string[]>(
+    // 初始化：根据当前路径自动展开对应父菜单
+    (() => {
+      const path = location.pathname;
+      if (path.startsWith('/users') || path.startsWith('/verifications') || path.startsWith('/referral-codes')) return ['user-system'];
+      if (path.startsWith('/activities') || path.startsWith('/salon-config')) return ['business'];
+      if (path.startsWith('/archives') || path.startsWith('/premium-verify') || path.startsWith('/fund-custody')) return ['archive'];
+      if (path.startsWith('/finance') || path === '/withdrawals' || path === '/commissions' || path === '/orders') return ['finance'];
+      if (path.startsWith('/partners') || path.startsWith('/stations')) return ['partner'];
+      if (path.startsWith('/system-settings') || path.startsWith('/score-rules') || path === '/score-rules') return ['config'];
+      return [];
+    })()
+  );
 
   const menuItems = [
+    // ========== 总览仪表盘 ==========
     {
       key: '/',
       icon: <DashboardOutlined />,
-      label: '仪表盘',
+      label: '总览仪表盘',
     },
+
+    // ========== 用户体系 ==========
     {
-      key: '/users',
+      key: 'user-system',
       icon: <UserOutlined />,
-      label: '用户管理',
+      label: '用户体系',
+      children: [
+        { key: '/users', label: '用户管理' },
+        { key: '/verifications', label: '实名认证' },
+        { key: '/referral-codes', label: '推荐码管理' },
+      ],
     },
+
+    // ========== 业务活动 ==========
     {
-      key: '/activities',
+      key: 'business',
       icon: <CalendarOutlined />,
-      label: '活动管理',
+      label: '业务活动',
+      children: [
+        { key: '/activities', label: '活动管理' },
+        { key: '/salon-config', label: '沙龙配置' },
+      ],
     },
+
+    // ========== 档案资质 ==========
     {
-      key: '/salon-config',
-      icon: <AppstoreOutlined />,
-      label: '沙龙配置',
-    },
-    {
-      key: '/score-rules',
-      icon: <StarOutlined />,
-      label: '评分规则',
-    },
-    {
-      key: '/archives',
+      key: 'archive',
       icon: <FolderOutlined />,
-      label: '档案管理',
+      label: '档案资质',
+      children: [
+        { key: '/archives', label: '档案管理' },
+        { key: '/premium-verify', label: '验资托管' },
+        { key: '/fund-custody', label: '基金托管' },
+      ],
     },
+
+    // ========== 交易财务 ==========
     {
-      key: '/premium-verify',
-      icon: <SafetyCertificateOutlined />,
-      label: '验资 & 托管',
+      key: 'finance',
+      icon: <MoneyCollectOutlined />,
+      label: '交易财务',
+      children: [
+        { key: '/finance/earnings', label: '收益明细' },
+        { key: '/finance/payments', label: '支付记录' },
+        { key: '/finance/passive-earnings', label: '被动收益' },
+        { key: '/withdrawals', label: '提现管理' },
+        { key: '/commissions', label: '佣金管理' },
+        { key: '/orders', label: '订单管理' },
+      ],
     },
+
+    // ========== 渠道合伙人 ==========
     {
-      key: '/commissions',
-      icon: <DollarOutlined />,
-      label: '佣金管理',
-    },
-    {
-      key: '/orders',
-      icon: <FileTextOutlined />,
-      label: '订单管理',
-    },
-    {
-      key: '/referral-codes',
-      icon: <QrcodeOutlined />,
-      label: '推荐码管理',
-    },
-    {
-      key: '/stations',
-      icon: <ShopOutlined />,
-      label: '服务站管理',
-    },
-    {
-      key: '/partners',
+      key: 'partner',
       icon: <TeamOutlined />,
-      label: '合伙人管理',
+      label: '渠道合伙人',
+      children: [
+        { key: '/partners', label: '合伙人管理' },
+        { key: '/stations', label: '服务站管理' },
+      ],
     },
+
+    // ========== 系统配置 ==========
     {
-      key: '/withdrawals',
-      icon: <WalletOutlined />,
-      label: '提现管理',
+      key: 'config',
+      icon: <ToolOutlined />,
+      label: '系统配置',
+      children: [
+        { key: '/system-settings', label: '系统设置' },
+        { key: '/score-rules', label: '评分规则' },
+      ],
     },
+
+    // ========== 数据统计 ==========
     {
-      key: '/fund-custody',
-      icon: <BankOutlined />,
-      label: '基金托管',
-    },
-    {
-      key: '/system-settings',
-      icon: <SettingOutlined />,
-      label: '系统设置',
+      key: '/reports',
+      icon: <BarChartOutlined />,
+      label: '数据统计',
     },
   ];
 
@@ -151,6 +180,8 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           theme="dark"
           mode="inline"
           selectedKeys={[location.pathname]}
+          openKeys={collapsed ? [] : openKeys}
+          onOpenChange={setOpenKeys}
           items={menuItems}
           onClick={({ key }) => handleMenuClick(key)}
           style={{

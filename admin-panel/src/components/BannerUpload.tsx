@@ -10,7 +10,7 @@ const { Text } = Typography;
 const PAGE_OPTIONS = [
   { label: '不跳转', value: '' },
   { label: '首页', value: '/pages/index/index' },
-  { label: '交友大厅', value: '/pages/dating/index' },
+  { label: '会员档案', value: '/pages/dating/index' },
   { label: '沙龙列表', value: '/pages/salon/list/index' },
   { label: '沙龙详情', value: '/pages/salon/detail/index' },
   { label: '个人中心', value: '/pages/profile/index' },

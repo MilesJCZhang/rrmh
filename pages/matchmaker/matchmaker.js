@@ -108,15 +108,29 @@ Page({
   },
 
   onShow() {
+    // 未登录时不调用需登录的接口（避免控制台401错误）
+    if (!authService.isLogin()) return;
     // 每次进入页面都重新获取最新身份状态（推荐官身份可能在其他页面升级）
     this.initPage();
   },
 
   /**
    * 初始化页面：判断当前状态
-   * 注意：推荐官用户会被重定向到独立的工作台页面
+   * 注意：推荐官用户会被重定向到各自独立的工作台页面
    * 社交中心页面只处理：未绑定推荐人、已绑定推荐人（但不是推荐官）
    */
+  // 推荐官角色 → 对应工作台路由映射
+  _getWorkbenchRoute(role) {
+    const routes = {
+      'public_matchmaker':         '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench',
+      'partner_matchmaker':        '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench',
+      'city_franchisee':           '/subpackages/partner/pages/franchisee/dashboard/dashboard',
+      'professional_recommender':  '/subpackages/matchmaker/pages/recommender/recommender',
+      'community_station':          '/subpackages/partner/pages/community-station/workbench/workbench',
+    };
+    return routes[role] || null;
+  },
+
   async initPage() {
     if (DEV_MODE) {
       // ===== 开发模式：完全由身份切换器控制 =====
@@ -125,8 +139,9 @@ Page({
       const hasRef = !!authService.getReferrerId();
 
       if (isMk) {
-        // ---- 推荐官身份 → 跳转到工作台 ----
-        wx.redirectTo({ url: '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench' });
+        // ---- 推荐官身份 → 跳转到对应工作台（按角色区分）----
+        const targetUrl = this._getWorkbenchRoute(role) || '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench';
+        wx.redirectTo({ url: targetUrl });
         return;
       } else if (hasRef) {
         // ---- 会员身份 → 我的推荐官 + 其他推荐官 ----
@@ -178,7 +193,8 @@ Page({
 
         // 推荐官用户跳转到独立工作台
         if (data.isMatchmaker) {
-          wx.redirectTo({ url: '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench' });
+          const targetUrl = this._getWorkbenchRoute(currentRole) || '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench';
+          wx.redirectTo({ url: targetUrl });
           return;
         }
 
@@ -224,7 +240,7 @@ Page({
   onScanBind() {
     wx.scanCode({
       onlyFromCamera: true,
-      scanType: ['qrCode'],
+      scanType: ['qrCode', 'wxCode'],
       success: (res) => {
         try {
           const params = JSON.parse(res.result);
@@ -405,14 +421,26 @@ Page({
 
   /**
    * 去绑定推荐人（状态1卡片入口）
+   * 支持：URL格式（含referrer_id）、纯推荐码字符串（如 LCRG001）
    */
   onGoBindReferrer() {
     wx.scanCode({
       onlyFromCamera: false,
-      scanType: ['qrCode'],
+      scanType: ['qrCode', 'wxCode'],
       success: (res) => {
+        // 小程序码（太阳码）的 scene 参数无法通过 wx.scanCode 获取
+        if (res.scanType === 'WX_CODE') {
+          wx.showToast({ title: '请使用推广码页面的普通二维码或手动输入推荐码', icon: 'none', duration: 2000 });
+          return;
+        }
+        const raw = (res.result || '').trim();
+        if (!raw) {
+          wx.showToast({ title: '二维码内容为空', icon: 'none' });
+          return;
+        }
+        // 方法1：URL 格式（含 referrer_id 参数）
         try {
-          const url = new URL(res.result);
+          const url = new URL(raw);
           const referrerId = url.searchParams.get('referrer_id');
           if (referrerId) {
             const { bindReferrer } = require('../../utils/referral');
@@ -422,11 +450,21 @@ Page({
                 wx.showToast({ title: '绑定成功', icon: 'success' });
               }
             });
-          } else {
-            wx.showToast({ title: '二维码无效', icon: 'none' });
+            return;
           }
-        } catch (e) {
-          wx.showToast({ title: '二维码格式错误', icon: 'none' });
+        } catch (e) { /* 非 URL 格式，尝试方法2 */ }
+        // 方法2：纯推荐码格式（如 LCRG001）
+        const { extractCodeFromScanResult, bindByCode } = require('../../utils/referral');
+        const code = extractCodeFromScanResult(raw);
+        if (code) {
+          bindByCode(code).then((result) => {
+            if (result.bound) {
+              this.initPage();
+              wx.showToast({ title: '绑定成功', icon: 'success' });
+            }
+          });
+        } else {
+          wx.showToast({ title: '二维码无效', icon: 'none' });
         }
       },
     });

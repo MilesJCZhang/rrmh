@@ -17,6 +17,7 @@ Page({
     hasReferralCode: false,
     qrcodeLoading: false,
     qrcodeBase64: '',
+    qrCodeBase64: '',       // 普通二维码（可被 wx.scanCode 扫描识别）
     qrcodeLocalPath: '',   // 存成本地路径，用于分享图片
     invitationCode: '',
   },
@@ -84,7 +85,7 @@ Page({
     });
   },
 
-  // ─── 新增：生成小程序码 ───
+  // ─── 生成普通二维码 + 小程序码 ───
   loadMiniappQrcode() {
     this.setData({ qrcodeLoading: true });
     request({
@@ -92,13 +93,16 @@ Page({
       method: 'GET',
     }).then((resp) => {
       const data = resp.data || resp;
-      const base64 = data.qrcodeBase64 || '';
-      // base64 图片存成本地文件，用于分享
+      const base64 = data.qrcodeBase64 || '';      // 小程序码（太阳码）
+      const qrCode64 = data.qrCodeBase64 || '';    // 普通二维码
+      // 优先用普通二维码 base64，兜底用小程序码 base64
+      const displayBase64 = qrCode64 || base64;
+      // 存成本地文件，用于分享
       let localPath = '';
-      if (base64 && base64.startsWith('data:image')) {
+      if (displayBase64 && displayBase64.startsWith('data:image')) {
         try {
           const fs = wx.getFileSystemManager();
-          const base64Data = base64.replace(/^data:image\/\w+;base64,/, '');
+          const base64Data = displayBase64.replace(/^data:image\/\w+;base64,/, '');
           localPath = `${wx.env.USER_DATA_PATH}/qrcode_share_${Date.now()}.png`;
           fs.writeFileSync(localPath, base64Data, 'base64');
         } catch (e) {
@@ -107,11 +111,12 @@ Page({
       }
       this.setData({
         qrcodeBase64: base64,
+        qrCodeBase64: qrCode64,
         qrcodeLocalPath: localPath,
         qrcodeLoading: false,
       });
     }).catch((err) => {
-      console.error('[loadMiniappQrcode] 生成小程序码失败:', err);
+      console.error('[loadMiniappQrcode] 生成二维码失败:', err);
       this.setData({ qrcodeLoading: false });
       wx.showToast({
         title: '二维码生成失败，请重试',

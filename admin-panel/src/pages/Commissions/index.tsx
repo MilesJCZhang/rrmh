@@ -15,7 +15,7 @@ const CommissionsPage: React.FC = () => {
     setLoading(true);
     try {
       const res = await commissionService.getList({ ...f, page: p, pageSize: 20 });
-      if (res.code === 0) {
+      if (res.code === 200 || res.code === 0) {
         setCommissions(res.data.list);
         setTotal(res.data.total);
         setPage(p);
@@ -34,12 +34,25 @@ const CommissionsPage: React.FC = () => {
   const payTypeMap: Record<string, string> = {
     single_registration: '会员建档',
     partner_matchmaker: '联创入驻',
+    partner_upgrade: '联创升级',
     professional_recommender: '专业入驻',
     city_franchisee: '城市入驻',
     online_unlock_gold: '线上解锁(优质)',
     online_unlock_silver: '线上解锁(良好)',
     salon_signup: '沙龙报名',
     salon_attend: '沙龙参会',
+  };
+
+  const roleMap: Record<string, string> = {
+    partner_matchmaker: '联创推荐官',
+    public_matchmaker: '公益推荐官',
+    professional_recommender: '专业推荐官',
+    community_station: '社区服务站',
+    city_franchisee: '城市合伙人',
+    admin: '管理员',
+    user: '用户',
+    single: '单身会员',
+    member: '会员',
   };
 
   const statusMap: Record<string, { color: string; label: string }> = {
@@ -51,7 +64,7 @@ const CommissionsPage: React.FC = () => {
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
     { title: '收款人', dataIndex: 'recipient_nickname', key: 'recipient_nickname', width: 100 },
-    { title: '收款角色', dataIndex: 'recipient_role', key: 'recipient_role', width: 100, render: (v: string) => <Tag>{v}</Tag> },
+    { title: '收款角色', dataIndex: 'recipient_role', key: 'recipient_role', width: 100, render: (v: string) => <Tag>{roleMap[v] || v}</Tag> },
     { title: '收款类型', dataIndex: 'recipient_type', key: 'recipient_type', width: 80, render: (v: string) => {
       const map: Record<string, string> = { referrer: '推荐人', organizer: '承办人', self: '自荐' };
       return map[v] || v;
@@ -78,7 +91,7 @@ const CommissionsPage: React.FC = () => {
             pagination={false}
             columns={[
               { title: '推荐人', dataIndex: 'nickname', key: 'nickname', width: 100 },
-              { title: '角色', dataIndex: 'role', key: 'role', width: 120, render: (v: string) => <Tag>{v}</Tag> },
+              { title: '角色', dataIndex: 'role', key: 'role', width: 120, render: (v: string) => <Tag>{roleMap[v] || v}</Tag> },
               { title: '总笔数', dataIndex: 'total_count', key: 'total_count', width: 80 },
               { title: '总金额', dataIndex: 'total_amount', key: 'total_amount', width: 100, render: (v: number) => <span style={{ color: '#f5222d' }}>¥{v}</span> },
               { title: '待结算', dataIndex: 'pending_amount', key: 'pending_amount', width: 100, render: (v: number) => <span style={{ color: '#faad14' }}>¥{v}</span> },

@@ -13,8 +13,8 @@
 // ============================================
 const SALON_TYPES = {
   MIXED: 'mixed',           // 常规沙龙（3男3女）
-  MALE_SALON: 'male_salon',     // 男推荐官主体沙龙
-  FEMALE_SALON: 'female_salon', // 女推荐官主体沙龙
+  MALE_SALON: 'male_salon',     // 男推荐官主题沙龙
+  FEMALE_SALON: 'female_salon', // 女推荐官主题沙龙
 };
 
 // ============================================
@@ -104,7 +104,7 @@ const SALON_TYPE_CONFIG = {
   [SALON_TYPES.MALE_SALON]: {
     // 基本信息
     type: SALON_TYPES.MALE_SALON,
-    name: '男推荐官主体沙龙',
+    name: '男推荐官主题沙龙',
     shortName: '男沙龙',
     description: '男士推荐官主办・专属圈层交流',
     
@@ -199,7 +199,7 @@ const SALON_TYPE_CONFIG = {
   [SALON_TYPES.FEMALE_SALON]: {
     // 基本信息
     type: SALON_TYPES.FEMALE_SALON,
-    name: '女推荐官主体沙龙',
+    name: '女推荐官主题沙龙',
     shortName: '女沙龙',
     description: '女士推荐官主办・专属圈层交流',
     

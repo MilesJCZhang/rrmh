@@ -22,7 +22,7 @@ const ArchivesPage: React.FC = () => {
     setLoading(true);
     try {
       const res = await commissionService.getArchives({ scoreTier: tier || undefined, keyword: kw || undefined, page: p, pageSize: 20 });
-      if (res.code === 0) {
+      if (res.code === 200 || res.code === 0) {
         setArchives(res.data.list);
         setTotal(res.data.total);
         setPage(p);
@@ -42,7 +42,7 @@ const ArchivesPage: React.FC = () => {
     setDetailLoading(true);
     try {
       const res = await commissionService.getArchiveDetail(userId);
-      if (res.code === 0) {
+      if (res.code === 200 || res.code === 0) {
         setDetailData(res.data);
       }
     } catch (error) {
@@ -54,12 +54,24 @@ const ArchivesPage: React.FC = () => {
 
   const tierColorMap: Record<string, string> = { gold: '#FFD700', silver: '#C0C0C0', bronze: '#CD7F32', unrated: '#999' };
   const tierLabelMap: Record<string, string> = { gold: '优质', silver: '良好', bronze: '基础', unrated: '未评分' };
+  const roleLabelMap: Record<string, string> = {
+    single: '单身会员', member: '会员', user: '用户',
+    public_matchmaker: '公益推荐官', partner_matchmaker: '联创推荐官',
+    professional_recommender: '专业推荐官', city_franchisee: '城市合伙人',
+    community_station: '社区服务站', admin: '管理员',
+  };
+  const roleColorMap: Record<string, string> = {
+    single: 'blue', member: 'blue', user: 'default',
+    public_matchmaker: 'green', partner_matchmaker: 'cyan',
+    professional_recommender: 'purple', city_franchisee: 'gold',
+    community_station: 'orange', admin: 'red',
+  };
 
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
     { title: '昵称', dataIndex: 'nickname', key: 'nickname', width: 100 },
     { title: '性别', dataIndex: 'gender', key: 'gender', width: 60, render: (v: string) => v === 'male' ? '男' : v === 'female' ? '女' : '-' },
-    { title: '角色', dataIndex: 'role', key: 'role', width: 100, render: (v: string) => <Tag>{v}</Tag> },
+    { title: '角色', dataIndex: 'role', key: 'role', width: 100, render: (v: string) => <Tag color={roleColorMap[v] || 'default'}>{roleLabelMap[v] || v}</Tag> },
     {
       title: '评分', dataIndex: 'total_score', key: 'total_score', width: 80,
       render: (v: number) => v ? <span style={{ fontWeight: 'bold', color: tierColorMap[v >= 80 ? 'gold' : v >= 60 ? 'silver' : 'bronze'] }}>{v}</span> : '-',
@@ -134,7 +146,9 @@ const ArchivesPage: React.FC = () => {
                 <Descriptions.Item label="昵称">{detailData.user?.nickname}</Descriptions.Item>
                 <Descriptions.Item label="性别">{detailData.user?.gender === 'male' ? '男' : detailData.user?.gender === 'female' ? '女' : '-'}</Descriptions.Item>
                 <Descriptions.Item label="手机">{detailData.user?.phone || '-'}</Descriptions.Item>
-                <Descriptions.Item label="角色">{detailData.user?.role}</Descriptions.Item>
+                <Descriptions.Item label="角色">
+                  <Tag color={roleColorMap[detailData.user?.role] || 'default'}>{roleLabelMap[detailData.user?.role] || detailData.user?.role || '-'}</Tag>
+                </Descriptions.Item>
                 <Descriptions.Item label="评分">
                   <span style={{ color: tierColorMap[detailData.user?.score_tier], fontWeight: 'bold' }}>
                     {detailData.user?.total_score || 0}分 ({tierLabelMap[detailData.user?.score_tier] || '未评分'})

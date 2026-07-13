@@ -152,10 +152,10 @@ Page({
       } else if (!userGender) {
         canSignup = false;
         signupBlockReason = '请先在"我的资料"页面完善性别资料';
-      } else if (userGender !== '女' && userGender !== '女性') {
-        canSignup = false;
-        signupBlockReason = '此为女推荐官专属沙龙，仅女士可报名';
-      }
+    } else if (userGender !== '女' && userGender !== '女性' && userGender !== 'female') {
+      canSignup = false;
+      signupBlockReason = '此为女推荐官专属沙龙，仅女士可报名';
+    }
 
       const formatted = {
         id: salon.id,
@@ -247,15 +247,16 @@ Page({
     // 重置表单并弹出弹窗
     const userInfo = authService.getUserInfo() || {};
     const cachedGender = userInfo.gender || '';
-    const genderVal = cachedGender === '女' ? 'female' : (cachedGender === '男' ? 'male' : '');
+    const genderVal = cachedGender === '女' || cachedGender === 'female' ? 'female' : (cachedGender === '男' || cachedGender === 'male' ? 'male' : '');
     const genderIdx = genderVal === 'female' ? 1 : (genderVal === 'male' ? 0 : 2);
+    const displayGender = genderVal === 'female' ? '女' : (genderVal === 'male' ? '男' : '');
     
     this.setData({
       showSignupForm: true,
       signupForm: {
         name: userInfo.nickname || userInfo.name || '',
         mobile: userInfo.mobile || '',
-        gender: genderVal,
+        gender: displayGender,
         genderIndex: genderIdx,
         age: userInfo.age || '',
         industry: '',
@@ -303,6 +304,10 @@ Page({
 
   onSignupIdentityChange(e) {
     this.setData({ 'signupForm.identity': e.detail.value });
+  },
+
+  onSelectIdentity(e) {
+    this.setData({ 'signupForm.identity': e.currentTarget.dataset.value });
   },
 
   onSignupPositionInput(e) {
@@ -409,8 +414,10 @@ Page({
     try {
       // 强制用 authService 缓存的性别，防止表单性别选错
       let submitGender = signupForm.gender;
+      const toEn = { '女': 'female', '男': 'male', 'female': 'female', 'male': 'male' };
+      submitGender = toEn[submitGender] || submitGender;
       const authGender = authService.getUserInfo()?.gender || '';
-      if (authGender) submitGender = authGender === '女' ? 'female' : 'male';
+      if (authGender) submitGender = authGender === '女' || authGender === 'female' ? 'female' : 'male';
       
       await request({
         url: API.SALON.JOIN.replace(':id', this.salonId),

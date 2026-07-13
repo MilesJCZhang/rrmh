@@ -4,6 +4,8 @@
 const { ensureLogin } = require('../../../../utils/auth');
 const { request } = require('../../../../utils/request');
 const API = require('../../../../services/api');
+const applyService = require('../../../../services/apply.service');
+const { DEV_MOCK_DATA } = require('../../../../utils/config');
 const { USER_ROLES, getFeesSync, getCommissionRules } = require('../../../../utils/commissionRules');
 const { createPayment, PAYMENT_TYPES } = require('../../../../utils/payment');
 const authService = require('../../../../services/auth.service');
@@ -12,6 +14,9 @@ Page({
   data: {
     // 注册类型: public | partner
     applyType: 'public',
+
+    // 访客通过分享获得的推荐码展示
+    existingReferralCode: '',
 
     // ===== 公益推荐官表单 =====
     // Step 1: 基础身份
@@ -31,7 +36,7 @@ Page({
     // Step 3: 从业资料（标签多选 + 补充文本）
     experienceTags: [
       { id: 'e1', label: '社区活动策划', checked: false },
-      { id: 'e2', label: '组织过交友活动', checked: false },
+      { id: 'e2', label: '组织过社交活动', checked: false },
       { id: 'e3', label: '志愿者服务经历', checked: false },
       { id: 'e4', label: '从事过教育/培训', checked: false },
       { id: 'e5', label: '销售/服务行业经验', checked: false },
@@ -65,6 +70,18 @@ Page({
     wx.setNavigationBarTitle({
       title: type === 'partner' ? '联创推荐官注册' : '公益推荐官注册',
     });
+
+    // 读取访客通过分享获得的推荐码
+    let existingCode = wx.getStorageSync('invitation_code') || '';
+    if (!existingCode && options.invitationCode) {
+      existingCode = options.invitationCode.toUpperCase();
+    }
+    if (!existingCode && options.code) {
+      existingCode = options.code.toUpperCase();
+    }
+    if (existingCode) {
+      this.setData({ existingReferralCode: existingCode });
+    }
   },
 
   // ===== 表单输入 =====
@@ -154,10 +171,10 @@ Page({
 
     if (isPartner) {
       // 联创推荐官：先提交资料审核，审核通过后再支付399元
-      this._submitPartnerApply();
+      await this._submitPartnerApply();
     } else {
       // 公益推荐官：免费提交，自动审核通过
-      this._submitPublicApply();
+      await this._submitPublicApply();
     }
   },
 
@@ -167,20 +184,20 @@ Page({
   async _submitPublicApply() {
     this.setData({ submitting: true });
     try {
-      const data = await request({
-        url: API.APPLY.PUBLIC_MATCHMAKER,
-        method: 'POST',
-        data: {
-          target_role: USER_ROLES.PUBLIC_MATCHMAKER,
-          real_name: this.data.realName.trim(),
-          gender: this.data.gender,
-          age: parseInt(this.data.age),
-          phone: this.data.phone.trim(),
-        },
+      console.log('[apply] _submitPublicApply 开始');
+      const data = await applyService.applyPublicMatchmaker({
+        real_name: this.data.realName.trim(),
+        gender: this.data.gender,
+        age: parseInt(this.data.age),
+        phone: this.data.phone.trim(),
+        target_role: USER_ROLES.PUBLIC_MATCHMAKER,
       });
+      console.log('[apply] applyPublicMatchmaker 返回:', JSON.stringify(data));
+      this.setData({ submitting: false });
+
       // 更新本地用户状态（推荐码 + 角色）
-      // request() 返回 body.data，即 { role, recommendCode }
       if (data && data.role) {
+        console.log('[apply] 设置用户角色为:', data.role, '推荐码:', data.recommendCode);
         authService.setUserInfo({
           role: data.role,
           recommendCode: data.recommendCode,
@@ -188,13 +205,40 @@ Page({
         authService.setUserRole(data.role);
       }
 
-      wx.showToast({ title: '申请成功，已自动通过审核', icon: 'success' });
-
-      // 返回上一页（实名认证留到提现环节）
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 1500);
+      // ★ 弹窗展示推荐码
+      console.log('[apply] 准备弹出 Modal');
+      wx.showModal({
+        title: '申请成功',
+        content: data?.recommendCode
+          ? `您已成为「公益推荐官」\n您的推荐码：${data.recommendCode}\n分享推荐码给朋友，推荐建档每单赚 99 元！`
+          : '已自动通过审核',
+        confirmText: data?.recommendCode ? '去查看' : '我知道了',
+        confirmColor: '#C8102E',
+        success: (modalRes) => {
+          console.log('[apply] Modal 确认:', modalRes.confirm ? '确认' : '取消');
+          if (modalRes.confirm && data?.recommendCode) {
+            // 延迟跳转：等待 Modal 关闭动画完成，避免被静默忽略
+            setTimeout(() => {
+              wx.redirectTo({
+                url: '/subpackages/matchmaker/pages/matchmaker/qrcode',
+                fail: (err) => {
+                  console.error('[apply] redirectTo 失败:', err);
+                  wx.showToast({ title: '页面跳转失败，请手动返回', icon: 'none' });
+                },
+              });
+            }, 300);
+          } else {
+            wx.navigateBack();
+          }
+        },
+        fail: (err) => {
+          console.error('[apply] Modal 显示失败:', err);
+          // 兜底：Modal 失败时用 Toast 提示
+          wx.showToast({ title: '申请成功！推荐码：' + (data?.recommendCode || ''), icon: 'none', duration: 4000 });
+        },
+      });
     } catch (e) {
+      console.error('[apply] _submitPublicApply 异常:', e);
       this.setData({ submitting: false });
       const msg = e && e.message ? e.message : (e && e.code === 401 ? '请先登录' : '申请失败，请重试');
       wx.showToast({ title: msg, icon: 'none' });
@@ -208,10 +252,11 @@ Page({
     this.setData({ submitting: true });
     try {
       // 第一步：提交申请（后端只需要 userId，从 token 中获取）
-      await request({
-        url: API.APPLY.PARTNER_MATCHMAKER,
-        method: 'POST',
-        // 注意：后端不需要请求体参数，所有参数都从 token 中解析 userId
+      await applyService.applyPartnerMatchmaker({
+        real_name: this.data.realName.trim(),
+        gender: this.data.gender,
+        phone: this.data.phone.trim(),
+        target_role: USER_ROLES.PARTNER_MATCHMAKER,
       });
 
       this.setData({ submitting: false });
@@ -244,14 +289,15 @@ Page({
               
               // 支付成功：更新本地状态（角色升级为联创推荐官）
               try {
-                // 先尝试从后端获取最新用户信息
-                const userData = await request({ url: API.USER.PROFILE });
+                // 先尝试从后端获取最新用户信息（mock 模式下不走真实 API）
+                const userData = DEV_MOCK_DATA
+                  ? { role: 'partner_matchmaker', recommendCode: 'LCRG' + String(Date.now()).slice(-6) }
+                  : await request({ url: API.USER.PROFILE });
                 if (userData) {
                   const updatedUser = userData;
                   authService.setUserInfo(updatedUser);
                   authService.setUserRole(updatedUser.role || 'partner_matchmaker');
                 } else {
-                  // 降级处理：直接设置角色
                   authService.setUserRole('partner_matchmaker');
                 }
               } catch (e) {
@@ -259,11 +305,47 @@ Page({
                 // 降级处理：直接设置角色
                 authService.setUserRole('partner_matchmaker');
               }
-              
-              // 跳转实名认证（深度认证：身份证核验）
-              setTimeout(() => {
-                wx.redirectTo({ url: '/subpackages/user/pages/verify/verify?from=partner_apply' });
-              }, 1500);
+
+              // ★ 获取推荐码并弹窗展示
+              let recommendCode = '';
+              try {
+                const statusResp = await applyService.getApplyStatus();
+                const statusData = statusResp.data || statusResp;
+                recommendCode = statusData.recommendCode || '';
+                if (recommendCode) {
+                  const userInfo = authService.getUserInfo() || {};
+                  userInfo.recommendCode = recommendCode;
+                  authService.setUserInfo(userInfo);
+                }
+              } catch (e) {
+                console.warn('[apply] 获取推荐码失败:', e.message);
+              }
+
+              wx.showModal({
+                title: '🎉 升级成功',
+                content: recommendCode
+                  ? `您已成为「联创推荐官」\n推荐码：${recommendCode}\n分享推荐码，开始赚取佣金！`
+                  : '您已成为联创推荐官，请完成实名认证。',
+                confirmText: recommendCode ? '去查看' : '去实名认证',
+                confirmColor: '#C8102E',
+                success: (modalRes) => {
+                  if (modalRes.confirm && recommendCode) {
+                    setTimeout(() => {
+                      wx.redirectTo({
+                        url: '/subpackages/matchmaker/pages/matchmaker/qrcode',
+                        fail: (err) => {
+                          console.error('[apply] redirectTo 失败:', err);
+                          wx.showToast({ title: '页面跳转失败，请手动返回', icon: 'none' });
+                        },
+                      });
+                    }, 300);
+                  } else {
+                    setTimeout(() => {
+                      wx.redirectTo({ url: '/subpackages/user/pages/verify/verify?from=partner_apply' });
+                    }, 300);
+                  }
+                },
+              });
             } else if (result.reason === 'cancelled') {
               wx.showToast({ title: '已取消，可稍后支付', icon: 'none' });
               setTimeout(() => { wx.navigateBack(); }, 1500);

@@ -12,7 +12,7 @@ const _getApp = () => getApp() || {};
 // ========== 支付类型定义 ==========
 const PAYMENT_TYPES = {
   SINGLE_REGISTRATION: 'single_registration',         // 会员建档费（199元/人）
-  PARTNER_MATCHMAKER_UPGRADE: 'partner_upgrade',      // 联创推荐官升级费（399元）
+  PARTNER_MATCHMAKER_UPGRADE: 'partner_matchmaker',      // 联创推荐官升级费（399元）
   CITY_FRANCHISEE_JOIN: 'city_franchisee_join',       // 城市合伙人加盟费（10000元，一次性）
   PROFESSIONAL_UPGRADE: 'professional_upgrade',       // 专业推荐官升级培训费（3999元）
   SALON_TICKET_PROMO: 'salon_ticket_promo',           // 沙龙报名费-优惠价（299元/人，上线第一年）

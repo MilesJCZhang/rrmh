@@ -187,12 +187,20 @@
       <!-- 选填：身份属性 -->
       <view class="form-group">
         <view class="form-label">身份属性</view>
-        <radio-group bindchange="onSignupIdentityChange">
-          <label><radio value="上班族" checked="{{signupForm.identity === '上班族'}}" />上班族</label>
-          <label><radio value="个体老板" checked="{{signupForm.identity === '个体老板'}}" />个体老板</label>
-          <label><radio value="自由职业" checked="{{signupForm.identity === '自由职业'}}" />自由职业</label>
-          <label><radio value="其他" checked="{{signupForm.identity === '其他'}}" />其他</label>
-        </radio-group>
+        <view class="radio-group">
+          <view class="radio-item {{signupForm.identity === '上班族' ? 'active' : ''}}" bindtap="onSelectIdentity" data-value="上班族">
+            <text>上班族</text>
+          </view>
+          <view class="radio-item {{signupForm.identity === '个体老板' ? 'active' : ''}}" bindtap="onSelectIdentity" data-value="个体老板">
+            <text>个体老板</text>
+          </view>
+          <view class="radio-item {{signupForm.identity === '自由职业' ? 'active' : ''}}" bindtap="onSelectIdentity" data-value="自由职业">
+            <text>自由职业</text>
+          </view>
+          <view class="radio-item {{signupForm.identity === '其他' ? 'active' : ''}}" bindtap="onSelectIdentity" data-value="其他">
+            <text>其他</text>
+          </view>
+        </view>
       </view>
 
       <!-- 选填：上班岗位/职务 -->
@@ -215,7 +223,7 @@
 
       <!-- 随行人员 -->
       <view class="section-title mt-16">随行人员（最多2人）</view>
-      <view wx:for="{{signupForm.companions}}" wx:key="index">
+      <view wx:for="{{signupForm.companions}}" wx:key="index" class="companion-card">
         <view class="form-group">
           <view class="form-label">随行{{index+1}}姓名 *</view>
           <input class="form-input" placeholder="请输入姓名" value="{{item.name}}" data-index="{{index}}" bindinput="onSignupCompanionNameInput" />

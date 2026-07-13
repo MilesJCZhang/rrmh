@@ -40,7 +40,7 @@ const APPLY_CONFIG = {
     },
     fieldHints: {
       idNumber: '需完成实名认证，与收款账户信息一致',
-      experience: '用于人工审核，如：从事社交活动策划X年、组织交友活动等（至少20个字）',
+      experience: '用于人工审核，如：从事社交活动策划X年、组织社交活动等（至少20个字）',
       channel: '您计划如何推广会员？如：社区活动、朋友圈、线下沙龙等（至少20个字）',
       bankAccount: '用于佣金提现',
       bankName: '如：中国工商银行、中国建设银行等',
@@ -218,6 +218,10 @@ Page({
     partnerReferrer: null,   // { id, name, role }
     partnerNameLoading: false, // 推荐官姓名加载中
     noReferrerHint: false,    // 无推荐人时显示提示
+
+    // 访客通过分享获得的推荐码展示
+    existingReferralCode: '',    // 推荐码字符串（如 RC000003）
+    existingReferrerName: '',    // 推荐人姓名（绑定成功后回填）
   },
 
   onLoad(options) {
@@ -259,7 +263,14 @@ Page({
           this._loadPartnerName(referrerId);
         }
       } else {
-        noReferrerHint = true;
+        // 检查 storage 中是否有待绑定的推荐码
+        const pendingCode = wx.getStorageSync('invitation_code');
+        if (pendingCode) {
+          // 有待绑定推荐码，稍后异步绑定，暂不设 noReferrerHint
+          partnerReferrer = null;
+        } else {
+          noReferrerHint = true;
+        }
       }
     }
 
@@ -275,8 +286,32 @@ Page({
 
     wx.setNavigationBarTitle({ title: config.title + '申请' });
 
+    // 读取访客通过分享获得的推荐码并展示
+    let existingCode = wx.getStorageSync('invitation_code') || '';
+    if (!existingCode && options.invitationCode) {
+      existingCode = options.invitationCode.toUpperCase();
+    }
+    if (!existingCode && options.code) {
+      existingCode = options.code.toUpperCase();
+    }
+    if (existingCode) {
+      this.setData({ existingReferralCode: existingCode });
+      // 如果已有绑定的推荐人信息，同步展示姓名
+      const refInfo = getReferrerInfo();
+      if (refInfo && refInfo.name) {
+        this.setData({ existingReferrerName: refInfo.name });
+      }
+    }
+
     // 异步加载最新配置，并更新支付金额
     this._refreshConfigAmounts(type);
+
+    // 延迟执行自动绑定（等页面渲染完成）
+    if (config.needReferrer && wx.getStorageSync('invitation_code')) {
+      setTimeout(() => {
+        this._autoBindReferral(wx.getStorageSync('invitation_code'));
+      }, 500);
+    }
   },
 
   /**
@@ -454,14 +489,21 @@ Page({
         return;
       }
 
+      // ★ 获取最新角色和推荐码（社区服务站免费申请成功后应已生成）
+      const roleInfo = await this._fetchRoleAndCode();
       wx.showModal({
-        title: '申请已提交',
-        content: `${config.title}申请已成功提交，我们将在1-3个工作日内审核，请留意微信通知。`,
-        showCancel: false,
-        confirmText: '我知道了',
+        title: '🎉 申请成功',
+        content: roleInfo?.recommendCode
+          ? `您已成为「${config.title}」\n您的推荐码：${roleInfo.recommendCode}\n快去分享给好友吧！`
+          : `${config.title}申请已成功提交，我们将在1-3个工作日内审核。`,
+        confirmText: roleInfo?.recommendCode ? '查看推广码' : '我知道了',
         confirmColor: '#C8102E',
-        success: () => {
-          wx.navigateBack();
+        success: (modalRes) => {
+          if (modalRes.confirm && roleInfo?.recommendCode) {
+            wx.redirectTo({ url: '/pages/matchmaker/qrcode' });
+          } else {
+            wx.navigateBack();
+          }
         },
       });
     } catch (e) {
@@ -483,14 +525,21 @@ Page({
         extra: {},
       });
       if (result.success) {
+        // ★ 获取最新角色和推荐码
+        const roleInfo = await this._fetchRoleAndCode();
         wx.showModal({
-          title: '支付成功',
-          content: `${config.title}费用已支付，我们将尽快审核，请留意微信通知。`,
-          showCancel: false,
-          confirmText: '我知道了',
+          title: '🎉 升级成功',
+          content: roleInfo?.recommendCode
+            ? `您已成为「${config.title}」\n推荐码：${roleInfo.recommendCode}\n分享推荐码，开始赚取佣金！`
+            : `${config.title}费用已支付，我们将尽快审核，请留意微信通知。`,
+          confirmText: roleInfo?.recommendCode ? '查看推广码' : '我知道了',
           confirmColor: '#C8102E',
-          success: () => {
-            wx.navigateBack();
+          success: (modalRes) => {
+            if (modalRes.confirm && roleInfo?.recommendCode) {
+              wx.redirectTo({ url: '/pages/matchmaker/qrcode' });
+            } else {
+              wx.navigateBack();
+            }
           },
         });
       } else if (result.reason === 'cancelled') {
@@ -542,7 +591,82 @@ Page({
     });
   },
 
+  /**
+   * 自动绑定推荐码（静默模式）
+   * 绑定成功后更新页面上的推荐人信息
+   */
+  async _autoBindReferral(code) {
+    try {
+      const { bindByCode, getReferrerId: getRefId, getReferrerInfo: getRefInfo } = require('../../../../utils/referral');
+      wx.showLoading({ title: '检测到推荐信息...' });
+      const result = await bindByCode(code, { silent: true });
+      wx.hideLoading();
+      if (result.bound) {
+        const refId = getRefId();
+        const refInfo = getRefInfo();
+        if (refId) {
+          this.setData({
+            partnerReferrer: {
+              id: refId,
+              name: refInfo?.name || '',
+              role: refInfo?.role || '',
+            },
+            noReferrerHint: false,
+            existingReferrerName: refInfo?.name || '',
+          });
+          wx.showToast({ title: `推荐人：${refInfo?.name || '推荐官'}`, icon: 'success', duration: 1500 });
+        }
+      }
+    } catch (e) {
+      wx.hideLoading();
+      console.warn('[partner-apply] 自动绑定推荐码失败:', e.message);
+      // 绑定失败：设置 noReferrerHint，让表单校验拦截
+      this.setData({ noReferrerHint: true });
+    }
+  },
+
+  /**
+   * 获取用户最新角色和推荐码，更新本地状态
+   */
+  async _fetchRoleAndCode() {
+    try {
+      const API = require('../../../../services/api');
+      const resp = await request({
+        url: API.APPLY.STATUS || '/v1/apply/status',
+        method: 'GET',
+      });
+      const data = resp.data || resp;
+      if (data && data.role) {
+        // 更新本地角色信息
+        authService.setUserRole(data.role);
+        const userInfo = authService.getUserInfo() || {};
+        userInfo.role = data.role;
+        userInfo.recommendCode = data.recommendCode || userInfo.recommendCode;
+        authService.setUserInfo(userInfo);
+        // 同步到 globalData
+        const app = getApp();
+        if (app) {
+          app.globalData.userRole = data.role;
+        }
+        return { role: data.role, recommendCode: data.recommendCode || '' };
+      }
+    } catch (e) {
+      console.warn('[partner-apply] 获取角色信息失败:', e.message);
+    }
+    return null;
+  },
+
   onBack() {
     wx.navigateBack();
+  },
+
+  /** 复制推荐码到剪贴板 */
+  onCopyReferralCode() {
+    const code = this.data.existingReferralCode;
+    if (!code) return;
+    wx.setClipboardData({
+      data: code,
+      success: () => wx.showToast({ title: '已复制推荐码', icon: 'success' }),
+    });
   },
 });

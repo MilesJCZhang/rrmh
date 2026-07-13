@@ -1,5 +1,5 @@
 <!-- subpackages/activity/pages/female-salon-create/female-salon-create.wxml -->
-<!-- 女推荐官沙龙创建页 - 粉色商务风，类型自动锁定 -->
+<!-- 女推荐官沙龙创建页 - 粉色商务风 -->
 <view class="page">
 
   <!-- 类型锁定展示 -->
@@ -11,117 +11,107 @@
     </view>
   </view>
 
-  <!-- 表单 -->
+  <!-- 基本信息 -->
   <view class="form-section">
 
     <!-- 封面图 -->
-    <view class="form-group">
-      <text class="form-label">封面图片</text>
-      <view class="cover-upload" bindtap="chooseCoverImage">
-        <image wx:if="{{coverImageTempPath}}" src="{{coverImageTempPath}}" mode="aspectFill" class="cover-preview" />
-        <view wx:else class="cover-placeholder">
-          <text class="cover-placeholder-icon">+</text>
-          <text class="cover-placeholder-text">上传封面</text>
+    <view class="form-card">
+      <view class="form-group">
+        <view class="form-label">🖼️ 封面图片</view>
+        <view class="cover-upload" bindtap="chooseCoverImage">
+          <image wx:if="{{coverImageTempPath}}" src="{{coverImageTempPath}}" mode="aspectFill" class="cover-preview" />
+          <view wx:else class="cover-placeholder">
+            <text class="cover-placeholder-icon">📷</text>
+            <text class="cover-placeholder-text">点击上传封面图</text>
+          </view>
         </view>
+        <text class="form-hint">建议上传与商务交流相关的图片，吸引更多参与者</text>
       </view>
-      <text class="form-hint">建议上传与商务交流相关的图片</text>
     </view>
 
-    <!-- 标题 -->
-    <view class="form-group">
-      <text class="form-label">沙龙标题 <text class="required">*</text></text>
-      <input
-        class="form-input"
-        placeholder="请输入活动标题，如：互联网行业交流沙龙"
-        value="{{title}}"
-        bindinput="onTitleInput"
-        maxlength="50"
-      />
+    <!-- 标题与地点 -->
+    <view class="form-card">
+      <view class="section-title">📝 基本信息</view>
+
+      <view class="form-group">
+        <view class="form-label">🏷️ 沙龙标题 <text class="required">*</text></view>
+        <input class="form-input" placeholder="如：互联网行业交流沙龙"
+          value="{{title}}" bindinput="onTitleInput" maxlength="50" />
+      </view>
+
+      <view class="form-group">
+        <view class="form-label">📍 活动地点 <text class="required">*</text></view>
+        <input class="form-input" placeholder="如：福田区CBD会议中心"
+          value="{{location}}" bindinput="onLocationInput" maxlength="100" />
+      </view>
     </view>
 
     <!-- 时间选择 -->
-    <view class="form-group">
-      <text class="form-label">开始时间 <text class="required">*</text></text>
-      <view class="datetime-row">
-        <picker mode="date" value="{{startDate}}" start="{{minDate}}" bindchange="onStartDateChange">
-          <view class="datetime-picker">
-            <text class="{{startDate ? '' : 'placeholder'}}">{{startDate || '选择日期'}}</text>
-          </view>
-        </picker>
-        <picker mode="time" value="{{startTimeVal}}" bindchange="onStartTimeChange">
-          <view class="datetime-picker">
-            <text class="{{startTimeVal ? '' : 'placeholder'}}">{{startTimeVal || '选择时间'}}</text>
-          </view>
-        </picker>
+    <view class="form-card">
+      <view class="section-title">⏰ 活动时间</view>
+
+      <view class="form-group">
+        <view class="form-label">📅 开始时间 <text class="required">*</text></view>
+        <view class="datetime-row">
+          <picker mode="date" value="{{startDate}}" start="{{minDate}}" bindchange="onStartDateChange">
+            <view class="datetime-picker">
+              <text class="{{startDate ? '' : 'placeholder'}}">{{startDate || '选择日期'}}</text>
+            </view>
+          </picker>
+          <picker mode="time" value="{{startTimeVal}}" bindchange="onStartTimeChange">
+            <view class="datetime-picker">
+              <text class="{{startTimeVal ? '' : 'placeholder'}}">{{startTimeVal || '选择时间'}}</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+
+      <view class="form-group">
+        <view class="form-label">🔚 结束时间</view>
+        <view class="datetime-row">
+          <picker mode="date" value="{{endDate}}" start="{{startDate || minDate}}" bindchange="onEndDateChange">
+            <view class="datetime-picker">
+              <text class="{{endDate ? '' : 'placeholder'}}">{{endDate || '选择日期'}}</text>
+            </view>
+          </picker>
+          <picker mode="time" value="{{endTimeVal}}" bindchange="onEndTimeChange">
+            <view class="datetime-picker">
+              <text class="{{endTimeVal ? '' : 'placeholder'}}">{{endTimeVal || '选择时间'}}</text>
+            </view>
+          </picker>
+        </view>
       </view>
     </view>
 
-    <view class="form-group">
-      <text class="form-label">结束时间</text>
-      <view class="datetime-row">
-        <picker mode="date" value="{{endDate}}" start="{{startDate || minDate}}" bindchange="onEndDateChange">
-          <view class="datetime-picker">
-            <text class="{{endDate ? '' : 'placeholder'}}">{{endDate || '选择日期'}}</text>
-          </view>
-        </picker>
-        <picker mode="time" value="{{endTimeVal}}" bindchange="onEndTimeChange">
-          <view class="datetime-picker">
-            <text class="{{endTimeVal ? '' : 'placeholder'}}">{{endTimeVal || '选择时间'}}</text>
-          </view>
-        </picker>
+    <!-- 人数与费用 -->
+    <view class="form-card">
+      <view class="section-title">👥 名额与费用</view>
+
+      <view class="form-group">
+        <view class="form-label">👤 人数上限</view>
+        <input class="form-input" type="number" placeholder="默认27人，可自定义调整"
+          value="{{maxParticipants}}" bindinput="onMaxParticipantsInput" />
+        <text class="form-hint">含报名者本人及随行人员，每场最多27人封顶</text>
       </view>
-    </view>
 
-    <!-- 地点 -->
-    <view class="form-group">
-      <text class="form-label">活动地点 <text class="required">*</text></text>
-      <input
-        class="form-input"
-        placeholder="请输入活动地点"
-        value="{{location}}"
-        bindinput="onLocationInput"
-        maxlength="100"
-      />
-    </view>
-
-    <!-- 人数上限 -->
-    <view class="form-group">
-      <text class="form-label">人数上限</text>
-      <input
-        class="form-input"
-        type="number"
-        placeholder="默认27人，可自定义调整"
-        value="{{maxParticipants}}"
-        bindinput="onMaxParticipantsInput"
-      />
-      <text class="form-hint">含报名者本人及随行人员，每场最多27人封顶</text>
-    </view>
-
-    <!-- 报名费用 -->
-    <view class="form-group">
-      <text class="form-label">报名费用（元/人）</text>
-      <input
-        class="form-input"
-        type="digit"
-        placeholder="请输入报名费用"
-        value="{{registrationFee}}"
-        bindinput="onFeeInput"
-      />
-      <text class="form-hint">建议设置为399元，可根据活动成本调整</text>
+      <view class="form-group">
+        <view class="form-label">💰 报名费用（元/人）</view>
+        <input class="form-input" type="digit" placeholder="建议399元"
+          value="{{registrationFee}}" bindinput="onFeeInput" />
+        <text class="form-hint">建议设置为399元，可根据活动成本调整</text>
+      </view>
     </view>
 
     <!-- 描述 -->
-    <view class="form-group">
-      <text class="form-label">沙龙描述 <text class="required">*</text></text>
-      <textarea
-        class="form-textarea"
-        placeholder="请输入活动描述，如：本次活动旨在促进行业内人士的交流与合作..."
-        value="{{description}}"
-        bindinput="onDescInput"
-        maxlength="2000"
-        auto-height
-      />
-      <text class="form-hint">描述应包含活动目的、流程、亮点等信息，吸引目标人群参加</text>
+    <view class="form-card">
+      <view class="section-title">📄 沙龙描述</view>
+      <view class="form-group">
+        <view class="form-label">📝 活动详情 <text class="required">*</text></view>
+        <textarea class="form-textarea"
+          placeholder="请输入活动描述，如：本次活动旨在促进行业内人士的交流与合作..."
+          value="{{description}}" bindinput="onDescInput" maxlength="2000" auto-height />
+        <text class="form-hint">描述应包含活动目的、流程、亮点等信息，吸引目标人群参加</text>
+      </view>
     </view>
 
   </view>
@@ -139,13 +129,8 @@
 
   <!-- 提交按钮 -->
   <view class="submit-wrap">
-    <button
-      class="submit-btn"
-      style="background: {{themeGradient}};"
-      bindtap="submitForm"
-      loading="{{submitting}}"
-      disabled="{{submitting}}"
-    >
+    <button class="submit-btn" style="background: {{themeGradient}};"
+      bindtap="submitForm" loading="{{submitting}}" disabled="{{submitting}}">
       {{isEditMode ? '更新并提交审核' : '提交审核'}}
     </button>
     <text class="submit-hint">提交后需管理员审核通过，方可发布</text>

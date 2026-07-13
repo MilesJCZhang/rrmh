@@ -34,6 +34,7 @@ const Payments: React.FC = () => {
   const [pagination, setPagination] = useState({ current: 1, pageSize: 20, total: 0 });
   const [searchParams, setSearchParams] = useState({ userId: '', status: '', startDate: '', endDate: '' });
   const [searchForm] = Form.useForm();
+  const [payStats, setPayStats] = useState<{ today: number; wechat: number; alipay: number }>({ today: 0, wechat: 0, alipay: 0 });
 
   const loadList = useCallback(
     async (page = 1, pageSize = 20) => {
@@ -48,6 +49,7 @@ const Payments: React.FC = () => {
         });
         setDataSource(result.list || []);
         setPagination({ current: result.page || page, pageSize: result.pageSize || pageSize, total: result.total || 0 });
+        if (result.stats) setPayStats(result.stats);
       } catch (error: any) {
         message.error('加载支付记录失败');
       } finally {
@@ -79,14 +81,14 @@ const Payments: React.FC = () => {
   };
 
   const columns = [
-    { title: '支付单号', dataIndex: 'id', key: 'id', width: 100 },
-    { title: '订单号', dataIndex: 'orderNo', key: 'orderNo', width: 160, ellipsis: true },
+    { title: '支付单号', dataIndex: 'id', key: 'id', width: 120, ellipsis: true },
+    { title: '交易流水号', dataIndex: 'transactionId', key: 'transactionId', width: 160, ellipsis: true, render: (v: string) => v || '-' },
     {
       title: '用户',
       key: 'userInfo',
       render: (_: any, r: any) => (
         <div>
-          <div><WechatOutlined /> {r.payerNickname || '-'}</div>
+          <div><WechatOutlined /> {r.nickname || r.payerNickname || '-'}</div>
           <div style={{ fontSize: 12, color: '#999' }}>ID:{r.userId}</div>
         </div>
       ),
@@ -96,27 +98,66 @@ const Payments: React.FC = () => {
       dataIndex: 'type',
       key: 'type',
       render: (t: string) => {
-        const m: Record<string, any> = { registration: { color: 'blue', text: '报名费' }, partner_fee: { color: 'green', text: '加盟费' }, station_fee: { color: 'cyan', text: '驿站费' }, activity: { color: 'purple', text: '活动费' }, single_registration: { color: 'blue', text: '报名费' } };
+        const m: Record<string, any> = {
+          registration: { color: 'blue', text: '报名费' },
+          partner_fee: { color: 'green', text: '加盟费' },
+          partner_upgrade: { color: 'lime', text: '合伙人升级' },
+          station_fee: { color: 'cyan', text: '驿站费' },
+          activity: { color: 'purple', text: '活动费' },
+          single_registration: { color: 'blue', text: '会员建档' },
+          recommend_reward: { color: 'orange', text: '推荐奖励' },
+          recharge: { color: 'gold', text: '充值' },
+          withdraw: { color: 'red', text: '提现' },
+          commission: { color: 'geekblue', text: '佣金' },
+        };
         const c = m[t] || { color: 'default', text: t };
         return <Tag color={c.color}>{c.text}</Tag>;
       },
     },
-    { title: '支付金额', dataIndex: 'totalFee', key: 'totalFee', render: (v: number) => <span style={{ color: '#f5222d', fontWeight: 500 }}>¥{v}</span> },
+    { title: '支付金额', key: 'amount', render: (_: any, r: any) => {
+      const v = r.amount ?? r.totalFee ?? r.total_fee;
+      return <span style={{ color: '#f5222d', fontWeight: 500 }}>¥{v ?? '-'}</span>;
+    }},
+    {
+      title: '支付方式',
+      dataIndex: 'method',
+      key: 'method',
+      render: (m: string) => {
+        if (m === 'wechat') return <Tag icon={<WechatOutlined />} color="green">微信支付</Tag>;
+        if (m === 'alipay') return <Tag icon={<AlipayCircleOutlined />} color="blue">支付宝</Tag>;
+        return <Tag>{m || '-'}</Tag>;
+      },
+    },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
       render: (s: string) => {
-        const m: Record<string, any> = { paid: { color: 'success', text: '已支付' }, pending: { color: 'processing', text: '待支付' }, failed: { color: 'error', text: '支付失败' }, cancelled: { color: 'default', text: '已取消' } };
+        const m: Record<string, any> = {
+          success: { color: 'success', text: '支付成功' },
+          paid: { color: 'success', text: '已支付' },
+          pending: { color: 'processing', text: '待支付' },
+          failed: { color: 'error', text: '支付失败' },
+          cancelled: { color: 'default', text: '已取消' },
+          refunded: { color: 'warning', text: '已退款' },
+          expired: { color: 'default', text: '已过期' },
+          closed: { color: 'default', text: '已关闭' },
+        };
         const c = m[s] || { color: 'default', text: s };
         return <Tag color={c.color}>{c.text}</Tag>;
       },
     },
-    { title: '支付时间', dataIndex: 'payTime', key: 'payTime', render: (d: string) => d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '-' },
-    { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', render: (d: string) => d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '-' },
+    { title: '支付时间', key: 'payTime', render: (_: any, r: any) => {
+      const d = r.payTime || r.paid_at || r.created_at || r.createdAt;
+      return d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '-';
+    }},
+    { title: '创建时间', key: 'createdAt', render: (_: any, r: any) => {
+      const d = r.createdAt || r.created_at;
+      return d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '-';
+    }},
   ];
 
-  const stats = { total: pagination.total || 0, today: 0, wechat: 0, alipay: 0 };
+  const stats = { total: pagination.total || 0, today: payStats.today || 0, wechat: payStats.wechat || 0, alipay: payStats.alipay || 0 };
 
   return (
     <div>

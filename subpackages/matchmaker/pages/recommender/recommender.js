@@ -65,9 +65,13 @@ Page({
   },
 
   onShow: function() {
+    this._startAutoRefresh();
     this.loadRecommenderData();
     this._buildUpgradeTargets();
     this.loadUsageRecords();
+  },
+  onHide: function() {
+    this._stopAutoRefresh();
   },
 
   // ===== 构建可升级身份列表 =====
@@ -129,7 +133,7 @@ Page({
     }
   },
 
-  // 检查推荐官状态
+  // 检查推荐官状态（仅专业推荐官可使用此页面）
   checkRecommenderStatus: function() {
     // 使用 auth.service 统一读取状态
     if (!authService.isLogin()) {
@@ -139,7 +143,38 @@ Page({
     }
 
     const role = authService.getUserRole();
-    if (role !== commissionRules.USER_ROLES.PROFESSIONAL_RECOMMENDER) {
+    const { USER_ROLES } = commissionRules;
+
+    // 已是专业推荐官 → 通过
+    if (role === USER_ROLES.PROFESSIONAL_RECOMMENDER) {
+      return true;
+    }
+
+    // 其他推荐官角色 → 引导跳转到对应工作台，而非强制升级
+    const workbenchMap = {
+      [USER_ROLES.PUBLIC_MATCHMAKER]:  '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench',
+      [USER_ROLES.PARTNER_MATCHMAKER]: '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench',
+      [USER_ROLES.CITY_FRANCHISEE]:    '/subpackages/partner/pages/franchisee/dashboard/dashboard',
+      [USER_ROLES.COMMUNITY_STATION]:   '/subpackages/partner/pages/community-station/workbench/workbench',
+    };
+
+    const targetUrl = workbenchMap[role];
+    if (targetUrl) {
+      // 已有推荐官身份但不是专业推荐官 → 跳转到自己的工作台
+      wx.showModal({
+        title: '提示',
+        content: '此页面为专业推荐官专属工作台，将为您跳转到当前身份的工作台。',
+        showCancel: true,
+        cancelText: '留在本页',
+        confirmText: '前往工作台',
+        success: (res) => {
+          if (res.confirm) {
+            wx.redirectTo({ url: targetUrl });
+          }
+        }
+      });
+    } else {
+      // 普通会员/未建档 → 引导升级
       wx.showModal({
         title: '提示',
         content: '您还不是专业推荐官，请先升级',
@@ -150,10 +185,8 @@ Page({
           });
         }
       });
-      return false;
     }
-
-    return true;
+    return false;
   },
 
   // 加载推荐官数据（真实 API）
@@ -254,10 +287,10 @@ Page({
       this.setData({
         ...realData,
         workbenchStats: {
-          partner_matchmaker_count: workbenchStats.partner_matchmaker_count || 0,
-          public_matchmaker_count: workbenchStats.public_matchmaker_count || 0,
-          registered_member_count: workbenchStats.registered_member_count || 0,
-          visitor_count: workbenchStats.visitor_count || 0,
+          partner_matchmaker_count: (wbStatsRes || {}).partner_matchmaker_count || 0,
+          public_matchmaker_count: (wbStatsRes || {}).public_matchmaker_count || 0,
+          registered_member_count: (wbStatsRes || {}).registered_member_count || 0,
+          visitor_count: (wbStatsRes || {}).visitor_count || 0,
         },
       });
     }).catch(err => {
@@ -370,6 +403,12 @@ Page({
 
   // 加载推荐码使用记录
   loadUsageRecords: function() {
+    const { DEV_MODE } = require('../../../../utils/config');
+    if (DEV_MODE) {
+      // 开发模式：跳过 API 调用（后端路由未部署时使用）
+      console.log('[recommender] DEV_MODE: 跳过 usage-records API');
+      return;
+    }
     const { request } = require('../../../../utils/request');
     const userInfo = authService.getUserInfo();
     const userId = userInfo?.id || this.data.userId;
@@ -551,5 +590,16 @@ Page({
     if (!hasMore || !expandedType) return;
     this.setData({ detailPage: detailPage + 1 });
     this._loadDetailList(expandedType, this.data.searchKeyword);
+  },
+
+  _stopAutoRefresh: function() {
+    if (this._autoRefreshTimer) {
+      clearInterval(this._autoRefreshTimer);
+      this._autoRefreshTimer = null;
+    }
+  },
+  _startAutoRefresh: function() {
+    this._stopAutoRefresh();
+    this._autoRefreshTimer = setInterval(() => { this.loadRecommenderData(); }, 30000);
   },
 });

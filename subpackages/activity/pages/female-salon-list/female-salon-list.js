@@ -43,6 +43,13 @@ Page({
     this.loadSalons();
   },
 
+  onShow() {
+    // 从详情页返回时自动刷新数据
+    if (this.data.salonList && this.data.salonList.length > 0) {
+      this.loadSalons();
+    }
+  },
+
   loadSalons() {
     this.setData({ loading: true, page: 1, hasMore: true });
     const params = { 

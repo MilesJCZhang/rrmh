@@ -1,5 +1,5 @@
 // subpackages/activity/pages/salon-weekly/salon-weekly.js
-// 主题社交沙龙-同城相亲小班预约页面 v1.0.8
+// 主题社交沙龙-同城社交小班预约页面 v1.0.8
 const { request } = require('../../../../utils/request');
 const API = require('../../../../services/api');
 

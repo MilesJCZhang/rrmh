@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button, Input, Space, Tag, Modal, Form, message, Card, Row, Col, Tabs, Popconfirm, Select, Statistic } from 'antd';
 import { PlusOutlined, ExportOutlined, LinkOutlined, DisconnectOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import PageHeader from '../../components/PageHeader';
-import { getReferralCodes, generateCodes, exportCodes, assignCode, unbindCode, deleteCode, getInsight, ReferralCode } from '../../services/referral-code.service';
+import { getReferralCodes, getReferralCodeStats, generateCodes, exportCodes, assignCode, unbindCode, deleteCode, getInsight, bindCodes, ReferralCode } from '../../services/referral-code.service';
+import * as XLSX from 'xlsx';
 
 const { TabPane } = Tabs;
 
@@ -38,6 +39,7 @@ const ReferralCodesPage: React.FC = () => {
   const [limit, setLimit] = useState(10);
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [codeKeyword, setCodeKeyword] = useState<string>('');
   const [roleStats, setRoleStats] = useState<any[]>([]);
   const [generateVisible, setGenerateVisible] = useState(false);
   const [assignVisible, setAssignVisible] = useState(false);
@@ -48,6 +50,8 @@ const ReferralCodesPage: React.FC = () => {
   const [insightVisible, setInsightVisible] = useState(false);
   const [insightLoading, setInsightLoading] = useState(false);
   const [insightData, setInsightData] = useState<any>(null);
+  const [bindCodesVisible, setBindCodesVisible] = useState(false);
+  const [bindCodesFormInstance] = Form.useForm();
 
   const fetchCodes = async () => {
     setLoading(true);
@@ -55,11 +59,11 @@ const ReferralCodesPage: React.FC = () => {
       const params: any = { page, limit };
       if (typeFilter !== 'all') params.type = typeFilter;
       if (statusFilter !== 'all') params.status = statusFilter;
+      if (codeKeyword.trim()) params.code = codeKeyword.trim();
 
       const result = await getReferralCodes(params);
       setCodes(result.list);
       setTotal(result.total);
-      calcRoleStats(result.list);
     } catch (error) {
       message.error('获取推荐码列表失败');
     } finally {
@@ -67,25 +71,33 @@ const ReferralCodesPage: React.FC = () => {
     }
   };
 
-  const calcRoleStats = (list: ReferralCode[]) => {
-    const stats = [
-      { label: '公益推荐官', value: 'public_welfare', count: 0 },
-      { label: '联创推荐官', value: 'creator', count: 0 },
-      { label: '专业推荐官', value: 'professional', count: 0 },
-      { label: '社区服务站', value: 'community_station', count: 0 },
-      { label: '城市合伙人', value: 'city_partner', count: 0 },
-    ];
-    list.forEach(item => {
-      const stat = stats.find(s => s.value === item.code_type);
-      if (stat) stat.count++;
-    });
-    setRoleStats(stats);
+  // 获取推荐码统计数据
+  const fetchStats = async () => {
+    try {
+      const params: any = {};
+      if (statusFilter !== 'all') params.status = statusFilter;
+      
+      const statsData = await getReferralCodeStats(params);
+      
+      const stats = [
+        { label: '联创推荐官', value: 'creator', count: statsData.creator || 0 },
+        { label: '公益推荐官', value: 'public_welfare', count: statsData.public_welfare || 0 },
+        { label: '专业推荐官', value: 'professional', count: statsData.professional || 0 },
+        { label: '社区服务站', value: 'community_station', count: statsData.community_station || 0 },
+        { label: '城市合伙人', value: 'city_partner', count: statsData.city_partner || 0 },
+      ];
+      
+      setRoleStats(stats);
+    } catch (error) {
+      console.error('获取推荐码统计失败:', error);
+    }
   };
 
   useEffect(() => {
     fetchCodes();
+    fetchStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit, typeFilter, statusFilter]);
+  }, [page, limit, typeFilter, statusFilter, codeKeyword]);
 
   const handleGenerate = async () => {
     try {
@@ -102,16 +114,99 @@ const ReferralCodesPage: React.FC = () => {
 
   const handleExport = async () => {
     try {
-      const blob = await exportCodes();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `referral-codes-${new Date().getTime()}.xlsx`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      message.success('导出成功');
+      setLoading(true);
+      message.loading({ content: '正在获取数据...', key: 'export' });
+
+      // 获取所有数据（使用较大的 pageSize）
+      const allData: ReferralCode[] = [];
+      let page = 1;
+      let pageSize = 1000;
+      let hasMore = true;
+
+      while (hasMore) {
+        const params: any = { page, pageSize };
+        if (typeFilter !== 'all') params.type = typeFilter;
+        if (statusFilter !== 'all') params.status = statusFilter;
+        if (codeKeyword) params.keyword = codeKeyword;
+
+        const res = await getReferralCodes(params);
+        allData.push(...res.list);
+        
+        if (allData.length >= res.total || res.list.length === 0) {
+          hasMore = false;
+        } else {
+          page++;
+        }
+      }
+
+      if (allData.length === 0) {
+        message.warning({ content: '没有数据可导出', key: 'export' });
+        setLoading(false);
+        return;
+      }
+
+      // 准备 Excel 数据
+      const typeMap: Record<string, string> = {
+        'public_welfare': '公益推荐官',
+        'creator': '联创推荐官',
+        'professional': '专业推荐官',
+        'community_station': '社区服务站',
+        'city_partner': '城市合伙人',
+        'partner': '合伙人',
+      };
+
+      const statusMap: Record<string, string> = {
+        'active': '可用',
+        'depleted': '已用完',
+        'deleted': '已删除',
+        'inactive': '停用',
+      };
+
+      const excelData = allData.map((item, index) => ({
+        '序号': index + 1,
+        '邀请码': item.code || '',
+        '类型': typeMap[item.code_type || ''] || item.code_type || '',
+        '状态': statusMap[item.status || ''] || item.status || '',
+        '使用次数': item.use_count ?? item.useCount ?? 0,
+        '最大次数': item.max_uses ?? item.maxUses ?? 0,
+        '推荐人': item.referrer_name || item.referrerName || '',
+        '推荐人ID': item.referrer_id || item.referrerId || '',
+        '上级推荐人': item.parent_referrer_name || '',
+        '上级推荐码': item.parent_referrer_code || '',
+        '创建时间': item.created_at || item.createdAt || '',
+      }));
+
+      // 生成 Excel 文件
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      
+      // 设置列宽
+      ws['!cols'] = [
+        { wch: 6 },   // 序号
+        { wch: 12 },  // 邀请码
+        { wch: 15 },  // 类型
+        { wch: 10 },  // 状态
+        { wch: 10 },  // 使用次数
+        { wch: 10 },  // 最大次数
+        { wch: 15 },  // 推荐人
+        { wch: 12 },  // 推荐人ID
+        { wch: 15 },  // 上级推荐人
+        { wch: 15 },  // 上级推荐码
+        { wch: 20 },  // 创建时间
+      ];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '推荐码列表');
+      
+      // 下载文件
+      const fileName = `推荐码列表-${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+
+      message.success({ content: `导出成功，共 ${allData.length} 条数据`, key: 'export' });
     } catch (error) {
-      message.error('导出失败');
+      console.error('导出失败:', error);
+      message.error({ content: '导出失败，请重试', key: 'export' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -196,6 +291,20 @@ const ReferralCodesPage: React.FC = () => {
     }
   };
 
+  const handleMarkSystem = async (code: string) => {
+    try {
+      await bindCodes({ referrer_code: 'SYSTEM', referred_code: code, remark: '系统生成' });
+      message.success(`推荐码 ${code} 已标记为系统生成`);
+      setInsightVisible(false);
+      setInsightData(null);
+      fetchCodes();
+    } catch (error: any) {
+      if (error.response?.data?.message) message.error(error.response.data.message);
+      else if (error.message) message.error(error.message);
+      else message.error('标记失败');
+    }
+  };
+
   const columns = [
     {
       title: 'ID',
@@ -213,7 +322,26 @@ const ReferralCodesPage: React.FC = () => {
       title: '推荐人',
       dataIndex: 'referrerName',
       key: 'referrerName',
+      width: 120,
       render: (name: string) => name || <span style={{ color: '#999' }}>未绑定</span>,
+    },
+    {
+      title: '上级推荐人',
+      key: 'parentReferrer',
+      width: 140,
+      render: (_: any, r: any) => {
+        if (r.parent_referrer_name) {
+          return <Tag color="blue">{r.parent_referrer_name}</Tag>;
+        }
+        return <span style={{ color: '#999' }}>无</span>;
+      },
+    },
+    {
+      title: '上级推荐码',
+      dataIndex: 'parent_referrer_code',
+      key: 'parent_referrer_code',
+      width: 120,
+      render: (v: string) => v ? <span style={{ fontFamily: 'monospace', fontSize: 13 }}>{v}</span> : <span style={{ color: '#999' }}>-</span>,
     },
     {
       title: '已使用/最大使用次数',
@@ -236,6 +364,21 @@ const ReferralCodesPage: React.FC = () => {
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 180,
+      render: (text: string) => {
+        if (!text) return '-';
+        try {
+          const date = new Date(text);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const hours = String(date.getHours()).padStart(2, '0');
+          const minutes = String(date.getMinutes()).padStart(2, '0');
+          const seconds = String(date.getSeconds()).padStart(2, '0');
+          return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        } catch (e) {
+          return text;
+        }
+      },
     },
     {
       title: '操作',
@@ -316,6 +459,9 @@ const ReferralCodesPage: React.FC = () => {
               <Button icon={<ExportOutlined />} onClick={handleExport}>
                 导出
               </Button>
+              <Button icon={<LinkOutlined />} onClick={() => { if (bindCodesFormInstance) bindCodesFormInstance.resetFields(); setBindCodesVisible(true); }}>
+                双码互绑
+              </Button>
             </Space>
           </Col>
         </Row>
@@ -348,6 +494,15 @@ const ReferralCodesPage: React.FC = () => {
               <Select.Option value="depleted">已用完</Select.Option>
               <Select.Option value="deleted">已删除</Select.Option>
             </Select>
+
+            <Input.Search
+              placeholder="输入推荐码搜索"
+              value={codeKeyword}
+              onChange={(e) => setCodeKeyword(e.target.value)}
+              onSearch={() => { setPage(1); fetchCodes(); }}
+              style={{ width: 200 }}
+              allowClear
+            />
           </Space>
         </Card>
 
@@ -456,6 +611,41 @@ const ReferralCodesPage: React.FC = () => {
       </Modal>
 
       <Modal
+        title="双码互绑"
+        open={bindCodesVisible}
+        onOk={async () => {
+          try {
+            const v = await bindCodesFormInstance.validateFields();
+            await bindCodes({ referrer_code: v.referrer_code, referred_code: v.referred_code, remark: v.remark });
+            message.success('推荐关系绑定成功');
+            setBindCodesVisible(false);
+            bindCodesFormInstance.resetFields();
+            fetchCodes();
+          } catch (error: any) {
+            if (error.response?.data?.message) message.error(error.response.data.message);
+            else if (error.message) message.error(error.message);
+            else message.error('绑定失败');
+          }
+        }}
+        onCancel={() => { setBindCodesVisible(false); bindCodesFormInstance.resetFields(); }}
+      >
+        <Form form={bindCodesFormInstance} layout="vertical">
+          <Form.Item name="referrer_code" label="推荐人推荐码" rules={[{ required: true, message: '请输入推荐人推荐码' }]}>
+            <Input placeholder="输入推荐人推荐码，如 LCRGXXXX；首批推荐官请填 SYSTEM" />
+          </Form.Item>
+          <Form.Item name="referred_code" label="被推荐人推荐码" rules={[{ required: true, message: '请输入被推荐人推荐码' }]}>
+            <Input placeholder="输入被推荐人推荐码，如 GYRGXXXX" />
+          </Form.Item>
+          <Form.Item name="remark" label="备注（可选）">
+            <Input placeholder="绑定备注" />
+          </Form.Item>
+          <div style={{ background: '#fff7e6', padding: '8px 12px', borderRadius: 4, fontSize: 12, color: '#d46b08' }}>
+            <strong>提示：</strong>第一批无上级推荐人的推荐官，推荐人推荐码填 <code>SYSTEM</code> 即可标记为系统生成。
+          </div>
+        </Form>
+      </Modal>
+
+      <Modal
         title={`数据洞察 - ${currentCode}`}
         open={insightVisible}
         onCancel={() => {
@@ -477,14 +667,41 @@ const ReferralCodesPage: React.FC = () => {
               <p><strong>过期时间：</strong>{insightData.code_info?.expiresAt || '无'}</p>
             </Card>
 
-            {insightData.code_info?.referrer_name && (
-              <Card title="推荐官信息" size="small" style={{ marginBottom: 16 }}>
-                <p><strong>昵称：</strong>{insightData.code_info?.referrer_name || '-'}</p>
-                <p><strong>微信号：</strong>{insightData.code_info?.referrer_wechat || '-'}</p>
-                <p><strong>手机号：</strong>{insightData.code_info?.referrer_phone || '-'}</p>
-                <p><strong>角色：</strong>{typeLabels[insightData.code_info?.codeType] || insightData.code_info?.type_name || '-'}</p>
-              </Card>
-            )}
+            {/* 推荐官信息 - 上级推荐人 */}
+            <Card
+              title="上级推荐人"
+              size="small"
+              style={{ marginBottom: 16, borderLeft: `3px solid ${insightData.code_info?.parent_referrer ? (insightData.code_info.parent_referrer.role === 'system' ? '#52c41a' : '#1890ff') : '#ff4d4f'}` }}
+            >
+              {insightData.code_info?.parent_referrer ? (
+                <>
+                  <p><strong>昵称：</strong>{insightData.code_info.parent_referrer.nickname || '-'}</p>
+                  <p><strong>微信号：</strong>{insightData.code_info.parent_referrer.wechatAccount || '-'}</p>
+                  <p><strong>推荐码：</strong>
+                    <span style={{ fontFamily: 'monospace', fontSize: 13 }}>{insightData.code_info.parent_referrer.recommendCode || '-'}</span>
+                  </p>
+                  <p><strong>角色：</strong>
+                    {insightData.code_info.parent_referrer.role === 'system' 
+                      ? <Tag color="green">系统（首批推荐官）</Tag> 
+                      : typeLabels[insightData.code_info.parent_referrer.role] || insightData.code_info.parent_referrer.role || '-'}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p style={{ color: '#999' }}>该推荐码暂无上级推荐人</p>
+                  <Button
+                    type="primary"
+                    size="small"
+                    ghost
+                    icon={<LinkOutlined />}
+                    onClick={() => handleMarkSystem(currentCode)}
+                    style={{ marginTop: 8 }}
+                  >
+                    标记为系统生成（首批推荐官）
+                  </Button>
+                </>
+              )}
+            </Card>
 
             <Card title="推荐关系" size="small" style={{ marginBottom: 16 }}>
               {insightData.referred_users?.length > 0 ? (
@@ -494,11 +711,15 @@ const ReferralCodesPage: React.FC = () => {
                   size="small"
                   pagination={false}
                   columns={[
-                    { title: 'ID', dataIndex: 'id', key: 'id' },
+                    { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
                     { title: '昵称', dataIndex: 'nickname', key: 'nickname' },
                     { title: '微信号', dataIndex: 'wechatAccount', key: 'wechatAccount' },
-                    { title: '级别', dataIndex: 'level', key: 'level' },
-                    { title: '状态', dataIndex: 'status', key: 'status', render: (s: string) => statusLabels[s] || s },
+                    { title: '上级推荐人', key: 'referrer', render: (_: any, r: any) => (
+                      r.referrer ? <Tag color="blue">{r.referrer.nickname || r.referrer.id}</Tag> : <Tag color="default">无</Tag>
+                    )},
+                    { title: '级别', dataIndex: 'level', key: 'level', width: 60 },
+                    { title: '状态', dataIndex: 'status', key: 'status', width: 80, render: (s: string) => statusLabels[s] || s },
+                    { title: '推荐时间', dataIndex: 'created_at', key: 'created_at', render: (d: string) => d ? new Date(d).toLocaleString() : '-' },
                   ]}
                 />
               ) : (

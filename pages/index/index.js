@@ -17,6 +17,8 @@ Page({
     // 推荐关系
     hasReferrer: false,
     referrerId: '',
+    pendingReferralCode: '',    // 扫码获得的待绑定推荐码
+    referrerName: '',           // 推荐人姓名
 
     // 游客/用户状态
     isGuest: true,
@@ -90,14 +92,39 @@ Page({
     // 记录访客日志（扫码/链接进入小程序）
     const app = getApp();
     const openid = app.globalData.openid || authService.getOpenId();
-    if (openid && code) {
+
+    const recordVisitor = (oid) => {
+      if (!oid) return;
       const userInfo = authService.getUserInfo() || {};
       referralService.logVisitor({
         referrer_code: code,
-        visitor_openid: openid,
+        visitor_openid: oid,
         visitor_nickname: userInfo.nickname || '',
         visitor_avatar: userInfo.avatar || '',
       }).catch(err => console.warn('[index] 访客日志上报失败:', err));
+    };
+
+    if (openid) {
+      // openid 可用：直接记录访客日志
+      recordVisitor(openid);
+    } else {
+      // openid 不可用（登录尚未完成）：缓存到 Storage，登录成功回调中补录
+      const pendingKey = '__pending_visitor_referrer_code__';
+      if (!wx.getStorageSync(pendingKey)) {
+        wx.setStorageSync(pendingKey, code);
+      }
+      const origCallback = app.globalData._onLoginSuccess;
+      app.globalData._onLoginSuccess = () => {
+        if (origCallback) origCallback();
+        const storedCode = wx.getStorageSync(pendingKey);
+        if (storedCode) {
+          const loginOpenid = app.globalData.openid || authService.getOpenId();
+          if (loginOpenid) {
+            recordVisitor(loginOpenid);
+          }
+          wx.removeStorageSync(pendingKey);
+        }
+      };
     }
 
     // 已锁定则忽略
@@ -428,7 +455,7 @@ Page({
   },
 
   /**
-   * 推荐官主体沙龙点击（性别校验由详情页处理）
+   * 推荐官主题沙龙点击（性别校验由详情页处理）
    * 使用配置系统获取页面路径
    */
   onGenderSalonTap(e) {
@@ -473,9 +500,14 @@ Page({
   _updateReferralStatus() {
     const has = hasReferrer();
     const id = getReferrerId();
+    const refInfo = id ? require('../../utils/referral').getReferrerInfo() : null;
+    // 读取 Storage 中尚未绑定的推荐码（扫码获得但未登录绑定）
+    const pendingCode = wx.getStorageSync('invitation_code') || '';
     this.setData({
       hasReferrer: has,
       referrerId: id,
+      pendingReferralCode: pendingCode,
+      referrerName: refInfo?.name || '',
     });
   },
 
@@ -528,7 +560,7 @@ Page({
         this.setData({
           stats: {
             users: data.totalMembers || data.totalUsers || data.users || 0,
-            matches: data.totalMatches || data.matches || 0,
+            salons: data.salonCount || data.totalSalons || data.activityCount || 0,
             matchmakers: data.totalMatchmakers || data.matchmakers || 0,
           }
         });
@@ -568,14 +600,25 @@ Page({
     });
   },
 
-  // 扫码绑定
+  // 扫码绑定（支持URL格式、纯推荐码字符串）
   onScanQrcode() {
     wx.scanCode({
       onlyFromCamera: false,
-      scanType: ['qrCode'],
+      scanType: ['qrCode', 'wxCode'],
       success: (res) => {
+        // 小程序码（太阳码）的 scene 参数无法通过 wx.scanCode 获取
+        if (res.scanType === 'WX_CODE') {
+          wx.showToast({ title: '请使用推广码页面的普通二维码或手动输入推荐码', icon: 'none', duration: 2000 });
+          return;
+        }
+        const raw = (res.result || '').trim();
+        if (!raw) {
+          wx.showToast({ title: '二维码内容为空', icon: 'none' });
+          return;
+        }
+        // 方法1：URL 格式（含 referrer_id 参数）
         try {
-          const url = new URL(res.result);
+          const url = new URL(raw);
           const referrerId = url.searchParams.get('referrer_id');
           if (referrerId) {
             const { bindReferrer } = require('../../utils/referral');
@@ -585,11 +628,21 @@ Page({
                 wx.showToast({ title: '绑定成功，可以报名了', icon: 'success' });
               }
             });
-          } else {
-            wx.showToast({ title: '二维码无效', icon: 'none' });
+            return;
           }
-        } catch (e) {
-          wx.showToast({ title: '二维码格式错误', icon: 'none' });
+        } catch (e) { /* 非 URL 格式，尝试方法2 */ }
+        // 方法2：纯推荐码格式（如 LCRG001）
+        const { extractCodeFromScanResult, bindByCode } = require('../../utils/referral');
+        const code = extractCodeFromScanResult(raw);
+        if (code) {
+          bindByCode(code).then((result) => {
+            if (result.bound) {
+              this._updateReferralStatus();
+              wx.showToast({ title: '绑定成功', icon: 'success' });
+            }
+          });
+        } else {
+          wx.showToast({ title: '二维码无效', icon: 'none' });
         }
       },
     });

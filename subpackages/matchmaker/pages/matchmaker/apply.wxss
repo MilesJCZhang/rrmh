@@ -44,6 +44,43 @@
   line-height: 1.6;
 }
 
+/* ---- 推荐码展示卡片（访客通过分享进入） ---- */
+.invite-code-card {
+  margin: 20rpx 24rpx;
+  background: linear-gradient(135deg, #F0F7FF 0%, #E8F0FE 100%);
+  border: 2rpx solid #BBDEFB;
+  border-radius: 16rpx;
+  padding: 24rpx 28rpx;
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+.icc-icon {
+  font-size: 36rpx;
+  flex-shrink: 0;
+  margin-top: 2rpx;
+}
+.icc-body {
+  flex: 1;
+}
+.icc-label {
+  font-size: 22rpx;
+  color: #1565C0;
+  font-weight: 600;
+  margin-bottom: 10rpx;
+}
+.icc-code-row {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+.icc-code {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #0D47A1;
+  letter-spacing: 2rpx;
+}
+
 /* ---- 分步表单区域 ---- */
 .form-section {
   margin: 24rpx 24rpx 0;

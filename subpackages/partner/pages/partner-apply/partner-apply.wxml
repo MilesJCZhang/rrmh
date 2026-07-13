@@ -9,6 +9,21 @@
     <view class="ab-desc">{{config.bannerDesc}}</view>
   </view>
 
+  <!-- 推荐码展示（访客通过分享进入） -->
+  <view class="invite-code-card" wx:if="{{existingReferralCode}}">
+    <view class="icc-icon">🔗</view>
+    <view class="icc-body">
+      <view class="icc-label">您通过推荐链接进入</view>
+      <view class="icc-code-row">
+        <text class="icc-code">推荐码：{{existingReferralCode}}</text>
+        <text class="icc-copy" bindtap="onCopyReferralCode">复制</text>
+      </view>
+      <view class="icc-referrer" wx:if="{{existingReferrerName}}">
+        推荐人：{{existingReferrerName}}
+      </view>
+    </view>
+  </view>
+
   <!-- 表单区域 -->
   <view class="form-section" wx:for="{{config.fields}}" wx:key="*this" wx:for-item="field">
     <!-- 收款账户分隔（社区服务站：在bankAccount前插入） -->

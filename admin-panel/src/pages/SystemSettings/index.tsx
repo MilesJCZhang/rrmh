@@ -41,9 +41,10 @@ const SystemSettingsPage: React.FC = () => {
         setBasicConfig({
           site_name: data.site_name || '',
           site_logo: data.site_logo || '',
-          home_banner: data.home_banner || '',
+          home_banner: data.home_banner || data.hero_slides || '',
           customer_service_wechat: data.customer_service_wechat || '',
           customer_service_phone: data.customer_service_phone || '',
+          hero_slides: data.hero_slides || data.home_banner || '',
           grid2_dating_bg: data.grid2_dating_bg || '',
           grid2_salon_bg: data.grid2_salon_bg || '',
           grid4_charity_bg: data.grid4_charity_bg || '',
@@ -169,7 +170,7 @@ const SystemSettingsPage: React.FC = () => {
                 label="轮播图配置"
                 tooltip="首页顶部轮播广告图，支持多张，每张可配置跳转页面"
               >
-                <Form.Item name="home_banner" noStyle>
+                <Form.Item name="hero_slides" noStyle>
                   <BannerUpload
                     maxSizeMB={2}
                     maxCount={5}
@@ -178,12 +179,12 @@ const SystemSettingsPage: React.FC = () => {
                 </Form.Item>
               </Form.Item>
               <Text type="secondary" style={{ fontSize: 12 }}>
-                提示：上传后可选择跳转页面（首页、交友大厅、沙龙列表等）或填写外部链接。拖动卡片可调整顺序。
+                提示：上传后可选择跳转页面（首页、会员档案、沙龙列表等）或填写外部链接。拖动卡片可调整顺序。
               </Text>
             </Panel>
 
             <Panel header="宫格背景图配置" key="3">
-              <Form.Item label="交友宫格背景图" tooltip="首页交友宫格的背景图片">
+              <Form.Item label="社交宫格背景图" tooltip="首页社交宫格的背景图片">
                 <Form.Item name="grid2_dating_bg" noStyle>
                   <ImageUpload
                     maxSizeMB={2}
@@ -281,7 +282,7 @@ const SystemSettingsPage: React.FC = () => {
           <Form.Item label="注册最低评分" name="score_min_register" tooltip="用户注册时的最低评分要求（0-100）">
             <InputNumber min={0} max={100} style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item label="发布最低评分" name="score_min_publish" tooltip="用户发布相亲信息的最低评分要求（0-100）">
+          <Form.Item label="发布最低评分" name="score_min_publish" tooltip="用户发布个人动态的最低评分要求（0-100）">
             <InputNumber min={0} max={100} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item label="高分阈值" name="score_high_threshold" tooltip="评分高于此值视为优质用户（0-100）">

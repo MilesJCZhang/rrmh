@@ -1,5 +1,17 @@
 import axios from '../utils/axios.config';
 
+export interface ReferrerInfo {
+  id: number;
+  nickname: string;
+  recommendCode: string | null;
+}
+
+export interface ReferralCodeInfo {
+  code: string;
+  typeName: string;
+  codeType: string;
+}
+
 export interface User {
   id: number;
   nickname: string;
@@ -12,7 +24,12 @@ export interface User {
   income: string;
   location: string;
   status: number;
+  recommendCode?: string;
+  recommendedBy?: number | null;
+  referrer?: ReferrerInfo | null;
+  referralCodes?: ReferralCodeInfo[];
   createdAt: string;
+  created_at?: string;
 }
 
 export interface UserListParams {
@@ -45,4 +62,12 @@ export const getUserDetail = async (id: number): Promise<User> => {
 
 export const updateUserStatus = async (id: number, status: number): Promise<void> => {
   await axios.put(`/v1/admin/users/${id}/status`, { status });
+};
+
+export const deleteUser = async (id: number): Promise<void> => {
+  await axios.delete(`/v1/admin/users/${id}`);
+};
+
+export const disableUser = async (id: number): Promise<void> => {
+  await axios.put(`/v1/admin/users/${id}/disable`);
 };

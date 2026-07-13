@@ -33,7 +33,7 @@ const PremiumVerifyPage: React.FC = () => {
     setVerifyLoading(true);
     try {
       const res = await premiumService.getVerifications({ status: status || undefined, page, pageSize: 20 });
-      if (res.code === 0) {
+      if (res.code === 200 || res.code === 0) {
         setVerifications(res.data.list);
         setVerifyTotal(res.data.total);
         setVerifyPage(page);
@@ -49,7 +49,7 @@ const PremiumVerifyPage: React.FC = () => {
     setCustodyLoading(true);
     try {
       const res = await premiumService.getCustodyList({ status: status || undefined, page, pageSize: 20 });
-      if (res.code === 0) {
+      if (res.code === 200 || res.code === 0) {
         setCustodyList(res.data.list);
         setCustodyTotal(res.data.total);
         setCustodyPage(page);
@@ -67,7 +67,7 @@ const PremiumVerifyPage: React.FC = () => {
   const handleApprove = async (id: number) => {
     try {
       const res = await premiumService.reviewVerification(id, 'approve');
-      if (res.code === 0) {
+      if (res.code === 200 || res.code === 0) {
         message.success('审核通过');
         fetchVerifications(verifyPage, verifyStatus);
       }
@@ -86,7 +86,7 @@ const PremiumVerifyPage: React.FC = () => {
     if (!rejectingId) return;
     try {
       const res = await premiumService.reviewVerification(rejectingId, 'reject', rejectReason);
-      if (res.code === 0) {
+      if (res.code === 200 || res.code === 0) {
         message.success('已拒绝');
         setRejectModalVisible(false);
         fetchVerifications(verifyPage, verifyStatus);
@@ -106,7 +106,7 @@ const PremiumVerifyPage: React.FC = () => {
     if (!settlingId) return;
     try {
       const res = await premiumService.settleCustody(settlingId, settleType);
-      if (res.code === 0) {
+      if (res.code === 200 || res.code === 0) {
         message.success(res.message);
         setSettleModalVisible(false);
         fetchCustody(custodyPage, custodyStatus);

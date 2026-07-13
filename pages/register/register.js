@@ -186,14 +186,29 @@ Page({
       this.setData({ 'form.referralCode': extractedCode.toUpperCase() });
     }
 
+    // 补：从 storage 读取推荐码（访客通过分享进入时由 app.js 写入）
+    if (!extractedCode) {
+      let storedCode = wx.getStorageSync('invitation_code') || '';
+      if (!storedCode && options.invitationCode) {
+        storedCode = options.invitationCode.toUpperCase();
+      }
+      if (!storedCode && options.code) {
+        storedCode = options.code.toUpperCase();
+      }
+      if (storedCode) {
+        this.setData({ 'form.referralCode': storedCode });
+      }
+    }
+
     // 检查已有推荐人
     const existingRefId = getReferrerId();
     if (existingRefId) {
       const refInfo = getReferrerInfo();
+      const code = this.data.form.referralCode;
       this.setData({
         'form.existingReferrer': true,
-        'form.referrerName': refInfo?.name || '推荐官',
-        'form.referralCode': '',
+        'form.referrerName': refInfo?.name || code || '推荐官',
+        // 保留推荐码不清空，供展示
       });
     }
 
@@ -293,6 +308,15 @@ Page({
         authService.setHasProfile(true);
         authService.setIsPaid(true);
 
+        // 支付成功后立即更新访客状态为已支付（不等建档完成）
+        const openid = authService.getOpenId();
+        if (openid) {
+          referralService.updateVisitorStatus({
+            visitor_openid: openid,
+            reg_status: 'paid',
+          }).catch(err => console.warn('[register] 更新访客状态失败:', err));
+        }
+
         this.setData({
           isMemberUnlocked: true,
           showPaymentModal: false,
@@ -302,6 +326,24 @@ Page({
 
         // 保存手机号
         this._savePhoneToServer();
+
+        // 刷新用户信息（同步后端 role → 'member'）
+        try {
+          const userInfo = await getProfile();
+          if (userInfo) {
+            authService.syncUserData(userInfo);
+            // 强制确保 roleList 包含 'member'（支付成功后立即生效）
+            const info = authService.getUserInfo() || {};
+            const roleList = userInfo.roleList || info.roleList || [];
+            if (!roleList.includes('member')) {
+              roleList.push('member');
+            }
+            info.roleList = roleList;
+            authService.setUserInfo(info);
+          }
+        } catch (e) {
+          console.warn('[register] 刷新用户信息失败:', e.message);
+        }
       } else {
         this.onPaymentFail(payResult.reason === 'cancelled' ? '支付已取消' : '支付未完成');
       }
@@ -546,7 +588,7 @@ Page({
         });
       });
       const tempFile = res.tempFiles[0].tempFilePath;
-      const uploaded = await uploadFile(tempFile, 'id_card');
+      const uploaded = await uploadFile(tempFile, 'image');
       const key = side === 'front' ? 'form.idCardFrontImage' : 'form.idCardBackImage';
       this.setData({ [key]: uploaded.url });
       this._updateScore();
@@ -656,20 +698,37 @@ Page({
       if (!loggedIn) return;
     }
 
-    // 推荐码可选：有则绑定，无则跳过
-    const { referralCode } = this.data.form;
-    if (referralCode && referralCode.trim()) {
-      try {
-        await bindByCode(referralCode, { silent: true });
-      } catch (err) {
-        // 推荐码绑定失败不阻塞提交，仅提示
-        console.warn('[register] 推荐码绑定失败:', err.message);
-      }
-    }
-
     this.setData({ loading: true });
     try {
       await this._submitForm();
+
+      // 同步会员档案资料到后端
+      // 注意：支付建档费（single_registration）后 role 仍为 'user'，
+      // "会员"身份由 orders 表中的付费记录界定，不依赖 role 字段
+      // 这里调用 member/register 将完整资料写入 users 表
+      const form = this.data.form;
+      if (form.gender && form.birthYear) {
+        try {
+          await request({
+            url: '/v1/member/register',
+            method: 'POST',
+            data: {
+              gender: form.gender,
+              birthYear: parseInt(form.birthYear),
+              occupation: form.occupation || '',
+              income: form.income || '',
+              location: form.cityLabel || '',
+              education: form.education || '',
+              marriage: form.maritalStatus || '',
+              children: form.childrenAttitude || '',
+              description: form.intro || '',
+            },
+          });
+        } catch (err) {
+          // 创建会员记录失败不阻塞后续操作（payment回调已更新role）
+          console.warn('[register] 创建会员记录失败:', err.message);
+        }
+      }
 
       // 同步评分到全局
       const app = getApp();
@@ -677,18 +736,28 @@ Page({
         app._syncScoreData();
       }
 
-      wx.showToast({ title: this.data.isEditMode ? '档案已更新' : '建档成功', icon: 'success' });
-      // 更新访客注册状态
-      const openid = authService.getOpenId();
-      if (openid) {
-        referralService.updateVisitorStatus({
-          visitor_openid: openid,
-          reg_status: 'registered',
-        }).catch(err => console.warn('[register] 更新访客状态失败:', err));
+      // 判断是否为最后一步
+      const stepsLen = this.data.steps ? this.data.steps.length : 5;
+      const isLastStep = this.data.activeTab >= stepsLen - 1;
+
+      if (isLastStep) {
+        // 最后一步 → 跳转到智能推荐
+        wx.showToast({ title: this.data.isEditMode ? '档案已更新' : '建档成功', icon: 'success' });
+        const openid = authService.getOpenId();
+        if (openid) {
+          referralService.updateVisitorStatus({
+            visitor_openid: openid,
+            reg_status: 'registered',
+          }).catch(err => console.warn('[register] 更新访客状态失败:', err));
+        }
+        setTimeout(() => {
+          wx.switchTab({ url: '/pages/match/match' });
+        }, 1500);
+      } else {
+        // 非最后一步 → 保存并前进到下一步
+        wx.showToast({ title: '已保存', icon: 'success' });
+        this.setData({ activeTab: this.data.activeTab + 1 });
       }
-      setTimeout(() => {
-        wx.switchTab({ url: '/pages/match/match' });
-      }, 1500);
     } catch (e) {
       wx.showToast({ title: e.message || '提交失败，请重试', icon: 'none' });
     } finally {
@@ -726,6 +795,15 @@ Page({
       expectIncome: form.expectIncome,
       marriageExpect: form.marriageExpect,
       childrenAttitude: form.childrenAttitude,
+      // 认证资料图片（上传后通过 setData 存储的 URL）
+      idCardFrontImage: form.idCardFrontImage || '',
+      idCardBackImage: form.idCardBackImage || '',
+      // 资产证明图片（数组 → JSON字符串）
+      propertyImages: JSON.stringify(form.propertyImages || []),
+      vehicleImages: JSON.stringify(form.vehicleImages || []),
+      bankDepositProof: form.bankDepositProof || '',
+      insuranceProof: form.insuranceProof || '',
+      financeProof: form.financeProof || '',
     };
 
     await request({

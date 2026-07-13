@@ -114,19 +114,38 @@ Page({
 
   /**
    * 初始化页面：判断当前状态
-   * 注意：推荐官用户会被重定向到独立的工作台页面
+   * 注意：推荐官用户会被重定向到各自独立的工作台页面
    * 社交中心页面只处理：未绑定推荐人、已绑定推荐人（但不是推荐官）
    */
+  // 推荐官角色 → 对应工作台路由映射
+  _getWorkbenchRoute(role) {
+    const routes = {
+      'public_matchmaker':         '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench',
+      'partner_matchmaker':        '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench',
+      'city_franchisee':           '/subpackages/partner/pages/franchisee/dashboard/dashboard',
+      'professional_recommender':  '/subpackages/matchmaker/pages/recommender/recommender',
+      'community_station':          '/subpackages/partner/pages/community-station/workbench/workbench',
+    };
+    return routes[role] || null;
+  },
+
   async initPage() {
+    // 如果是"了解推荐官"模式，跳过推荐官检查和跳转
+    const pages = getCurrentPages();
+    const currentPage = pages[pages.length - 1];
+    const mode = currentPage.options?.mode || '';
+    const isLearnMode = mode === 'learn';
+
     if (DEV_MODE) {
       // ===== 开发模式：完全由身份切换器控制 =====
       const role = authService.getUserRole();
       const isMk = authService.isMatchmaker();
       const hasRef = !!authService.getReferrerId();
 
-      if (isMk) {
-        // ---- 推荐官身份 → 跳转到工作台 ----
-        wx.redirectTo({ url: '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench' });
+      if (isMk && !isLearnMode) {
+        // ---- 推荐官身份 → 跳转到对应工作台（按角色区分）----
+        const targetUrl = this._getWorkbenchRoute(role) || '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench';
+        wx.redirectTo({ url: targetUrl });
         return;
       } else if (hasRef) {
         // ---- 会员身份 → 我的推荐官 + 其他推荐官 ----
@@ -176,9 +195,11 @@ Page({
         const roleLabel = this._getRoleLabel(currentRole);
         const upgradableRoles = getUpgradableRoles(currentRole);
 
-        // 推荐官用户跳转到独立工作台
-        if (data.isMatchmaker) {
-          wx.redirectTo({ url: '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench' });
+        // 推荐官用户跳转到各自独立工作台（按角色区分）
+        // 但如果是"了解推荐官"模式，则不跳转
+        if (data.isMatchmaker && !isLearnMode) {
+          const targetUrl = this._getWorkbenchRoute(currentRole) || '/subpackages/matchmaker/pages/matchmaker-workbench/matchmaker-workbench';
+          wx.redirectTo({ url: targetUrl });
           return;
         }
 
@@ -224,21 +245,53 @@ Page({
   onScanBind() {
     wx.scanCode({
       onlyFromCamera: true,
-      scanType: ['qrCode'],
+      scanType: ['qrCode', 'wxCode'],
       success: (res) => {
+        const raw = (res.result || '').trim();
+        if (!raw) {
+          wx.showToast({ title: '未识别到二维码内容', icon: 'none' });
+          return;
+        }
+        // 优先尝试 JSON 格式（兼容旧版 matchmaker_referral 类型二维码）
         try {
-          const params = JSON.parse(res.result);
+          const params = JSON.parse(raw);
           if (params.type === 'matchmaker_referral' && params.id) {
             this.bindMatchmaker(params.id, params.name);
-          } else {
-            wx.showToast({ title: '请扫描推荐码', icon: 'none' });
+            return;
           }
-        } catch (e) {
-          wx.showToast({ title: '二维码格式有误', icon: 'none' });
+        } catch (e) { /* 非 JSON 格式，继续尝试纯推荐码 */ }
+        // 其次尝试识别纯推荐码（如 RC001、LCRG001）
+        const { extractCodeFromScanResult } = require('../../../../utils/referral');
+        const code = extractCodeFromScanResult(raw);
+        if (code) {
+          this.bindByReferralCode(code);
+          return;
         }
+        wx.showToast({ title: '请扫描有效的推荐码', icon: 'none' });
       },
       fail: () => {},
     });
+  },
+
+  /**
+   * 通过推荐码绑定（适用于扫描普通二维码）
+   */
+  async bindByReferralCode(code) {
+    const { bindByCode } = require('../../../../utils/referral');
+    wx.showLoading({ title: '绑定中...' });
+    try {
+      const result = await bindByCode(code);
+      wx.hideLoading();
+      if (result.bound) {
+        wx.showToast({ title: result.isNew ? '绑定成功' : '已绑定该推荐人', icon: 'success' });
+        setTimeout(() => this.initPage(), 500);
+      } else {
+        wx.showToast({ title: result.reason || '绑定失败，请重试', icon: 'none' });
+      }
+    } catch (e) {
+      wx.hideLoading();
+      wx.showToast({ title: e.message || '绑定失败', icon: 'none' });
+    }
   },
 
   /**
@@ -405,14 +458,26 @@ Page({
 
   /**
    * 去绑定推荐人（状态1卡片入口）
+   * 支持：URL格式（含referrer_id）、纯推荐码字符串（如 LCRG001）
    */
   onGoBindReferrer() {
     wx.scanCode({
       onlyFromCamera: false,
-      scanType: ['qrCode'],
+      scanType: ['qrCode', 'wxCode'],
       success: (res) => {
+        // 小程序码（太阳码）的 scene 参数无法通过 wx.scanCode 获取
+        if (res.scanType === 'WX_CODE') {
+          wx.showToast({ title: '请使用推广码页面的普通二维码或手动输入推荐码', icon: 'none', duration: 2000 });
+          return;
+        }
+        const raw = (res.result || '').trim();
+        if (!raw) {
+          wx.showToast({ title: '二维码内容为空', icon: 'none' });
+          return;
+        }
+        // 方法1：URL 格式（含 referrer_id 参数）
         try {
-          const url = new URL(res.result);
+          const url = new URL(raw);
           const referrerId = url.searchParams.get('referrer_id');
           if (referrerId) {
             const { bindReferrer } = require('../../../../utils/referral');
@@ -422,11 +487,21 @@ Page({
                 wx.showToast({ title: '绑定成功', icon: 'success' });
               }
             });
-          } else {
-            wx.showToast({ title: '二维码无效', icon: 'none' });
+            return;
           }
-        } catch (e) {
-          wx.showToast({ title: '二维码格式错误', icon: 'none' });
+        } catch (e) { /* 非 URL 格式，尝试方法2 */ }
+        // 方法2：纯推荐码格式（如 LCRG001）
+        const { extractCodeFromScanResult, bindByCode } = require('../../../../utils/referral');
+        const code = extractCodeFromScanResult(raw);
+        if (code) {
+          bindByCode(code).then((result) => {
+            if (result.bound) {
+              this.initPage();
+              wx.showToast({ title: '绑定成功', icon: 'success' });
+            }
+          });
+        } else {
+          wx.showToast({ title: '二维码无效', icon: 'none' });
         }
       },
     });

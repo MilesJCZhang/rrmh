@@ -57,7 +57,8 @@ const submitBasicVerification = (params) => {
       method: 'POST',
       data: { realName, idNumber },
     }).then((resp) => {
-      const data = resp.data || resp;
+      // request.js 在 body.code === 0 时已返回 body.data，resp 直接是内层对象
+      const data = resp;
       wx.hideLoading();
       _getApp().globalData.isVerified = true;
       _getApp().globalData.verificationLevel = VERIFICATION_LEVELS.BASIC;

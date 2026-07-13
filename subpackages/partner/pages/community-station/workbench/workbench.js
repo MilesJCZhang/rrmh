@@ -44,9 +44,13 @@ Page({
   },
 
   onShow() {
+    this._startAutoRefresh();
     this._loadData();
     this._buildIdentityList();
     this._buildUpgradeTargets();
+  },
+  onHide() {
+    this._stopAutoRefresh();
   },
 
   // ===== 构建可升级身份列表 =====
@@ -164,12 +168,14 @@ Page({
       incomeService.getSummary().catch(() => null),
       incomeService.getRecords({ page: 1, limit: 10 }).catch(() => null),
       referralService.getMyInsight().catch(() => null),
-    ]).then(([summaryRes, recordsRes, insightRes]) => {
+      referralService.getWorkbenchStats().catch(() => null),
+    ]).then(([summaryRes, recordsRes, insightRes, wbStatsRes]) => {
       wx.hideLoading();
 
       const summary = summaryRes || {};
       const recordsData = recordsRes || {};
       const insight = insightRes || {};
+      const wbStats = wbStatsRes?.data || wbStatsRes || {};
       // 过滤出我推荐的人
       const rawChain=insight.referral_chain||[];
       const myReferrals=rawChain.filter(r=>r.direction==="referrer").map(r=>({...r,dateStr:r.createdAt?new Date(r.createdAt).toLocaleDateString():"--"})).slice(0,10);
@@ -213,10 +219,10 @@ Page({
         })),
         myReferrals,
         workbenchStats: {
-          partner_matchmaker_count: workbenchStats.partner_matchmaker_count || 0,
-          public_matchmaker_count: workbenchStats.public_matchmaker_count || 0,
-          registered_member_count: workbenchStats.registered_member_count || 0,
-          visitor_count: workbenchStats.visitor_count || 0,
+          partner_matchmaker_count: wbStats.partner_matchmaker_count || 0,
+          public_matchmaker_count: wbStats.public_matchmaker_count || 0,
+          registered_member_count: wbStats.registered_member_count || 0,
+          visitor_count: wbStats.visitor_count || 0,
         },
       });
     }).catch(err => {
@@ -433,5 +439,16 @@ Page({
       title: '人人媒好·社区服务站',
       path: '/pages/index/index?from=community_station&id=' + this.data.userId,
     };
+  },
+
+  _stopAutoRefresh() {
+    if (this._autoRefreshTimer) {
+      clearInterval(this._autoRefreshTimer);
+      this._autoRefreshTimer = null;
+    }
+  },
+  _startAutoRefresh() {
+    this._stopAutoRefresh();
+    this._autoRefreshTimer = setInterval(() => { this._loadData(); }, 30000);
   },
 });

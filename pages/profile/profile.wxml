@@ -33,11 +33,14 @@
     <view class="form-row">
       <text class="form-label">昵称</text>
       <input
-        class="form-input text-right"
+        class="form-input"
         type="nickname"
-        placeholder="点击获取微信昵称"
+        placeholder="点击选择微信昵称"
         placeholder-class="placeholder"
         value="{{form.nickname}}"
+        focus="{{nicknameFocus}}"
+        bindfocus="onNicknameFocus"
+        bindinput="onNicknameInput"
         bindblur="onNicknameBlur"
       />
     </view>
@@ -94,4 +97,7 @@
   >{{saving ? '保存中...' : '保存'}}</button>
 
   <view class="safe-bottom"></view>
+
+  <!-- 隐私弹窗 -->
+  <privacy-popup show="{{showPrivacyPopup}}" bindclose="onPrivacyClose"></privacy-popup>
 </view>

@@ -49,7 +49,7 @@ Page({
       },
       {
         id: 3,
-        title: '社区交友驿站',
+        title: '社区社交驿站',
         icon: '🏠',
         description: '社区实体店的连锁加盟模式',
         features: [
@@ -106,7 +106,7 @@ Page({
         example: '每月发展10名会员，组织1场活动'
       },
       {
-        model: '社区交友驿站',
+        model: '社区社交驿站',
         monthlyEarnings: '20,000-100,000元',
         roi: '6-12个月',
         example: '固定会员50人，每月组织4场活动'

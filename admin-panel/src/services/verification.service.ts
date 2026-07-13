@@ -9,6 +9,8 @@ export interface Verification {
   user_nickname?: string;
   user_phone?: string;
   user_avatar?: string;
+  real_name?: string;
+  id_card?: string;
   verify_type: 'online' | 'offline';
   id_card_front?: string;
   id_card_back?: string;

@@ -38,22 +38,21 @@ const Reports: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const res: any = await financeService.getSummary();
-      // TS 后端返回 { code: 200, data: { totalEarnings, todayEarnings, totalPayments, totalWithdrawals, pendingWithdrawals } }
-      // axios interceptor 返回 response.data，即 { code, data }
-      if (res.code === 200 && res.data) {
-        const d = res.data;
+      const res = await financeService.getSummary();
+      // financeService.getSummary() 通过 extractData 已解包 data
+      // 返回 { totalEarnings, todayEarnings, totalPayments, totalWithdrawals, pendingWithdrawals }
+      if (res && typeof res === 'object') {
         setSummary({
-          totalEarnings: d.totalEarnings || 0,
-          todayEarnings: d.todayEarnings || 0,
-          pendingEarnings: d.pendingWithdrawals || 0,
-          totalPayments: d.totalPayments || 0,
+          totalEarnings: res.totalEarnings || 0,
+          todayEarnings: res.todayEarnings || 0,
+          pendingEarnings: res.pendingWithdrawals || 0,
+          totalPayments: res.totalPayments || 0,
           todayPayments: 0,
-          totalWithdrawals: d.totalWithdrawals || 0,
-          pendingWithdrawals: d.pendingWithdrawals || 0,
+          totalWithdrawals: res.totalWithdrawals || 0,
+          pendingWithdrawals: res.pendingWithdrawals || 0,
         });
       } else {
-        message.error(res.message || '加载失败');
+        message.error('获取数据失败');
       }
     } catch (err: any) {
       message.error('加载数据失败');

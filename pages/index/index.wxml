@@ -62,8 +62,25 @@
     </swiper>
   </view>
 
-  <!-- 无推荐人引导提示条（仅访客显示） -->
-  <view class="guide-tip" wx:if="{{isGuest}}" bindtap="onLearnMore">
+  <!-- 推荐码状态提示条（仅访客时显示，会员/推荐官无需显示） -->
+  <!-- 情况1：已扫码获得推荐码，待绑定 -->
+  <view class="guide-tip guide-tip--has-code" wx:if="{{pendingReferralCode && isGuest}}">
+    <view class="guide-tip-icon guide-tip-icon--success">
+      <text class="gti-text">✓</text>
+    </view>
+    <view class="guide-tip-body">
+      <text class="guide-tip-title">已获取推荐官推荐码</text>
+      <text class="guide-tip-code">{{pendingReferralCode}}</text>
+      <text class="guide-tip-desc" wx:if="{{referrerName}}">推荐人：{{referrerName}}</text>
+      <text class="guide-tip-desc" wx:else>注册建档时将自动绑定此推荐码</text>
+    </view>
+    <view class="guide-tip-arrow" bindtap="onDatingTap">
+      <text>去建档 ›</text>
+    </view>
+  </view>
+
+  <!-- 情况2：未获得推荐码，引导获取 -->
+  <view class="guide-tip" wx:elif="{{!pendingReferralCode && isGuest}}" bindtap="onLearnMore">
     <view class="guide-tip-icon">
       <text class="gti-text">!</text>
     </view>
@@ -117,8 +134,8 @@
       </view>
       <view class="stat-sep"></view>
       <view class="stat-block">
-        <text class="stat-num">{{stats.matches}}+</text>
-        <text class="stat-lbl">成功结识</text>
+        <text class="stat-num">{{stats.salons}}+</text>
+        <text class="stat-lbl">沙龙场次</text>
       </view>
       <view class="stat-sep"></view>
       <view class="stat-block">
@@ -155,25 +172,25 @@
         <view class="grid4-arrow">></view>
         </block>
       </view>
-      <!-- 男推荐官主体沙龙 -->
+      <!-- 男推荐官主题沙龙 -->
       <view class="grid4-card grid4-card--male-salon" bindtap="onGenderSalonTap" data-type="male_salon" style="{{gridBgs.maleSalon ? 'background-image: url(' + gridBgs.maleSalon + '); background-size: cover;' : ''}}">
         <block wx:if="{{!gridBgs.maleSalon}}">
         <view class="grid4-deco grid4-deco-5"></view>
         <view class="grid4-body">
           <view class="grid4-emoji">🏋‍♂️</view>
-          <view class="grid4-title">男推荐官主体沙龙</view>
+          <view class="grid4-title">男推荐官主题沙龙</view>
           <view class="grid4-desc">男士推荐官主办·专属圈层交流</view>
         </view>
         <view class="grid4-arrow"></view>
         </block>
       </view>
-      <!-- 女推荐官主体沙龙 -->
+      <!-- 女推荐官主题沙龙 -->
       <view class="grid4-card grid4-card--female-salon" bindtap="onGenderSalonTap" data-type="female_salon" style="{{gridBgs.femaleSalon ? 'background-image: url(' + gridBgs.femaleSalon + '); background-size: cover;' : ''}}">
         <block wx:if="{{!gridBgs.femaleSalon}}">
         <view class="grid4-deco grid4-deco-6"></view>
         <view class="grid4-body">
           <view class="grid4-emoji">🏋‍♀️</view>
-          <view class="grid4-title">女推荐官主体沙龙</view>
+          <view class="grid4-title">女推荐官主题沙龙</view>
           <view class="grid4-desc">女士推荐官主办·专属圈层交流</view>
         </view>
         <view class="grid4-arrow"></view>

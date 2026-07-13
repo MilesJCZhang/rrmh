@@ -105,7 +105,7 @@ Page({
   onShareInvite() {
     const inviteCode = this.data.inviteCode;
     wx.navigateTo({
-      url: `/subpackages/social/subpackages/social/pages/reunion/reunion-chat?invite_code=${inviteCode}&mode=share`,
+      url: `/subpackages/social/pages/reunion/reunion-chat?invite_code=${inviteCode}&mode=share`,
     });
   },
 
