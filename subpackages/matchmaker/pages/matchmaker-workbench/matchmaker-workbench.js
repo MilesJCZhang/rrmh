@@ -374,9 +374,13 @@ Page({
   onGoAllRecords() { wx.navigateTo({ url: '/subpackages/matchmaker/pages/matchmaker/earnings' }); },
 
   onShareAppMessage() {
+    // 分享链接携带推荐码（code）而非用户 id：
+    // 访客通过此链接进入首页时，parseReferralScene 能解析出 code，
+    // 进而在 index.js 的 _handleScanEnter 中自动记录访客日志并绑定推荐官。
+    const code = this.data.insightCodeInfo?.code || '';
     return {
       title: '人人媒好·推荐官',
-      path: '/pages/index/index?from=matchmaker&id=' + this.data.userId,
+      path: '/pages/index/index?from=matchmaker&code=' + code,
     };
   },
 

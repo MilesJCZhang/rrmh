@@ -22,6 +22,7 @@ import {
   MenuUnfoldOutlined,
   AuditOutlined,
   BarChartOutlined,
+  EyeOutlined,
   MoneyCollectOutlined,
   ProfileOutlined,
   FileProtectOutlined,
@@ -39,7 +40,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // 初始化：根据当前路径自动展开对应父菜单
     (() => {
       const path = location.pathname;
-      if (path.startsWith('/users') || path.startsWith('/verifications') || path.startsWith('/referral-codes')) return ['user-system'];
+      if (path.startsWith('/users') || path.startsWith('/verifications') || path.startsWith('/referral-codes') || path.startsWith('/referral-visitors')) return ['user-system'];
       if (path.startsWith('/activities') || path.startsWith('/salon-config')) return ['business'];
       if (path.startsWith('/archives') || path.startsWith('/premium-verify') || path.startsWith('/fund-custody')) return ['archive'];
       if (path.startsWith('/finance') || path === '/withdrawals' || path === '/commissions' || path === '/orders') return ['finance'];
@@ -66,6 +67,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         { key: '/users', label: '用户管理' },
         { key: '/verifications', label: '实名认证' },
         { key: '/referral-codes', label: '推荐码管理' },
+        { key: '/referral-visitors', label: '访客管理', icon: <EyeOutlined /> },
       ],
     },
 

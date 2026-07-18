@@ -1034,4 +1034,62 @@ router.get('/insight/:code', (req, res) => {
   }
 });
 
+// ========== 访客日志全局列表（管理后台） ==========
+// GET /v1/admin/referral-codes/visitors
+// 用途：运营在管理后台查看所有推荐官发展的访客（含未注册），
+// 用于与小程序"推荐官工作台"的访客数对账。仅增量，不动既有路由。
+router.get('/visitors', (req, res) => {
+  const db = req.db;
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = Math.min(parseInt(req.query.pageSize) || parseInt(req.query.limit) || 20, 100);
+    const offset = (page - 1) * pageSize;
+    const { referrer_code, reg_status, keyword } = req.query;
+
+    const whereParts = [];
+    const params = [];
+    if (referrer_code) {
+      whereParts.push('v.referrer_code = ?');
+      params.push(String(referrer_code).toUpperCase());
+    }
+    if (reg_status && ['pending', 'registered'].includes(reg_status)) {
+      whereParts.push('v.reg_status = ?');
+      params.push(reg_status);
+    }
+    if (keyword) {
+      whereParts.push('(u.nickname LIKE ? OR v.visitor_nickname LIKE ? OR v.visitor_openid LIKE ?)');
+      params.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
+    }
+    const whereSql = whereParts.length ? 'WHERE ' + whereParts.join(' AND ') : '';
+
+    const countRow = db.prepare(
+      `SELECT COUNT(*) AS total FROM visitor_logs v LEFT JOIN users u ON v.referrer_id = u.id ${whereSql}`
+    ).get(...params);
+    const total = countRow?.total || 0;
+
+    const rows = db.prepare(
+      `SELECT v.id,
+              v.referrer_code AS referrerCode,
+              v.visitor_openid AS visitorOpenid,
+              v.visitor_nickname AS visitorNickname,
+              v.visitor_avatar AS visitorAvatar,
+              v.visit_time AS visitTime,
+              v.reg_status AS regStatus,
+              v.created_at AS createdAt,
+              v.updated_at AS updatedAt,
+              u.id AS referrerId,
+              u.nickname AS referrerName,
+              u.role AS referrerRole
+       FROM visitor_logs v LEFT JOIN users u ON v.referrer_id = u.id
+       ${whereSql} ORDER BY v.visit_time DESC LIMIT ? OFFSET ?`
+    ).all(...params, pageSize, offset);
+
+    const list = rows.map(r => ({ ...r, regStatus: r.regStatus || 'pending' }));
+    res.json({ code: 0, data: { list, total, page, pageSize } });
+  } catch (err) {
+    console.error('[referral-codes] visitors error:', err);
+    res.status(500).json({ code: -1, message: '查询访客日志失败' });
+  }
+});
+
 module.exports = router;

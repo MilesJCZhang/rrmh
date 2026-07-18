@@ -12,6 +12,7 @@ import UsersPage from './pages/Users';
 import ActivitiesPage from './pages/Activities';
 import SalonConfigPage from './pages/SalonConfig';
 import ReferralCodesPage from './pages/ReferralCodes';
+import ReferralVisitorsPage from './pages/ReferralVisitors';
 import StationsPage from './pages/Stations';
 import PartnersPage from './pages/Partners';
 import WithdrawalsPage from './pages/Withdrawals';
@@ -66,6 +67,17 @@ const App: React.FC = () => {
               <PrivateRoute>
                 <AppLayout>
                   <ReferralCodesPage />
+                </AppLayout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/referral-visitors"
+            element={
+              <PrivateRoute>
+                <AppLayout>
+                  <ReferralVisitorsPage />
                 </AppLayout>
               </PrivateRoute>
             }
