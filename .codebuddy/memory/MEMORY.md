@@ -87,8 +87,56 @@
   - 新增 `routes_salon_export.js`：Excel导出+海报生成接口
   - 角色白名单：`partner_matchmaker/community_station/city_franchisee/professional_recommender`
 
-## 待办事项
-- 后端开发者需实现4个新API接口（`/v1/referral/workbench-stats`、`/v1/referral/workbench-detail`、`/v1/referral/visitor-log`、`/v1/referral/visitor-update`）
-- 执行数据库脚本创建 `visitor_logs` 表
-- 前端开发者需在小程序入口页面和注册完成后的回调中调用新增的服务方法
-- 测试四大分类数据看板功能（搜索、展开/收起、分页加载、下拉刷新等）
+## 评分系统（2026-06-17 创建）
+
+### S1（生产服务器，MySQL + Prisma）
+- 评分服务文件：`/home/ubuntu/renrenmeihao-api/src/services/score.service.ts`
+- 编译为 `/home/ubuntu/renrenmeihao-api/dist/services/score.service.js`
+- `calculateAndSaveScore(userId)` 函数：读取 `users` + `single_members` 两表数据，6维度100分体系
+- 评分后写入 `users.profile_score`、`users.score_tier` 和 `user_scores` 表
+- `PUT /v1/user/profile/update` 完成后自动调用评分计算
+- `GET /v1/score/profile` 和 `POST /v1/score/recalculate` 使用真实评分引擎（不再返回 TODO mock）
+
+### S2（本地开发，SQLite + better-sqlite3）
+- 评分引擎：`utils/scoreEngine.js`
+- `isFieldFilled()` 增加了 camelCase → snake_case 映射（解决 `hasProperty` 查 `users.has_property`）
+- `recalculateAndSave(db, userId)` 在 `routes_user.js` PUT `/profile/update` 后调用
+
+### 评分维度
+| 维度 | 满分 | 数据库字段来源 |
+|------|------|---------------|
+| 基础信息(basic) | 40 | avatar, nickname, gender, birthYear, city, phone, wechatAccount, education, marital_status, intro |
+| 职业收入(career) | 15 | occupation, income, has_property, has_car |
+| 兴趣爱好(hobby) | 15 | health_tags, sleep_habit, sport_habit, diet_tags, smoking, drinking |
+| 择偶需求(preference) | 10 | expect_age_min, expect_age_max, expect_education, expect_income, marriage_expect |
+| 认证(verification) | 12 | id_card_front/back_image, face_auth_status |
+| 资产(asset) | 8 | property_images, vehicle_images, bank_deposit_proof, insurance_proof |
+| **合计** | **100** | |
+
+### S1 MySQL users 表新增21列（2026-06-17）
+education, occupation, income, smoking, drinking, health_tags, sleep_habit, sport_habit, diet_tags, expect_age_min, expect_age_max, expect_education, expect_income, marriage_expect, expect_location, children_attitude, age, marital_status, has_property(TINYINT), has_car(TINYINT), intro
+
+## 本地开发环境关键信息（2026-06-17 新增）
+- **本地服务器端口**：3000（`miniprogram/server.js`），启动方式 `node server.js`
+- **本地数据库**：SQLite `renrenmei.db`（文件位于 `miniprogram/` 目录下）
+- **环境变量**：从 `.env` 文件读取（已配置 JWT_SECRET，NODE_ENV=production）
+- **API 基础地址**：`utils/config.js` 中 `ENV = 'dev'` → `http://192.168.3.7:3000`
+- **users 表列清单**（当前 SQLite 版本）：id, nickname, role, referrer_id, created_at, referral_code, referral_level, total_commission, available_commission, phone, avatar, gender, age, openid, password, username, parent_id, wechat_account, education, marital_status, intro, occupation, income, has_property, has_car, health_tags, sleep_habit, sport_habit, diet_tags, smoking, drinking, expect_age_min, expect_age_max, expect_education, expect_income, marriage_expect, profile_score, score_tier, face_auth_status, face_auth_image, id_card_front_image, id_card_back_image, property_images, vehicle_images, bank_deposit_proof, insurance_proof, finance_proof, city, birth_date（共 48 列）
+- **routes_user.js 注意**：ALLOWED_FIELDS 中 camelCase 名称（如 wechatAccount）通过 FIELD_NAME_MAP 映射到 snake_case（如 wechat_account），避免 SQL UPDATE 报错
+- **评分引擎 `utils/scoreEngine.js`**：`isFieldFilled()` 修复了 camelCase→snake_case 映射，避免字段值为 undefined 导致评分始终为 0
+- **上传端点**：`POST /v1/upload/{avatar,image,voice}`，使用 multer 保存到 `public/uploads/`，已在 `routes_upload.js` 实现
+- **内容审核**：`POST /v1/moderation/text-check` 等在 `routes_moderation.js` 实现（开发模式始终返回安全）
+
+## 待办事项（历史）
+- ~~后端实现4个新API接口~~ ✅ 2026-07-18 确认：`/v1/referral/workbench-stats`、`/v1/referral/workbench-detail`、`/v1/referral/visitor-log`、`/v1/referral/visitor-update` 在 S2 与 生产S1 均已实现
+- ~~创建 visitor_logs 表~~ ✅ 2026-07-18 确认：生产 MySQL 已存在 visitor_logs 表（含数据，之前为0行因写入链路断）
+- ~~前端在入口/注册回调调用服务方法~~ ✅ 2026-07-18 修复：matchmaker-workbench.js 分享链接由 `id=` 改为 `code=`(推荐码)，访客进首页后 index.js `_handleScanEnter` 自动 logVisitor + 绑定推荐官
+- 测试四大分类数据看板功能（搜索、展开/收起、分页加载、下拉刷新等）—— 仍待回归
+
+## 推荐官工作台数据同步（2026-07-18 完成）
+- **访客写入断链已修复**：根因 matchmaker-workbench.js:379 分享链接用 `id=` 但 parseReferralScene 只读 `code/referrer_id/invitationCode`，导致访客进首页直接 return，visitor_logs 长期 0 行。已改为 `code=<推荐码>`，复用既有 index.js _handleScanEnter→logVisitor 逻辑（无需新增调用点）。
+- **管理后台新增"访客管理"页**（`/admin/referral-visitors`，增量新增，未动现有页面）：
+  - 前端：admin-panel/src/pages/ReferralVisitors/index.tsx（搜索+分页+注册状态筛选）、services/referral-visitor.service.ts（兼容 S1 `success({list})` 与 S2 `{code:0,data:{list}}`）、App.tsx 路由、Layout.tsx 菜单(EyeOutlined)
+  - 后端接口 `GET /api/admin/referral-codes/visitors`（跨推荐官全局访客列表，用于与小程序工作台对账）：S2 在 backend/s2/routes_referral-codes.js 增量新增；S1 生产在 src/routes/admin-referral.ts 新增并 `npx tsc`（noEmitOnError:false）重新 emit dist 后 pm2 restart 生效（验证返回 401=已注册需鉴权）
+  - 构建部署：admin-panel `CI=false npm run build` 成功，scp build/* 到 /var/www/admin/，新哈希 JS 自动失效缓存
+- **S1/S2 visitor_logs 双栈字段漂移（R4 实例）**：生产 S1 MySQL 用 camelCase 列（referrerId/referrerCode/visitor_openid/visitor_nickname/visitor_avatar/visit_time/reg_status）；本地 S2 SQLite 用 snake_case（referrer_id/referrer_code/...）。两后端接口已分别适配。
