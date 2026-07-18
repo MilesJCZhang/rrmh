@@ -4,7 +4,10 @@ const fetch = require('node-fetch');
 require('dotenv').config();
 
 const BASE_URL = 'http://localhost:3000';
-const JWT_SECRET = process.env.JWT_SECRET || 'renrenmei-secret-key-2026';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('缺少 JWT_SECRET 环境变量，请在 .env 中配置');
+}
 
 // 测试用户登录并获取token
 async function testPayment() {

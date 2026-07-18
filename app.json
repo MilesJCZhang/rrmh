@@ -6,6 +6,7 @@
     "pages/avatar/avatar",
     "pages/match/match",
     "pages/mine/mine",
+    "pages/member-detail/member-detail",
     "pages/pay/pay",
     "pages/customer-service/customer-service",
     "pages/agreement/agreement"
@@ -93,8 +94,6 @@
       "root": "subpackages/premium",
       "name": "premium",
       "pages": [
-        "pages/verify/verify",
-        "pages/match/match",
         "pages/custody/custody"
       ]
     }

@@ -1,0 +1,36 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="state">加载中...</view>
+  <view wx:elif="{{errMsg}}" class="state">{{errMsg}}</view>
+  <block wx:else>
+    <view class="header">
+      <image wx:if="{{member.avatar}}" class="avatar" src="{{member.avatar}}" mode="aspectFill"></image>
+      <view wx:else class="avatar avatar-placeholder">{{member.nickname}}</view>
+      <view class="name">{{member.nickname || '匿名会员'}}</view>
+      <view class="tags">
+        <text wx:if="{{member.gender}}" class="tag">{{member.gender === 'male' ? '男' : (member.gender === 'female' ? '女' : member.gender)}}</text>
+        <text wx:if="{{member.age}}" class="tag">{{member.age}}岁</text>
+        <text wx:if="{{member.city}}" class="tag">{{member.city}}</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="row" wx:if="{{member.occupation}}">
+        <text class="label">职业</text><text class="value">{{member.occupation}}</text>
+      </view>
+      <view class="row" wx:if="{{member.income}}">
+        <text class="label">收入</text><text class="value">{{member.income}}</text>
+      </view>
+      <view class="row" wx:if="{{member.education}}">
+        <text class="label">学历</text><text class="value">{{member.education}}</text>
+      </view>
+      <view class="row" wx:if="{{member.wechatAccount}}">
+        <text class="label">微信</text><text class="value">{{member.wechatAccount}}</text>
+      </view>
+    </view>
+
+    <view class="card" wx:if="{{member.intro}}">
+      <view class="card-title">自我介绍</view>
+      <view class="intro">{{member.intro}}</view>
+    </view>
+  </block>
+</view>
